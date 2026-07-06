@@ -1,3 +1,7 @@
+![reef_transparent](https://github.com/user-attachments/assets/a7c9f074-a61a-4f96-8bf4-f595df18f2f8)
+# Notice
+This project is under active development. Expect new versions DAILY.
+
 # Reef Search
 
 Reef Search is a zero-build, single-script-tag search overlay for static sites. It crawls your sitemap, extracts page headings and content, builds a local search index in the browser, and opens a keyboard-first overlay when visitors press Cmd/Ctrl+K.
@@ -11,10 +15,10 @@ Reef Search is a zero-build, single-script-tag search overlay for static sites. 
 
 ## Usage
 
-Download the bundled file from the project site or build it yourself, then include it on any page:
+Simply include this line in your code:
 
 ```html
-<script src="./dist/reef.min.js" data-sitemap="/sitemap.xml"></script>
+<script type="module"> import reefSearch from 'https://cdn.jsdelivr.net/npm/reef-search@0.1.0/+esm' </script>
 ```
 
 Optional attributes:
