@@ -1,26 +1,405 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Installation - Reef Search Docs</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Installation - Reef Search Documentation</title>
+  <meta name="description" content="Complete installation guide for Reef Search - multiple methods, frameworks, troubleshooting" />
   <script src="../dist/reef.min.js" data-sitemap="sitemap.xml"></script>
-  <style>body{font-family:system-ui,sans-serif;max-width:720px;margin:0 auto;padding:2rem;color:#111827;background:#f9fafb}h1{font-size:2rem;margin:0 0 1rem}h2{margin:1.25rem 0 0.5rem}p{color:#4b5563;line-height:1.6;margin:0 0 1rem}.nav{margin-top:2rem}.nav a{color:#2563eb;text-decoration:none}pre{background:#111827;color:#b9d2ff;padding:1rem;border-radius:8px;font-family:monospace}</style>
+  <style>
+    :root {
+      --bg: #071312;
+      --bg-elev: #0d1f1e;
+      --bg-elev-2: #142e2c;
+      --text: #eaf3f0;
+      --text-dim: rgb(134, 172, 165);
+      --text-faint: #4d6e69;
+      --border: #1e3634;
+      --coral: #ff8562;
+      --coral-soft: #ffab8c;
+      --coral-dim: rgba(255,133,98,0.14);
+      --teal: #43d9c8;
+      --link: #6c8cff;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
+      -webkit-font-smoothing:antialiased; min-height:100vh; margin:0;
+      line-height:1.6;
+    }
+    h1,h2,h3,h4{margin:0 0 1rem; font-family:'Fraunces',serif; font-optical-sizing:auto; font-weight:560; line-height:1.3;}
+    h1{font-size:clamp(28px,4vw,36px); letter-spacing:-0.01em;}
+    h2{font-size:22px;}
+    h3{font-size:18px;}
+    h4{color:var(--coral-soft);}
+    p{margin:0 0 1rem; color:var(--text-dim);}
+    a{color:var(--link); text-decoration:none;}
+    a:hover{color:var(--teal); text-decoration:underline;}
+    code{background:var(--bg-elev); padding:0.15rem 0.4rem; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:0.9em; color:var(--coral-soft);}
+    pre{background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; padding:1rem; overflow-x:auto; margin:0 0 1rem;}
+    pre code{background:none; padding:0; color:var(--coral-soft);}
+    ul,ol{margin:0 0 1rem; padding-left:1.5rem;}
+    li{color:var(--text-dim); margin:0.25rem 0;}
+    .container{max-width:760px; margin:0 auto; padding:40px 24px;}
+    .doc-nav{display:flex; gap:1rem; margin:2rem 0 2rem; padding:0.75rem 1rem; background:var(--bg-elev); border:1px solid var(--border); border-radius:10px;}
+    .doc-nav a{color:var(--text-dim); font-size:13px;}
+    .doc-nav a:hover{color:var(--text);}
+    .doc-nav a.active{color:var(--teal); font-weight:500;}
+    .doc-section{margin:0 0 3rem;}
+    .doc-section h2{color:var(--teal); font-size:14px; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 0.5rem; font-family:'JetBrains Mono',monospace;}
+    .kbd{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--bg-elev-2); border:1px solid var(--border); border-radius:4px; padding:2px 6px;}
+    .warning-box{background:var(--bg-elev); border:1px solid var(--coral); border-left:4px solid var(--coral); border-radius:8px; padding:1rem; margin:1rem 0;}
+    .warning-box h4{margin:0 0 0.5rem; color:var(--coral);}
+    .success-box{background:var(--bg-elev); border:1px solid var(--teal); border-left:4px solid var(--teal); border-radius:8px; padding:1rem; margin:1rem 0;}
+    .success-box h4{margin:0 0 0.5rem; color:var(--teal);}
+    .back-link{display:inline-block; margin:0 0 2rem; color:var(--text-dim); font-size:13px;}
+    .back-link:hover{color:var(--text);}
+    table{width:100%; border-collapse:collapse; margin:1rem 0; font-size:14px;}
+    th,td{padding:0.75rem 1rem; text-align:left; border-bottom:1px solid var(--border);}
+    th{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em;}
+    tr:last-child td{border-bottom:none;}
+    td:first-child{color:var(--text-dim); font-family:'JetBrains Mono',monospace; font-size:13px;}
+  </style>
 </head>
 <body>
-  <nav class="nav"><a href="index.html">← Back to Documentation</a></nav>
-  <h1>Installation</h1>
-  <p>To install Reef Search on your site, add the following script tag to your HTML:</p>
-  <pre><code>&lt;script src="https://unpkg.com/reef-search/dist/reef.min.js"&gt;&lt;/script&gt;</code></pre>
+  <nav class="container">
+    <a href="index.html" class="back-link">← Reef Search Documentation</a>
+    <div class="doc-nav">
+      <a href="index.html">Overview</a>
+      <a href="install.html" class="active">Installation</a>
+      <a href="config.html">Configuration</a>
+      <a href="advanced.html">Advanced</a>
+    </div>
+  </nav>
 
-  <h2 id="requirements">Requirements</h2>
-  <p>The search works in all modern browsers. No additional dependencies or build steps are required.</p>
+  <main class="container">
+    <header class="doc-section">
+      <h1>Installation Guide</h1>
+      <p>Complete installation instructions for Reef Search across different environments, frameworks, and deployment scenarios.</p>
+    </header>
 
-  <h2 id="cdn">CDN Usage</h2>
-  <p>For production sites, you can load the script from a CDN:</p>
-  <pre><code>&lt;script src="NOT HERE FOR NOW"&gt;&lt;/script&gt;</code></pre>
+    <section class="doc-section" id="prerequisites">
+      <h2>Prerequisites</h2>
+      <p>Before installing Reef Search, ensure your site meets these requirements:</p>
+      <table>
+        <thead>
+          <tr><th>Requirement</th><th>Details</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>HTTPS Recommended</td>
+            <td>Required for most CDNs and for sitemap fetch to work on many static hosts</td>
+          </tr>
+          <tr>
+            <td>Sitemap</td>
+            <td>Recommended but not required: <code>sitemap.xml</code> at your site root for full indexing</td>
+          </tr>
+          <tr>
+            <td>Modern Browser</td>
+            <td>ES6+ support required (Chrome 60+, Firefox 55+, Safari 12+, Edge 79+)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
 
-  <h2 id="options">Configuration Options</h2>
-  <p>All configuration is done via data attributes on the script tag.</p>
-  <p>Hidden? Nope! You can search this text from anywhere too!</p>
+    <section class="doc-section" id="quick-install">
+      <h2>Quick Installation</h2>
+      <p>The fastest way to add Reef Search to any static site:</p>
+      <pre><code>&lt;script src="https://unpkg.com/reef-search/dist/reef.min.js"&gt;&lt;/script&gt;</code></pre>
+      <p>This single script tag is all that's required. Reef Search will automatically:</p>
+      <ul>
+        <li>Fetch your <code>/sitemap.xml</code> to discover all pages</li>
+        <li>Index headings and content from each page</li>
+        <li>Register the <kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd> keyboard shortcut</li>
+      </ul>
+
+      <div class="success-box">
+        <h4>✓ Minimal Setup</h4>
+        <p>This method works for pure HTML sites, documentation, blogs, and marketing sites. No build step or configuration needed.</p>
+      </div>
+    </section>
+
+    <section class="doc-section" id="install-methods">
+      <h2>Installation Methods</h2>
+
+      <h3>1. CDN (Recommended for most users)</h3>
+      <p>Load directly from a CDN without hosting the file yourself:</p>
+      <pre><code>&lt;!-- jsDelivr (automatic latest version) --&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/reef-search/dist/reef.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- unpkg (explicit version recommended) --&gt;
+&lt;script src="https://unpkg.com/reef-search@latest/dist/reef.min.js"&gt;&lt;/script&gt;</code></pre>
+
+      <h3>2. Self-hosted (Download the bundle)</h3>
+      <p>For complete control over the script location:</p>
+      <pre><code># Download the latest release
+curl -L https://github.com/reef-search/reef-search/releases/latest/download/reef.min.js -o dist/reef.min.js
+
+# Or build from source
+npm install
+npm run build</code></pre>
+      <p>Then include in your HTML:</p>
+      <pre><code>&lt;script src="/dist/reef.min.js"&gt;&lt;/script&gt;</code></pre>
+
+      <h3>3. NPM Package (For bundlers)</h3>
+      <p>Install as a dependency in your project:</p>
+      <pre><code>npm install reef-search</code></pre>
+      <p>Then in your JavaScript entry point:</p>
+      <pre><code>// ESM import
+import { ReefSearch } from 'reef-search';
+const reef = new ReefSearch();
+
+// Or attach to window for global access
+(window as any).Reef = reef;
+
+// CommonJS
+const { ReefSearch } = require('reef-search');
+const reef = new ReefSearch();</code></pre>
+    </section>
+
+    <section class="doc-section" id="frameworks">
+      <h2>Framework Integration</h2>
+
+      <h3>React</h3>
+      <p>Add Reef Search to any React application:</p>
+      <pre><code>// In your main App.tsx or index.tsx
+import { useEffect } from 'react';
+
+useEffect(() => {
+  const script = document.createElement('script');
+  script.src = '/dist/reef.min.js';
+  script.setAttribute('data-sitemap', '/sitemap.xml');
+  document.head.appendChild(script);
+  return () => document.head.removeChild(script);
+}, []);
+
+// Or use a custom hook
+function useReef() {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = '/dist/reef.min.js';
+    script.async = true;
+    document.head.appendChild(script);
+    return () => document.head.removeChild(script);
+  }, []);
+}</code></pre>
+
+      <h3>Vue</h3>
+      <p>For Vue 3 applications:</p>
+      <pre><code>// In main.js or a plugin file
+const script = document.createElement('script');
+script.src = '/dist/reef.min.js';
+script.setAttribute('data-sitemap', '/sitemap.xml');
+document.head.appendChild(script);
+
+// In a Vue component
+import { onMounted, onUnmounted } from 'vue';
+
+export default {
+  setup() {
+    onMounted(() => {
+      const script = document.createElement('script');
+      script.src = '/dist/reef.min.js';
+      document.head.appendChild(script);
+    });
+    onUnmounted(() => {
+      document.querySelectorAll('script[src*="reef.min.js"]').forEach(s => s.remove());
+    });
+  }
+}</code></pre>
+
+      <h3>Svelte / SvelteKit</h3>
+      <p>For Svelte applications, add to <code>+layout.svelte</code>:</p>
+      <pre><code>&lt;script&gt;
+  import { onMount } from 'svelte';
+  onMount(() => {
+    const script = document.createElement('script');
+    script.src = '/dist/reef.min.js';
+    document.head.appendChild(script);
+    return () => script.remove();
+  });
+&lt;/script&gt;</code></pre>
+
+      <h3>Next.js / Remix</h3>
+      <p>For React-based frameworks with SSR, add to <code>_document.tsx</code> or <code>root.tsx</code>:</p>
+      <pre><code>// _document.tsx (Next.js)
+import { Html, Head, Main, NextScript } from 'next/document';
+
+export default function Document() {
+  return (
+    &lt;Html&gt;
+      &lt;Head /&gt;
+      &lt;body&gt;
+        &lt;Main /&gt;
+        &lt;NextScript /&gt;
+        &lt;script 
+          src="/dist/reef.min.js" 
+          data-sitemap="/sitemap.xml" 
+        /&gt;
+      &lt;/body&gt;
+    &lt;/Html&gt;
+  );
+}</code></pre>
+    </section>
+
+    <section class="doc-section" id="static-site-generators">
+      <h2>Static Site Generators</h2>
+
+      <h3>Jekyll / GitHub Pages</h3>
+      <p>Copy <code>reef.min.js</code> to your <code>_includes</code> directory and include in your layout:</p>
+      <pre><code>{# _includes/head.html #}
+&lt;script src="{{ '/dist/reef.min.js' | relative_url }}"&gt;&lt;/script&gt;</code></pre>
+
+      <h3>VitePress / VuePress</h3>
+      <p>Configure in <code>config.js</code> or add to your theme:</p>
+      <pre><code>// config.js
+export default {
+  head: [
+    ['script', { src: '/reef.min.js', attrs: { 'data-sitemap': '/sitemap.xml' } }]
+  ]
+}</code></pre>
+
+      <h3>Nuxt / Astro</h3>
+      <p>Add to your layout or <code>nuxt.config.js</code>:</p>
+      <pre><code>// astro.config.mjs or in a layout
+&lt;script is:inline src="/reef.min.js" data-sitemap="/sitemap.xml"&gt;&lt;/script&gt;</code></pre>
+
+      <h3>Gatsby</h3>
+      <p>Use <code>gatsby-ssr.js</code> to inject the script:</p>
+      <pre><code>// gatsby-ssr.js
+export const onRenderBody = ({ setPostBodyComponents }) => {
+  setPostBodyComponents([
+    &lt;script 
+      key="reef"
+      src="/reef.min.js"
+      data-sitemap="/sitemap.xml"
+    /&gt;
+  ]);
+};</code></pre>
+    </section>
+
+    <section class="doc-section" id="sitemap-setup">
+      <h2>Sitemap Configuration</h2>
+
+      <h3>Standard Sitemap Location</h3>
+      <p>Place <code>sitemap.xml</code> at your site root (e.g., <code>https://example.com/sitemap.xml</code>). The sitemap format must follow the standard protocol:</p>
+      <pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"&gt;
+  &lt;url&gt;
+    &lt;loc&gt;https://example.com/&lt;/loc&gt;
+    &lt;lastmod&gt;2024-01-15&lt;/lastmod&gt;
+    &lt;changefreq&gt;monthly&lt;/changefreq&gt;
+  &lt;/url&gt;
+  &lt;url&gt;
+    &lt;loc&gt;https://example.com/docs/install.html&lt;/loc&gt;
+    &lt;lastmod&gt;2024-01-10&lt;/lastmod&gt;
+  &lt;/url&gt;
+&lt;/urlset&gt;</code></pre>
+
+      <h3>Custom Sitemap Path</h3>
+      <p>If your sitemap is at a different location, specify it explicitly:</p>
+      <pre><code>&lt;script 
+  src="/reef.min.js" 
+  data-sitemap="/sitemap-index.xml"&gt;
+&lt;/script&gt;</code></pre>
+
+      <div class="warning-box">
+        <h4>⚠️ Sitemap Requirements</h4>
+        <p>Reef Search only indexes pages from the sitemap if they are on the same origin. Cross-origin URLs are skipped for security reasons.</p>
+      </div>
+
+      <h3>Sitemap Index Files</h3>
+      <p>Reef Search supports sitemap index files (one level of nesting):</p>
+      <pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"&gt;
+  &lt;sitemap&gt;
+    &lt;loc&gt;https://example.com/sitemap-docs.xml&lt;/loc&gt;
+  &lt;/sitemap&gt;
+  &lt;sitemap&gt;
+    &lt;loc&gt;https://example.com/sitemap-blog.xml&lt;/loc&gt;
+  &lt;/sitemap&gt;
+&lt;/sitemapindex&gt;</code></pre>
+
+      <h3>Generating Sitemaps</h3>
+      <p>Most static site generators have plugins:</p>
+      <table>
+        <thead><tr><th>Generator</th><th>Plugin</th></tr></thead>
+        <tbody>
+          <tr><td>VitePress</td><td><code>@vuepress/plugin-sitemap</code></td></tr>
+          <tr><td>Next.js</td><td><code>next-sitemap</code></td></tr>
+          <tr><td>Gatsby</td><td><code>gatsby-plugin-sitemap</code></td></tr>
+          <tr><td>Astro</td><td><code>@astrojs/sitemap</code></td></tr>
+          <tr><td>Jekyll</td><td>Built-in <code>jekyll-sitemap</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="doc-section" id="troubleshooting">
+      <h2>Troubleshooting</h2>
+
+      <h3>Search doesn't open</h3>
+      <ul>
+        <li>Verify the script loaded correctly (check Network tab)</li>
+        <li>Check browser console for errors</li>
+        <li>Ensure you're pressing <kbd>⌘K</kbd> (Mac) or <kbd>Ctrl+K</kbd> (Windows/Linux)</li>
+        <li>Make sure no other element has focus that might intercept the shortcut</li>
+      </ul>
+
+      <h3>No pages are indexed</h3>
+      <ul>
+        <li>Check that your sitemap exists and is accessible</li>
+        <li>Verify sitemap URLs are on the same origin</li>
+        <li>Check sitemap format matches the standard protocol</li>
+        <li>Use <code>data-sitemap</code> to point to a custom sitemap path</li>
+      </ul>
+
+      <h3>Only current page is indexed</h3>
+      <p>This typically means Reef couldn't fetch the sitemap. Verify:</p>
+      <pre><code>// Check your sitemap URL manually
+fetch('/sitemap.xml')
+  .then(r => r.text())
+  .then(console.log)</code></pre>
+
+      <h3>Cross-Origin Issues</h3>
+      <p>Reef Search enforces same-origin policy for security. If your sitemap contains:</p>
+      <ul>
+        <li>External URLs (<code>https://other-domain.com/page</code>): Skipped</li>
+        <li>Protocol mismatches (<code>http://</code> vs <code>https://</code>): Skipped</li>
+        <li>Port differences (<code>:3000</code> vs <code>:443</code>): Skipped</li>
+      </ul>
+
+      <h3>Console Errors</h3>
+      <table>
+        <thead><tr><th>Error</th><th>Cause</th><th>Solution</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>[reef] sitemap fetch failed</code></td>
+            <td>Sitemap not found or CORS blocked</td>
+            <td>Check sitemap path and server configuration</td>
+          </tr>
+          <tr>
+            <td><code>[reef] current page indexing failed</code></td>
+            <td>Page fetch failed</td>
+            <td>Verify the page is accessible</td>
+          </tr>
+          <tr>
+            <td><code>Failed to execute action</code></td>
+            <td>Element selector not found</td>
+            <td>Page structure changed or dynamic content</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="doc-section" id="next-steps">
+      <h2>Next Steps</h2>
+      <p>After installation, configure Reef Search to match your needs:</p>
+      <ul>
+        <li><a href="config.html">Configuration Options →</a> Learn about all configuration attributes</li>
+        <li><a href="advanced.html">Advanced Topics →</a> Performance tuning and security considerations</li>
+        <li>Press <kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd> to test your search!</li>
+      </ul>
+    </section>
+  </main>
 </body>
 </html>

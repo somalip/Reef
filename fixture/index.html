@@ -1,39 +1,325 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Fixture Documentation</title>
-  <meta name="description" content="Demo documentation site for Reef Search" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reef Search Documentation</title>
+  <meta name="description" content="Comprehensive documentation for Reef Search - zero-build, client-side search for static sites" />
   <script src="../dist/reef.min.js" data-sitemap="sitemap.xml"></script>
   <style>
-    body{font-family:system-ui,sans-serif;max-width:720px;margin:0 auto;padding:2rem;color:#111827;background:#f9fafb}
-    h1{font-size:2.5rem;margin:0 0 1rem}
-    h2{margin:1.5rem 0 0.5rem;font-size:1.5rem}
-    p{color:#4b5563;line-height:1.6;margin:0 0 1rem}
-    .nav{margin-top:2rem;padding-top:1rem;border-top:1px solid #e5e7eb}
-    .nav a{color:#2563eb;text-decoration:none;margin-right:1rem}
+    :root {
+      --bg: #071312;
+      --bg-elev: #0d1f1e;
+      --bg-elev-2: #142e2c;
+      --text: #eaf3f0;
+      --text-dim: rgb(134, 172, 165);
+      --text-faint: #4d6e69;
+      --border: #1e3634;
+      --coral: #ff8562;
+      --coral-soft: #ffab8c;
+      --coral-dim: rgba(255,133,98,0.14);
+      --teal: #43d9c8;
+      --teal-dim: rgba(67,217,200,0.12);
+      --link: #6c8cff;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
+      -webkit-font-smoothing:antialiased; min-height:100vh; margin:0;
+      line-height:1.6;
+    }
+    h1,h2,h3,h4{margin:0 0 1rem; font-family:'Fraunces',serif; font-optical-sizing:auto; font-weight:560; line-height:1.3;}
+    h1{font-size:clamp(28px,4vw,36px); letter-spacing:-0.01em;}
+    h2{font-size:22px;}
+    h3{font-size:18px;}
+    h4{font-size:15px; color:var(--coral-soft);}
+    p{margin:0 0 1rem; color:var(--text-dim);}
+    a{color:var(--link); text-decoration:none;}
+    a:hover{color:var(--teal); text-decoration:underline;}
+    code{background:var(--bg-elev); padding:0.15rem 0.4rem; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:0.9em; color:var(--coral-soft);}
+    pre{background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; padding:1rem; overflow-x:auto; margin:0 0 1rem;}
+    pre code{background:none; padding:0; color:var(--coral-soft);}
+    ul,ol{margin:0 0 1rem; padding-left:1.5rem;}
+    li{color:var(--text-dim); margin:0.25rem 0;}
+    .container{max-width:760px; margin:0 auto; padding:40px 24px;}
+    .doc-nav{display:flex; gap:1rem; margin:2rem 0 2rem; padding:0.75rem 1rem; background:var(--bg-elev); border:1px solid var(--border); border-radius:10px;}
+    .doc-nav a{color:var(--text-dim); font-size:13px;}
+    .doc-nav a:hover{color:var(--text);}
+    .doc-nav a.active{color:var(--teal); font-weight:500;}
+    .doc-section{margin:0 0 3rem;}
+    .doc-section h2{color:var(--teal); font-size:14px; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 0.5rem; font-family:'JetBrains Mono',monospace;}
+    .tag{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--coral); background:var(--bg-elev-2); border:1px solid var(--border); border-radius:4px; padding:2px 6px;}
+    .kbd{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--bg-elev-2); border:1px solid var(--border); border-radius:4px; padding:2px 6px;}
+    .example-box{background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; padding:1rem; margin:1rem 0;}
+    .example-box h4{margin-top:0; color:var(--coral-soft);}
+    .props-table{width:100%; border-collapse:collapse; margin:1rem 0; font-size:14px;}
+    .props-table th,.props-table td{padding:0.75rem 1rem; text-align:left; border-bottom:1px solid var(--border);}
+    .props-table th{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em;}
+    .props-table td:first-child{color:var(--text-dim); font-family:'JetBrains Mono',monospace; font-size:13px;}
+    .props-table tr:last-child td{border-bottom:none;}
+    .back-link{display:inline-block; margin:0 0 2rem; color:var(--text-dim); font-size:13px;}
+    .back-link:hover{color:var(--text);}
   </style>
 </head>
 <body>
-  <h1>Fixture Documentation</h1>
-  <p>Welcome to this demo documentation site. Press <kbd>Cmd</kbd>+<kbd>K</kbd> (or <kbd>Ctrl</kbd>+<kbd>K</kbd>) to search across all pages.</p>
-
-  <h2 id="overview">Overview</h2>
-  <p>This site demonstrates Reef Search, a zero-build search overlay for static websites. The search indexes all pages and allows instant searching by section heading.</p>
-  <p>The indexed content includes heading text, body content, and metadata from each page.</p>
-
-  <h2 id="getting-started">Getting Started</h2>
-  <p>To begin using Reef Search on your site, follow these simple steps:</p>
-  <p>First, include the script tag in your HTML. The script will automatically discover pages from your sitemap and build an in-memory search index.</p>
-  <p>No server configuration is needed. Search works entirely in the browser.</p>
-
-  <h2 id="usage">Usage</h2>
-  <p>Press <kbd>Cmd</kbd>/<kbd>Ctrl</kbd>+<kbd>K</kbd> to open the search modal. Type your query and results will appear instantly.</p>
-  <p>You can navigate results with arrow keys and press Enter to visit a page. If the heading has an ID, the page will scroll to that section.</p>
-
-  <nav class="nav">
-    <a href="install.html">Installation Guide →</a>
-    <a href="config.html">Configuration Options →</a>
+  <nav class="container">
+    <a href="index.html" class="back-link">← Reef Search</a>
+    <div class="doc-nav">
+      <a href="index.html" class="active">Overview</a>
+      <a href="install.html">Installation</a>
+      <a href="config.html">Configuration</a>
+      <a href="advanced.html">Advanced</a>
+    </div>
   </nav>
+
+  <main class="container">
+    <header class="doc-section">
+      <h1>Reef Search Documentation</h1>
+      <p>Welcome to the official documentation for Reef Search. This guide covers everything from basic installation to advanced configuration and integration.</p>
+    </header>
+
+    <section class="doc-section" id="what-is-reef">
+      <h2>What is Reef Search?</h2>
+      <p>Reef Search is a <strong>zero-build, client-side search overlay</strong> designed for static websites. It transforms a simple <code>&lt;script&gt;</code> tag into a powerful, keyboard-first search experience that indexes your content entirely in the visitor's browser.</p>
+      
+      <div class="example-box">
+        <h4>Key Characteristics</h4>
+        <ul>
+          <li><strong>Zero backend required</strong> &mdash; No servers, no database, no external API calls</li>
+          <li><strong>Privacy-first</strong> &mdash; All indexing and search happens locally in the browser</li>
+          <li><strong>Framework agnostic</strong> &mdash; Works with plain HTML, React, Vue, Svelte, or any framework</li>
+          <li><strong>Keyboard-first UX</strong> &mdash; Press <kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd> to open the search modal</li>
+          <li><strong>Small footprint</strong> &mdash; Approximately 6.2KB gzipped (excluding fonts)</li>
+        </ul>
+      </div>
+
+      <h3>Core Philosophy</h3>
+      <p>Reef Search was built on the principle that static sites deserve better search without the complexity. Traditional search solutions require:</p>
+      <ol>
+        <li>Account registration and dashboard configuration</li>
+        <li>Server-side indexing and query processing</li>
+        <li>Monthly fees based on usage volume</li>
+        <li>Privacy concerns as all queries are logged</li>
+      </ol>
+      <p>Reef Search eliminates all of these requirements while providing a search experience that rivals hosted solutions.</p>
+    </section>
+
+    <section class="doc-section" id="how-it-works">
+      <h2>How It Works: Architecture Deep Dive</h2>
+      
+      <h3>System Architecture</h3>
+      <p>Reef Search consists of four main components working in harmony:</p>
+      
+      <div class="props-table" style="margin:1rem 0; display:block;">
+        <div style="display:grid; gap:1rem;">
+          <div style="background:var(--bg-elev); border:1px solid var(--border); border-radius:8px; padding:1rem;">
+            <h4 style="margin:0 0 0.5rem; color:var(--teal);">1. Loader (loader.ts)</h4>
+            <p style="margin:0; font-size:13px;">Entry point that reads configuration from script attributes, registers the Cmd+K/Ctrl+K hotkey, and initializes the search system during browser idle time.</p>
+          </div>
+          <div style="background:var(--bg-elev); border:1px solid var(--border); border-radius:8px; padding:1rem;">
+            <h4 style="margin:0 0 0.5rem; color:var(--teal);">2. Crawler/Indexer (search.ts)</h4>
+            <p style="margin:0; font-size:13px;">Discovers pages via sitemap.xml, fetches content via fetch API, and extracts searchable content using DOMParser.</p>
+          </div>
+          <div style="background:var(--bg-elev); border:1px solid var(--border); border-radius:8px; padding:1rem;">
+            <h4 style="margin:0 0 0.5rem; color:var(--teal);">3. Index Store (search.ts)</h4>
+            <p style="margin:0; font-size:13px;">In-memory search index with optimized data structures for fast querying. Supports multiple record types with weighted scoring.</p>
+          </div>
+          <div style="background:var(--bg-elev); border:1px solid var(--border); border-radius:8px; padding:1rem;">
+            <h4 style="margin:0 0 0.5rem; color:var(--teal);">4. UI Layer (reef.ts)</h4>
+            <p style="margin:0; font-size:13px;">Shadow DOM-based modal overlay with keyboard navigation, result rendering, and action execution capabilities.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Initialization Flow</h3>
+      <p>When you include Reef Search on a page, the following sequence occurs:</p>
+      <ol>
+        <li><strong>Script Load</strong> &mdash; The browser downloads <code>reef.min.js</code> from your server or CDN</li>
+        <li><strong>Configuration Parse</strong> &mdash; The loader reads <code>data-*</code> attributes from the script tag</li>
+        <li><strong>Hotkey Registration</strong> &mdash; Listens for <kbd>⌘K</kbd>/<kbd>Ctrl+K</kbd> to open the modal</li>
+        <li><strong>Sitemap Fetch (if available)</strong> &mdash; Retrieves <code>sitemap.xml</code> to discover all pages</li>
+        <li><strong>Parallel Page Fetching</strong> &mdash; Fetches up to 6 pages concurrently (configurable via <code>data-max-pages</code>)</li>
+        <li><strong>Content Extraction</strong> &mdash; Parses each page's HTML and extracts headings, body text, and other content types</li>
+        <li><strong>Index Building</strong> &mdash; Tokenizes all content into an in-memory search index</li>
+        <li><strong>User Interaction</strong> &mdash; Search queries run against the in-memory index with fuzzy matching</li>
+      </ol>
+
+      <h3>Data Structures</h3>
+      <p>The search index uses three primary data structures for efficient querying:</p>
+      <pre><code>// headingIds: Map&lt;string, IndexRecord[]&gt;
+// Stores records indexed by exact heading text (lowercase)
+// Example: "installation" → [record1, record2]
+
+// headingIndex: Map&lt;string, IndexRecord[]&gt;
+// Stores records indexed by heading text prefixes
+// Enables fast prefix matching for autocomplete-style search
+
+// bodyIndex: Map&lt;string, IndexRecord[]&gt;
+// Stores records indexed by individual body text words (3+ chars)
+// Used for full-text search within page content</code></pre>
+    </section>
+
+    <section class="doc-section" id="record-types">
+      <h2>Universal Record Types</h2>
+      
+      <h3>Overview</h3>
+      <p>Reef Search supports seven distinct record types, each with specific extraction rules and interaction behaviors:</p>
+      
+      <table class="props-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Icon</th>
+            <th>Description</th>
+            <th>Behavior</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>section</code></td>
+            <td>📄</td>
+            <td>Page headings and their associated body text</td>
+            <td>Navigate to page and scroll to heading anchor</td>
+          </tr>
+          <tr>
+            <td><code>action</code></td>
+            <td>⚡</td>
+            <td>Clickable elements: buttons, toggles, summaries</td>
+            <td>Execute click event on current page, or navigate with deferred execution</td>
+          </tr>
+          <tr>
+            <td><code>field</code></td>
+            <td>📝</td>
+            <td>Form inputs, textareas, and select elements</td>
+            <td>Focus the element (and select its content)</td>
+          </tr>
+          <tr>
+            <td><code>link</code></td>
+            <td>🔗</td>
+            <td>External links (different origin than current page)</td>
+            <td>Navigate to the linked page</td>
+          </tr>
+          <tr>
+            <td><code>file</code></td>
+            <td>📎</td>
+            <td>Downloadable resources (PDF, DOC, XLS, etc.)</td>
+            <td>Navigate to download the file</td>
+          </tr>
+          <tr>
+            <td><code>media</code></td>
+            <td>🎵</td>
+            <td>Images with alt text and video/audio with transcripts</td>
+            <td>Navigate and highlight the media element</td>
+          </tr>
+          <tr>
+            <td><code>structured</code></td>
+            <td>🔍</td>
+            <td>FAQ entries and other JSON-LD structured data</td>
+            <td>Navigate to the FAQ or structured data location</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Scoring Algorithm</h3>
+      <p>Search results are ranked using weighted scoring based on match type:</p>
+      <table class="props-table">
+        <thead>
+          <tr>
+            <th>Match Type</th>
+            <th>Score</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Exact heading match</td>
+            <td>100</td>
+            <td>Perfect match on heading text</td>
+          </tr>
+          <tr>
+            <td>Heading prefix match</td>
+            <td>50</td>
+            <td>Query matches beginning of heading</td>
+          </tr>
+          <tr>
+            <td>Body word match</td>
+            <td>20</td>
+            <td>Query appears in section body text</td>
+          </tr>
+          <tr>
+            <td>Fallback substring</td>
+            <td>40 / 10</td>
+            <td>Substring match in heading/body as last resort</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Destructive Action Detection</h3>
+      <p>Actions with labels containing certain keywords are treated as destructive and excluded from automatic execution:</p>
+      <pre><code>const destructiveVerbs = [
+  'delete', 'remove', 'cancel subscription', 'unsubscribe',
+  'pay', 'checkout', 'submit order', 'confirm'
+];</code></pre>
+      <p>When an action is marked destructive, the search will navigate to the page instead of executing immediately, allowing the user to confirm the action visually.</p>
+    </section>
+
+    <section class="doc-section" id="use-cases">
+      <h2>Use Cases</h2>
+      
+      <h3>Documentation Sites</h3>
+      <p>The primary use case for Reef Search is documentation websites. It excels at:</p>
+      <ul>
+        <li>Searching across hundreds of pages of documentation</li>
+        <li>Navigating directly to specific API references or examples</li>
+        <li>Finding configuration options without knowing exact names</li>
+      </ul>
+      
+      <h3>Blog Search</h3>
+      <p>For personal blogs and articles, Reef Search enables:</p>
+      <ul>
+        <li>Full-text search across all articles</li>
+        <li>Searching by topic tags or keywords</li>
+        <li>Finding related content through fuzzy matching</li>
+      </ul>
+
+      <h3>Knowledge Bases</h3>
+      <p>Internal or external knowledge bases benefit from:</p>
+      <ul>
+        <li>Instant search results without backend queries</li>
+        <li>Indexing FAQ structured data for direct answers</li>
+        <li>Finding procedures documented across many pages</li>
+      </ul>
+
+      <h3>E-commerce Product Search</h3>
+      <p>Small catalog sites can use Reef Search for:</p>
+      <ul>
+        <li>Searching product names and descriptions</li>
+        <li>Filtering by product attributes</li>
+        <li>Privacy-first search (no analytics leakage)</li>
+      </ul>
+
+      <h3>Dashboard Action Search</h3>
+      <p style="color:#ff8562;"><strong>⚠️ Important Security Note</strong></p>
+      <p>When using action indexing on interactive sites, Reef Search provides:</p>
+      <ul>
+        <li>Searching for buttons and UI controls by their labels</li>
+        <li>Executing safe actions directly from the search modal</li>
+        <li>Navigating to pages to run destructive actions safely</li>
+      </ul>
+    </section>
+
+    <section class="doc-section" id="quick-start">
+      <h2>Quick Start</h2>
+      <p>Ready to add search to your site? Here's the fastest path:</p>
+      <pre><code>&lt;script src="https://unpkg.com/reef-search/dist/reef.min.js"&gt;&lt;/script&gt;</code></pre>
+      <p>That's it. Reef Search will automatically:</p>
+      <ul>
+        <li>Look for <code>/sitemap.xml</code> at your site root</li>
+        <li>Fetch and index all pages listed in the sitemap</li>
+        <li>Open the search modal when users press <kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd></li>
+      </ul>
+      <p>Having trouble? <a href="install.html">Installation guide →</a> covers troubleshooting, CDN options, and framework-specific setups.</p>
+    </section>
+  </main>
 </body>
 </html>
