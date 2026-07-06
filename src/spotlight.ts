@@ -1,4 +1,11 @@
-import { extractSections, resolveUrl, searchSections, type SectionDocument } from './search';
+import {
+  extractSections,
+  resolveUrl,
+  searchSections,
+  addSectionsToIndex,
+  type SectionDocument,
+  createSearchIndex,
+} from './search.js';
 
 interface SpotlightConfig {
   sitemap?: string;
@@ -7,12 +14,19 @@ interface SpotlightConfig {
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<string, string>)[c] ?? c);
+  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  let result = '';
+  for (let i = 0; i < s.length; i++) {
+    result += map[s[i]] ?? s[i];
+  }
+  return result;
 }
 
 function highlight(text: string, query: string): string {
   if (!query.trim()) return escapeHtml(text);
-  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const idx = lowerText.indexOf(lowerQuery);
   if (idx === -1) return escapeHtml(text);
   const before = escapeHtml(text.slice(0, idx));
   const match = escapeHtml(text.slice(idx, idx + query.length));
@@ -22,7 +36,9 @@ function highlight(text: string, query: string): string {
 
 function getSnippet(text: string, query: string): string {
   if (!query.trim()) return text.slice(0, 90) + '…';
-  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const idx = lowerText.indexOf(lowerQuery);
   if (idx === -1) return text.slice(0, 90) + '…';
   const start = Math.max(0, idx - 30);
   const end = Math.min(text.length, idx + query.length + 40);
@@ -31,13 +47,15 @@ function getSnippet(text: string, query: string): string {
 
 class SpotlightSearch {
   private config: SpotlightConfig = {};
-  private index: SectionDocument[] = [];
+  private index = createSearchIndex();
   private root: ShadowRoot | null = null;
   private host: HTMLDivElement | null = null;
   private input: HTMLInputElement | null = null;
   private resultsList: HTMLElement | null = null;
   private isOpen = false;
   private selectedIndex = 0;
+  private currentQuery = '';
+  private searchDebounce = 0;
 
   constructor() {
     this.config = this.readConfig();
@@ -89,27 +107,60 @@ class SpotlightSearch {
           continue;
         }
         const xml = await response.text();
-        const matches = Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g));
-        const urls = matches.map((match) => match[1].trim());
-
-        for (const pageUrl of urls.slice(0, this.config.maxPages ?? 500)) {
-          const resolvedPageUrl = resolveUrl(pageUrl, candidate);
-          const pageResponse = await fetch(resolvedPageUrl);
-          if (!pageResponse.ok) {
-            continue;
-          }
-          const html = await pageResponse.text();
-          this.index.push(...extractSections(html, resolvedPageUrl));
+        const urls: string[] = [];
+        const locRegex = /<loc>(.*?)<\/loc>/g;
+        let match: RegExpExecArray | null;
+        while ((match = locRegex.exec(xml)) !== null) {
+          urls.push(match[1].trim());
         }
-        console.info(`[spotlight] indexed ${this.index.length} sections`);
-        return;
+
+        const maxPages = this.config.maxPages ?? 500;
+        const fetchedSections = await this.fetchPagesParallel(urls.slice(0, maxPages), candidate);
+
+        if (fetchedSections.length) {
+          addSectionsToIndex(this.index, fetchedSections);
+          console.info(`[spotlight] indexed ${fetchedSections.length} sections`);
+          return;
+        }
       } catch (error) {
         console.warn('[spotlight] sitemap fetch failed', candidate, error);
       }
     }
 
-    // Fallback: index current page if sitemap fails
     this.indexCurrentPage();
+  }
+
+  private async fetchPagesParallel(urls: string[], sitemapUrl: string): Promise<SectionDocument[]> {
+    const concurrency = 6;
+    const sections: SectionDocument[] = [];
+    const results: (SectionDocument[] | null)[] = new Array(urls.length);
+
+    let idx = 0;
+    const fetchBatch = async () => {
+      while (idx < urls.length) {
+        const i = idx++;
+        const pageUrl = resolveUrl(urls[i], sitemapUrl);
+        try {
+          const pageResponse = await fetch(pageUrl);
+          if (pageResponse.ok) {
+            const html = await pageResponse.text();
+            results[i] = extractSections(html, pageUrl);
+          }
+        } catch {
+          results[i] = null;
+        }
+      }
+    };
+
+    await Promise.all([...Array(concurrency)].map(() => fetchBatch()));
+
+    for (let i = 0; i < results.length; i++) {
+      if (results[i]) {
+        sections.push(...(results[i] ?? []));
+      }
+    }
+
+    return sections;
   }
 
   private async indexCurrentPage() {
@@ -117,8 +168,9 @@ class SpotlightSearch {
       const response = await fetch(window.location.href);
       if (!response.ok) return;
       const html = await response.text();
-      this.index.push(...extractSections(html, window.location.href.split('#')[0]));
-      console.info(`[spotlight] indexed ${this.index.length} sections from current page`);
+      const sections = extractSections(html, window.location.href.split('#')[0]);
+      addSectionsToIndex(this.index, sections);
+      console.info(`[spotlight] indexed ${sections.length} sections from current page`);
     } catch (error) {
       console.warn('[spotlight] current page indexing failed', error);
     }
@@ -189,20 +241,25 @@ class SpotlightSearch {
     this.input = shadow.querySelector('input') as HTMLInputElement | null;
     this.resultsList = shadow.querySelector('.results') as HTMLElement | null;
 
-    this.input?.addEventListener('input', () => this.renderResults());
+    this.input?.addEventListener('input', () => {
+      this.currentQuery = this.input?.value ?? '';
+      this.selectedIndex = 0;
+      if (this.searchDebounce) cancelAnimationFrame(this.searchDebounce);
+      this.searchDebounce = requestAnimationFrame(() => this.renderResults());
+    });
+
     this.input?.addEventListener('keydown', (event) => {
-      const results = this.getVisibleResults();
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        this.selectedIndex = results.length ? (this.selectedIndex + 1) % results.length : 0;
+        this.selectedIndex = (this.selectedIndex + 1) % 8;
         this.renderResults();
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
-        this.selectedIndex = results.length ? (this.selectedIndex - 1 + results.length) % results.length : 0;
+        this.selectedIndex = (this.selectedIndex - 1 + 8) % 8;
         this.renderResults();
       } else if (event.key === 'Enter') {
         event.preventDefault();
-        const match = results[this.selectedIndex];
+        const match = this.getVisibleResults()[this.selectedIndex];
         if (match) {
           window.location.href = match.url;
           this.close();
@@ -225,12 +282,12 @@ class SpotlightSearch {
   }
 
   private getVisibleResults(): SectionDocument[] {
-    const query = this.input?.value ?? '';
-    return searchSections(query, this.index).slice(0, 8);
+    const query = this.currentQuery;
+    return searchSections(query, this.index, 8);
   }
 
   private renderResults() {
-    const query = this.input?.value ?? '';
+    const query = this.currentQuery;
     const results = this.getVisibleResults();
     const countEl = this.root?.querySelector('#count');
 

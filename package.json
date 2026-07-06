@@ -11,8 +11,5 @@
     "esbuild": "^0.28.1",
     "esbuild-wasm": "^0.28.1",
     "tsx": "^4.20.0"
-  },
-  "dependencies": {
-    "flexsearch": "^0.7.0"
   }
 }

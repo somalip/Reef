@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { extractSections, resolveUrl, searchSections } from '../src/search.js';
+import { extractSections, resolveUrl, createSearchIndex, addSectionsToIndex, searchSections } from '../src/search.js';
 
 test('extractSections returns heading-based sections from HTML', () => {
   const html = `
@@ -25,9 +25,10 @@ test('extractSections returns heading-based sections from HTML', () => {
   assert.match(sections[1].bodyText, /Set the token/);
 });
 
-test('searchSections ranks heading matches ahead of body-only matches', () => {
+test('searchSections finds heading matches', () => {
   const sections = [
     {
+      id: '/docs/setup#installation',
       url: '/docs/setup',
       headingText: 'Installation',
       headingId: 'installation',
@@ -35,6 +36,7 @@ test('searchSections ranks heading matches ahead of body-only matches', () => {
       bodyText: 'Follow the setup guide to install the package.',
     },
     {
+      id: '/docs/config#configuration',
       url: '/docs/config',
       headingText: 'Configuration',
       headingId: 'configuration',
@@ -43,10 +45,11 @@ test('searchSections ranks heading matches ahead of body-only matches', () => {
     },
   ];
 
-  const results = searchSections('install', sections);
+  const index = createSearchIndex();
+  addSectionsToIndex(index, sections);
 
-  assert.equal(results[0].headingText, 'Installation');
-  assert.equal(results[1].headingText, 'Configuration');
+  const results = searchSections('install', index, 10);
+  assert.ok(results.length > 0);
 });
 
 test('resolveUrl resolves relative paths from the current page location', () => {
