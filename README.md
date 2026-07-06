@@ -11,10 +11,10 @@ Reef Search is a zero-build, single-script-tag search overlay for static sites. 
 
 ## Usage
 
-Download the bundled file from the project site or build it yourself, then include it on any page:
+Simply include this line in your code:
 
 ```html
-<script src="./dist/reef.min.js" data-sitemap="/sitemap.xml"></script>
+<script type="module"> import reefSearch from 'https://cdn.jsdelivr.net/npm/reef-search@0.1.0/+esm' </script>
 ```
 
 Optional attributes:
