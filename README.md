@@ -1,6 +1,6 @@
 ![reef_transparent](https://github.com/user-attachments/assets/a7c9f074-a61a-4f96-8bf4-f595df18f2f8)
 # Notice
-this project is under active development. Expect new versions DAILY.
+This project is under active development. Expect new versions DAILY.
 
 # Reef Search
 
