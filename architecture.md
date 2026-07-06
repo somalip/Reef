@@ -205,12 +205,12 @@ Labels matching destructive verbs are treated conservatively and excluded from d
 | `data-file-extensions` | `pdf,doc,docx,xls,xlsx,ppt,pptx,zip,csv` | File-link classification |
 | `data-exclude-action` | — | CSS selectors excluded from executable results |
 | `data-actions-mode` | `execute` | `execute` or `navigate-only` |
-| `data-spotlight-action` | element-level only | Explicit site-owner label or override |
+| `data-reef-action` | element-level only | Explicit site-owner label or override |
 
 ### Runtime API
-- `window.Spotlight.open()` opens the modal.
-- `window.Spotlight.reindex()` rebuilds the index.
-- `window.Spotlight.onselect(fn)` registers a selection hook.
+- `window.Reef.open()` opens the modal.
+- `window.Reef.reindex()` rebuilds the index.
+- `window.Reef.onselect(fn)` registers a selection hook.
 
 ## 13. Performance and Distribution
 

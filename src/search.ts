@@ -156,7 +156,7 @@ export function extractActions(html: string, url: string): IndexRecord[] {
     'input[type="button"]',
     'input[type="submit"]',
     'summary',
-    '[data-spotlight-action]'
+    '[data-reef-action]'
   ];
   
   const elements = Array.from(doc.querySelectorAll(selectors.join(',')));

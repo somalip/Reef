@@ -3,7 +3,7 @@
   kbdHint.textContent = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘K' : 'Ctrl K';
 
   document.getElementById('trigger').addEventListener('click', function () {
-    if (window.Spotlight) window.Spotlight.open();
+    if (window.Reef) window.Reef.open();
   });
 
   document.getElementById('viewCode').addEventListener('click', function () {
@@ -11,7 +11,7 @@
   });
 
   document.getElementById('copyBtn').addEventListener('click', function () {
-    var text = '<script src="dist/spotlight.min.js"><\/script>';
+    var text = '<script src="dist/reef.min.js"><\/script>';
     navigator.clipboard.writeText(text).then(function () {
       var btn = document.getElementById('copyBtn');
       btn.textContent = 'Copied';

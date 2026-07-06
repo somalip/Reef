@@ -14,7 +14,7 @@ import {
   findClosestWord,
 } from './search.js';
 
-interface SpotlightConfig {
+export interface ReefConfig {
   sitemap?: string;
   maxPages?: number;
   scope?: string;
@@ -87,8 +87,8 @@ function getResultTypeLabel(type: string): string {
   }
 }
 
-class SpotlightSearch {
-  private config: SpotlightConfig = {};
+class ReefSearch {
+  private config: ReefConfig = {};
   private index = createSearchIndex();
   private root: ShadowRoot | null = null;
   private host: HTMLDivElement | null = null;
@@ -106,7 +106,7 @@ class SpotlightSearch {
     void this.boot();
   }
 
-  private readConfig(): SpotlightConfig {
+  private readConfig(): ReefConfig {
     const script = document.currentScript as HTMLScriptElement | null;
     const dataset = script?.dataset ?? {};
     return {
@@ -137,45 +137,10 @@ class SpotlightSearch {
   }
   
   private registerHotkey() {
-    this.input?.addEventListener("keydown", (event) => {
-      const results = this.getVisibleResults();
-
-      switch (event.key) {
-        case "ArrowDown":
-          event.preventDefault();
-          if (!results.length) return;
-
-          this.selectedIndex =
-            (this.selectedIndex + 1) % results.length;
-
-          this.renderResults();
-          this.scrollSelectedIntoView();
-          break;
-
-        case "ArrowUp":
-          event.preventDefault();
-          if (!results.length) return;
-
-          this.selectedIndex =
-            (this.selectedIndex - 1 + results.length) % results.length;
-
-          this.renderResults();
-          this.scrollSelectedIntoView();
-          break;
-
-        case "Enter":
-          event.preventDefault();
-          const match = results[this.selectedIndex];
-          if (match) {
-            this.executeAction(match);
-            this.close();
-          }
-          break;
-
-        case "Escape":
-          event.preventDefault();
-          this.close();
-          break;
+    document.addEventListener('keydown', (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k' && !event.shiftKey && !event.altKey) {
+        event.preventDefault();
+        this.open();
       }
     });
   }
@@ -216,11 +181,11 @@ class SpotlightSearch {
 
         if (fetchedSections.length) {
           addToIndex(this.index, fetchedSections);
-          console.info(`[spotlight] indexed ${fetchedSections.length} sections`);
+          console.info(`[reef] indexed ${fetchedSections.length} sections`);
           return;
         }
       } catch (error) {
-        console.warn('[spotlight] sitemap fetch failed', candidate, error);
+        console.warn('[reef] sitemap fetch failed', candidate, error);
       }
     }
 
@@ -309,9 +274,9 @@ class SpotlightSearch {
       const html = await response.text();
       const sections = await this.extractAllContent(html, window.location.href.split('#')[0]);
       addToIndex(this.index, sections);
-      console.info(`[spotlight] indexed ${sections.length} sections from current page`);
+      console.info(`[reef] indexed ${sections.length} sections from current page`);
     } catch (error) {
-      console.warn('[spotlight] current page indexing failed', error);
+      console.warn('[reef] current page indexing failed', error);
     }
   }
 
@@ -335,7 +300,7 @@ class SpotlightSearch {
 
   private renderUI() {
     const host = document.createElement('div');
-    host.className = 'spotlight-host is-hidden';
+    host.className = 'reef-host is-hidden';
     document.body.appendChild(host);
     this.host = host;
 
@@ -638,13 +603,13 @@ class SpotlightSearch {
 
   private handleDeferredActions(): void {
     // Check if we have a deferred action to execute
-    const deferredActionStr = sessionStorage.getItem('spotlight-deferred-action');
+    const deferredActionStr = sessionStorage.getItem('reef-deferred-action');
     if (!deferredActionStr) return;
 
     try {
       const deferredAction = JSON.parse(deferredActionStr);
       // Clear the stored action
-      sessionStorage.removeItem('spotlight-deferred-action');
+      sessionStorage.removeItem('reef-deferred-action');
 
       // Find the element and execute the action
       if (deferredAction.selector) {
@@ -666,7 +631,7 @@ class SpotlightSearch {
       }
     } catch (error) {
       console.error('Failed to handle deferred action:', error);
-      sessionStorage.removeItem('spotlight-deferred-action');
+      sessionStorage.removeItem('reef-deferred-action');
     }
   }
 
@@ -679,7 +644,7 @@ class SpotlightSearch {
       destructive: result.destructive
     };
 
-    sessionStorage.setItem('spotlight-deferred-action', JSON.stringify(deferredAction));
+    sessionStorage.setItem('reef-deferred-action', JSON.stringify(deferredAction));
 
     // Navigate to the target page
     window.location.href = result.url;
@@ -723,5 +688,5 @@ class SpotlightSearch {
   }
 }
 
-const spotlight = new SpotlightSearch();
-(window as Window & { Spotlight?: SpotlightSearch }).Spotlight = spotlight;
+export { ReefSearch };
+export default ReefSearch;

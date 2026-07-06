@@ -1,10 +1,41 @@
 {
   "name": "reef-search",
   "version": "0.1.0",
-  "private": true,
+  "description": "Fuzzy, keyboard-first search for static sites. No backend, no build step, no account. Works across web pages, and indexes links as well for navigation.",
+  "keywords": [
+    "js",
+    "static",
+    "search"
+  ],
+  "homepage": "https://github.com/somalip/Reef#readme",
+  "bugs": {
+    "url": "https://github.com/somalip/Reef/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/somalip/Reef.git"
+  },
+  "license": "MIT",
+  "author": "Pranav Somalinga",
   "type": "module",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": {
+      "import": "./index.ts",
+      "types": "./index.ts"
+    },
+    "./dist/reef.min.js": "./dist/reef.min.js"
+  },
+  "files": [
+    "index.ts",
+    "src"
+  ],
+  "directories": {
+    "test": "tests"
+  },
   "scripts": {
-    "build": "esbuild src/reef.ts --bundle --format=iife --global-name=ReefSearch --outfile=dist/reef.min.js --minify",
+    "build": "esbuild src/browser.ts --bundle --format=iife --global-name=ReefSearch --outfile=dist/reef.min.js --minify",
     "test": "node --import tsx --test"
   },
   "devDependencies": {

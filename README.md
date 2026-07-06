@@ -1,6 +1,6 @@
-# Spotlight Search
+# Reef Search
 
-Spotlight Search is a zero-build, single-script-tag search overlay for static sites. It crawls your sitemap, extracts page headings and content, builds a local search index in the browser, and opens a keyboard-first overlay when visitors press Cmd/Ctrl+K.
+Reef Search is a zero-build, single-script-tag search overlay for static sites. It crawls your sitemap, extracts page headings and content, builds a local search index in the browser, and opens a keyboard-first overlay when visitors press Cmd/Ctrl+K.
 
 ## How it works
 
@@ -14,7 +14,7 @@ Spotlight Search is a zero-build, single-script-tag search overlay for static si
 Download the bundled file from the project site or build it yourself, then include it on any page:
 
 ```html
-<script src="./dist/spotlight.min.js" data-sitemap="/sitemap.xml"></script>
+<script src="./dist/reef.min.js" data-sitemap="/sitemap.xml"></script>
 ```
 
 Optional attributes:
@@ -33,7 +33,7 @@ npm install
 npm run build
 ```
 
-The generated bundle will be written to `dist/spotlight.min.js`.
+The generated bundle will be written to `dist/reef.min.js`.
 
 ## Development
 
