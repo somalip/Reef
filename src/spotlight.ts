@@ -1,20 +1,36 @@
 import {
   extractSections,
+  extractActions,
+  extractFields,
+  extractLinks,
+  extractFiles,
+  extractMedia,
+  extractStructuredData,
   resolveUrl,
   searchSections,
-  addSectionsToIndex,
-  type SectionDocument,
+  addToIndex,
+  type IndexRecord,
   createSearchIndex,
+  findClosestWord,
 } from './search.js';
 
 interface SpotlightConfig {
   sitemap?: string;
   maxPages?: number;
   scope?: string;
+  indexActions?: boolean;
+  indexMedia?: boolean;
+  indexStructuredData?: boolean;
+  indexHidden?: boolean;
+  fileExtensions?: string;
+  excludeAction?: string;
+  actionsMode?: 'execute' | 'navigate-only';
 }
 
+
+
 function escapeHtml(s: string): string {
-  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  const map: Record<string, string> = { '&': '&', '<': '<', '>': '>', '"': '"', "'": "'" };
   let result = '';
   for (let i = 0; i < s.length; i++) {
     result += map[s[i]] ?? s[i];
@@ -45,6 +61,32 @@ function getSnippet(text: string, query: string): string {
   return (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
 }
 
+function getResultTypeIcon(type: string): string {
+  switch (type) {
+    case 'section': return '📄';
+    case 'action': return '⚡';
+    case 'field': return '📝';
+    case 'link': return '🔗';
+    case 'file': return '📎';
+    case 'media': return '🎵';
+    case 'structured': return '🔍';
+    default: return '📄';
+  }
+}
+
+function getResultTypeLabel(type: string): string {
+  switch (type) {
+    case 'section': return 'Section';
+    case 'action': return 'Action';
+    case 'field': return 'Field';
+    case 'link': return 'Link';
+    case 'file': return 'File';
+    case 'media': return 'Media';
+    case 'structured': return 'Answer';
+    default: return 'Section';
+  }
+}
+
 class SpotlightSearch {
   private config: SpotlightConfig = {};
   private index = createSearchIndex();
@@ -56,6 +98,7 @@ class SpotlightSearch {
   private selectedIndex = 0;
   private currentQuery = '';
   private searchDebounce = 0;
+  private deferredActions: { action: IndexRecord; pageUrl: string }[] = [];
 
   constructor() {
     this.config = this.readConfig();
@@ -70,6 +113,13 @@ class SpotlightSearch {
       sitemap: dataset.sitemap ?? '/sitemap.xml',
       maxPages: Number(dataset.maxPages ?? 500),
       scope: dataset.scope,
+      indexActions: dataset.indexActions !== 'false',
+      indexMedia: dataset.indexMedia !== 'false',
+      indexStructuredData: dataset.indexStructuredData !== 'false',
+      indexHidden: dataset.indexHidden !== 'false',
+      fileExtensions: dataset.fileExtensions,
+      excludeAction: dataset.excludeAction,
+      actionsMode: dataset.actionsMode as 'execute' | 'navigate-only' || 'execute',
     };
   }
 
@@ -118,7 +168,7 @@ class SpotlightSearch {
         const fetchedSections = await this.fetchPagesParallel(urls.slice(0, maxPages), candidate);
 
         if (fetchedSections.length) {
-          addSectionsToIndex(this.index, fetchedSections);
+          addToIndex(this.index, fetchedSections);
           console.info(`[spotlight] indexed ${fetchedSections.length} sections`);
           return;
         }
@@ -130,10 +180,10 @@ class SpotlightSearch {
     this.indexCurrentPage();
   }
 
-  private async fetchPagesParallel(urls: string[], sitemapUrl: string): Promise<SectionDocument[]> {
+  private async fetchPagesParallel(urls: string[], sitemapUrl: string): Promise<IndexRecord[]> {
     const concurrency = 6;
-    const sections: SectionDocument[] = [];
-    const results: (SectionDocument[] | null)[] = new Array(urls.length);
+    const sections: IndexRecord[] = [];
+    const results: (IndexRecord[] | null)[] = new Array(urls.length);
 
     let idx = 0;
     const fetchBatch = async () => {
@@ -144,7 +194,8 @@ class SpotlightSearch {
           const pageResponse = await fetch(pageUrl);
           if (pageResponse.ok) {
             const html = await pageResponse.text();
-            results[i] = extractSections(html, pageUrl);
+            const pageSections = await this.extractAllContent(html, pageUrl);
+            results[i] = pageSections;
           }
         } catch {
           results[i] = null;
@@ -163,13 +214,54 @@ class SpotlightSearch {
     return sections;
   }
 
+  private async extractAllContent(html: string, url: string): Promise<IndexRecord[]> {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    
+    // Apply scope if specified
+    let rootElement: Element | Document = doc;
+    if (this.config.scope) {
+      const scopeElement = doc.querySelector(this.config.scope);
+      if (scopeElement) {
+        rootElement = scopeElement;
+      }
+    }
+    
+    // Re-serialize the relevant part of the document
+    let htmlToProcess = new XMLSerializer().serializeToString(rootElement as Element);
+    
+    // Apply exclusions if specified
+    if (this.config.excludeAction) {
+      // In a real implementation, we would remove elements matching the exclude selector
+      // For simplicity, we'll skip this in the extraction functions
+    }
+    
+    const sections = extractSections(htmlToProcess, url);
+    const actions = this.config.indexActions ? extractActions(htmlToProcess, url) : [];
+    const fields = this.config.indexActions ? extractFields(htmlToProcess, url) : []; // Fields are grouped with actions
+    const links = extractLinks(htmlToProcess, url);
+    const files = extractFiles(htmlToProcess, url);
+    const media = this.config.indexMedia ? extractMedia(htmlToProcess, url) : [];
+    const structured = this.config.indexStructuredData ? extractStructuredData(htmlToProcess, url) : [];
+    
+    // Combine all results
+    const combined: IndexRecord[] = [];
+    combined.push(...sections);
+    combined.push(...actions);
+    combined.push(...fields);
+    combined.push(...links);
+    combined.push(...files);
+    combined.push(...media);
+    combined.push(...structured);
+    return combined;
+  }
+
   private async indexCurrentPage() {
     try {
       const response = await fetch(window.location.href);
       if (!response.ok) return;
       const html = await response.text();
-      const sections = extractSections(html, window.location.href.split('#')[0]);
-      addSectionsToIndex(this.index, sections);
+      const sections = await this.extractAllContent(html, window.location.href.split('#')[0]);
+      addToIndex(this.index, sections);
       console.info(`[spotlight] indexed ${sections.length} sections from current page`);
     } catch (error) {
       console.warn('[spotlight] current page indexing failed', error);
@@ -218,10 +310,16 @@ class SpotlightSearch {
         .results { max-height: 340px; overflow-y: auto; padding: 0.5rem; }
         .result { display: flex; flex-direction: column; gap: 0.25rem; width: 100%; text-align: left; padding: 0.8rem 0.75rem; border-radius: 10px; margin-top: 0.25rem; cursor: pointer; border: 0; background: transparent; color: inherit; }
         .result:hover, .result.is-selected { background: rgba(108, 140, 255, 0.14); }
+        .result-type { display: flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; margin-bottom: 0.25rem; }
+        .result-type-icon { font-size: 0.9rem; }
+        .result-type-label { font-family: ui-monospace, monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .result .breadcrumb { font-family: ui-monospace, monospace; font-size: 0.75rem; color: #8a8a8f; }
         .result .heading { font-size: 0.95rem; font-weight: 500; color: #edebe6; }
         .result .snippet { font-size: 0.85rem; color: #8a8a8f; line-height: 1.5; }
         .result mark { background: rgba(255, 214, 102, 0.22); color: #ffd666; border-radius: 2px; padding: 0 1px; }
+        .result-action-hint { font-size: 0.75rem; font-family: ui-monospace, monospace; color: #55555a; margin-top: 0.25rem; }
+        .result-action-hint.run-here { color: #6c8cff; }
+        .result-action-hint.go-there { color: #8a8a8f; }
         .empty { padding: 2rem; color: #55555a; text-align: center; font-size: 0.9rem; }
         .footer { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-top: 1px solid #232326; color: #55555a; font-size: 0.75rem; font-family: ui-monospace, monospace; }
         .k { border: 1px solid #232326; border-radius: 4px; padding: 0.1rem 0.4rem; margin: 0 0.2rem; }
@@ -261,7 +359,7 @@ class SpotlightSearch {
         event.preventDefault();
         const match = this.getVisibleResults()[this.selectedIndex];
         if (match) {
-          window.location.href = match.url;
+          this.executeAction(match);
           this.close();
         }
       } else if (event.key === 'Escape') {
@@ -279,9 +377,12 @@ class SpotlightSearch {
 
     shadow.querySelector('.panel')?.addEventListener('click', (event) => event.stopPropagation());
     host.addEventListener('click', () => this.close());
+    
+    // Handle deferred actions from sessionStorage
+    this.handleDeferredActions();
   }
 
-  private getVisibleResults(): SectionDocument[] {
+  private getVisibleResults(): IndexRecord[] {
     const query = this.currentQuery;
     return searchSections(query, this.index, 8);
   }
@@ -296,44 +397,283 @@ class SpotlightSearch {
     }
 
     if (!results.length) {
-      this.resultsList.innerHTML = `<div class="empty">No sections match "${escapeHtml(query)}"</div>`;
+      const suggestion = findClosestWord(query, this.index);
+      if (suggestion) {
+        this.resultsList.innerHTML = `<div class="empty">No sections match "${escapeHtml(query)}". Did you mean <strong>${escapeHtml(suggestion)}</strong>?</div>`;
+      } else {
+        this.resultsList.innerHTML = `<div class="empty">No sections match "${escapeHtml(query)}"</div>`;
+      }
       if (countEl) countEl.textContent = '0 results';
       return;
     }
 
     if (countEl) {
-      countEl.textContent = `${results.length} result${results.length !== 1 ? 's' : ''}`;
+      // Count by type for the footer
+      const counts: Record<string, number> = {};
+      for (const result of results) {
+        const type = getResultTypeLabel(result.type);
+        counts[type] = (counts[type] || 0) + 1;
+      }
+      
+      const countParts = Object.entries(counts)
+        .map(([type, count]) => `${count} ${type.toLowerCase()}${count !== 1 ? 's' : ''}`)
+        .join(', ');
+      
+      countEl.textContent = countParts;
     }
 
-    this.resultsList.innerHTML = results
-      .map((result, index) => {
+    if (this.resultsList) {
+      this.resultsList.innerHTML = results
+        .map((result, index) => {
         const isSelected = index === this.selectedIndex;
         const snippet = getSnippet(result.bodyText, query);
-        return `
-          <button class="result ${isSelected ? 'is-selected' : ''}" type="button" data-index="${index}">
-            <div class="breadcrumb">${escapeHtml(result.breadcrumb)}</div>
-            <div class="heading">${highlight(result.headingText, query)}</div>
-            <div class="snippet">${highlight(snippet, query)}</div>
-          </button>
-        `;
-      })
-      .join('');
+        const typeIcon = getResultTypeIcon(result.type);
+        const typeLabel = getResultTypeLabel(result.type);
+        
+        // Determine if this is an action that can be executed on the current page
+        const isAction = result.type === 'action';
+        const isSamePage = result.url === window.location.href.split('#')[0];
+        const canExecuteHere = isAction && isSamePage && !result.destructive;
+        const actionHint = canExecuteHere 
+          ? '<span class="result-action-hint run-here">↵ to run here</span>'
+          : '<span class="result-action-hint go-there">↵ to go there</span>';
+          
+        // For structured data, show an inline answer preview
+        let answerPreview = '';
+        if (result.type === 'structured' && result.structuredData) {
+          if (result.structuredData.answer) {
+            answerPreview = `<div class="answer-preview">${escapeHtml(result.structuredData.answer.substring(0, 100))}${result.structuredData.answer.length > 100 ? '…' : ''}</div>`;
+          } else if (result.structuredData.question && result.structuredData.answer) {
+            answerPreview = `<div class="answer-preview"><strong>${escapeHtml(result.structuredData.question)}</strong>: ${escapeHtml(result.structuredData.answer.substring(0, 100))}${result.structuredData.answer.length > 100 ? '…' : ''}</div>`;
+          }
+        }
 
-    this.resultsList.querySelectorAll('button').forEach((button) => {
+          return `
+            <button class="result ${isSelected ? 'is-selected' : ''}" type="button" data-index="${index}">
+              <div class="result-type">
+                <span class="result-type-icon">${typeIcon}</span>
+                <span class="result-type-label">${typeLabel}</span>
+              </div>
+              <div class="breadcrumb">${escapeHtml(result.breadcrumb)}</div>
+              <div class="heading">${highlight(result.headingText, query)}</div>
+              ${answerPreview}
+              <div class="snippet">${highlight(snippet, query)}</div>
+              ${isAction ? actionHint : ''}
+            </button>
+          `;
+        })
+        .join('');
+
+      this.resultsList.querySelectorAll('button').forEach((button) => {
       button.addEventListener('mouseenter', () => {
         this.selectedIndex = Number(button.getAttribute('data-index')) ?? 0;
         this.renderResults();
       });
-      button.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const match = results[Number(button.getAttribute('data-index')) ?? 0];
-        if (match) {
-          window.location.href = match.url;
-          this.close();
-        }
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const match = results[Number(button.getAttribute('data-index')) ?? 0];
+          if (match) {
+            this.executeAction(match);
+            this.close();
+          }
+        });
       });
-    });
+    }
   }
+
+  private executeAction(result: IndexRecord): void {
+    switch (result.type) {
+      case 'action':
+        this.executeActionResult(result);
+        break;
+      case 'field':
+        this.focusField(result);
+        break;
+      case 'link':
+      case 'file':
+      case 'media':
+      case 'section':
+      case 'structured':
+        window.location.href = result.url;
+        break;
+    }
+  }
+
+  private executeActionResult(result: IndexRecord): void {
+    if (result.destructive && this.config.actionsMode !== 'execute') {
+      this.highlightAndNavigate(result);
+      return;
+    }
+
+    const currentUrl = window.location.href.split('#')[0];
+    const targetUrl = result.url.split('#')[0];
+
+    if (currentUrl === targetUrl) {
+      this.executeActionOnCurrentPage(result);
+    } else {
+      this.setupDeferredAction(result);
+    }
+  }
+
+  private executeActionOnCurrentPage(result: IndexRecord): void {
+    if (!result.selector) {
+      if (result.type === 'field') {
+        this.focusField(result);
+      }
+      return;
+    }
+
+    try {
+      const element = document.querySelector(result.selector);
+      if (!element) {
+        this.showToast('Could not find that element on the page. It may have changed.');
+        return;
+      }
+
+      if (result.type === 'action') {
+        const clickEvent = new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        });
+        element.dispatchEvent(clickEvent);
+      } else if (result.type === 'field') {
+        (element as HTMLElement).focus();
+      }
+    } catch (error) {
+      console.error('Failed to execute action:', error);
+      this.showToast('Could not interact with that element. It may have changed or be unavailable.');
+    }
+  }
+
+  private focusField(result: IndexRecord): void {
+    if (!result.selector) return;
+
+    try {
+      const element = document.querySelector(result.selector);
+      if (element) {
+        (element as HTMLElement).focus();
+        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+          element.select();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to focus field:', error);
+    }
+  }
+
+  private showToast(message: string): void {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.right = '20px';
+    toast.style.background = '#333';
+    toast.style.color = '#fff';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '4px';
+    toast.style.zIndex = '9999';
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s';
+
+    document.body.appendChild(toast);
+
+    void toast.offsetWidth;
+    toast.style.opacity = '1';
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 300);
+    }, 2000);
+  }
+
+ private handleDeferredActions(): void {
+    // Check if we have a deferred action to execute
+    const deferredActionStr = sessionStorage.getItem('spotlight-deferred-action');
+    if (!deferredActionStr) return;
+    
+    try {
+        const deferredAction = JSON.parse(deferredActionStr);
+        // Clear the stored action
+        sessionStorage.removeItem('spotlight-deferred-action');
+        
+        // Find the element and execute the action
+        if (deferredAction.selector) {
+            const element = document.querySelector(deferredAction.selector);
+            if (element) {
+                if (deferredAction.type === 'action' && !deferredAction.destructive) {
+                    // Execute the action
+                    const clickEvent = new MouseEvent('click', {
+                        bubbles: true,
+                        cancelable: true,
+                        view: window
+                    });
+                    element.dispatchEvent(clickEvent);
+                } else if (deferredAction.type === 'field') {
+                    // Focus the field
+                    (element as HTMLElement).focus();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Failed to handle deferred action:', error);
+        sessionStorage.removeItem('spotlight-deferred-action');
+    }
+}
+
+  private setupDeferredAction(result: IndexRecord): void {
+    // Store the action in sessionStorage to be executed on page load
+    const deferredAction = {
+        selector: result.selector,
+        type: result.type,
+        label: result.label,
+        destructive: result.destructive
+    };
+    
+    sessionStorage.setItem('spotlight-deferred-action', JSON.stringify(deferredAction));
+    
+    // Navigate to the target page
+    window.location.href = result.url;
+}
+
+  private highlightAndNavigate(result: IndexRecord): void {
+    // Navigate to the page
+    window.location.href = result.url;
+    
+    // If we have a selector, try to highlight the element after navigation
+    if (result.selector) {
+        const selector = result.selector;
+        // We'll use a MutationObserver to check when the DOM is ready
+        const observer = new MutationObserver(() => {
+            const element = document.querySelector(selector) as HTMLElement | null;
+            if (element) {
+                // Scroll the element into view
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Add a temporary highlight effect
+                element.style.boxShadow = '0 0 0 3px rgba(108, 140, 255, 0.5)';
+                element.style.borderRadius = '4px';
+                
+                // Remove the highlight after a short delay
+                setTimeout(() => {
+                    element.style.boxShadow = '';
+                    element.style.borderRadius = '';
+                }, 1500);
+                
+                observer.disconnect();
+            }
+        });
+        
+        observer.observe(document.body, { childList: true, subtree: true });
+        
+        // Also set a timeout to disconnect the observer after a while
+        setTimeout(() => {
+            observer.disconnect();
+        }, 5000);
+    }
+}
 }
 
 const spotlight = new SpotlightSearch();
