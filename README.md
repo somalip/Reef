@@ -1,3 +1,4 @@
+![reef_transparent](https://github.com/user-attachments/assets/a7c9f074-a61a-4f96-8bf4-f595df18f2f8)
 # Reef Search
 
 Reef Search is a zero-build, single-script-tag search overlay for static sites. It crawls your sitemap, extracts page headings and content, builds a local search index in the browser, and opens a keyboard-first overlay when visitors press Cmd/Ctrl+K.
