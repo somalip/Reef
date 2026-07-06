@@ -3,23 +3,38 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Reef Search</title>
+  <title>Reef — search that ships in one script tag</title>
   <meta name="description" content="Zero-build, Cmd+K search overlay for static sites" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,450;9..144,560;9..144,650&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <div class="tide" aria-hidden="true"></div>
+
+  <div class="gauge" id="gauge" aria-hidden="true">
+    <div class="gauge-track">
+      <div class="gauge-fill" id="gaugeFill"></div>
+      <div class="gauge-marker" id="gaugeMarker"></div>
+    </div>
+    <div class="gauge-label" id="gaugeLabel">0m · surface</div>
+  </div>
+
   <nav class="wrap">
     <div class="logo"><span class="logo-dot"></span>reef</div>
     <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#compare">Compare</a>
       <a href="fixture/index.html">Docs</a>
       <a href="https://github.com">GitHub</a>
     </div>
   </nav>
 
   <header class="hero wrap">
-    <h1>Search that ships in<br>one <span style="background:var(--bg-elev-2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:0.72em;">&lt;script&gt;</span> tag</h1>
+    <div class="hero-eyebrow">client-side search · zero backend</div>
+    <h1>Search that ships in<br>one <span class="tag-chip">&lt;script&gt;</span> tag</h1>
     <p class="sub">Fuzzy, keyboard-first search for static sites. No backend, no build step, no account. Try it now — it works on this page.</p>
     <div class="trigger" id="trigger" role="button" tabindex="0" aria-haspopup="dialog">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -31,6 +46,26 @@
       <button class="btn btn-ghost" id="viewCode">View install ↓</button>
     </div>
   </header>
+
+  <section class="stats wrap">
+    <div class="stat">
+      <div class="stat-num">12,480</div>
+      <div class="stat-label">sites indexed</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3.1M</div>
+      <div class="stat-label">searches served / mo</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">6.2kb</div>
+      <div class="stat-label">gzipped bundle</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">38ms</div>
+      <div class="stat-label">median query time</div>
+    </div>
+  </section>
+  <p class="stats-note">Sample metrics shown for layout — swap in your real numbers before launch.</p>
 
   <section class="features wrap">
     <div class="feature">
@@ -47,6 +82,49 @@
     </div>
   </section>
 
+  <section class="how wrap" id="how">
+    <div class="section-head">
+      <div class="code-label">How it works</div>
+      <h2>Three steps, one request</h2>
+    </div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-index">01</div>
+        <h3>Crawl</h3>
+        <p>Reef reads your sitemap or the links already on the page the moment it loads.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-index">02</div>
+        <h3>Index</h3>
+        <p>Content is tokenized and scored entirely client-side — nothing is sent anywhere.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-index">03</div>
+        <h3>Serve</h3>
+        <p>⌘K opens instantly. Fuzzy matching ranks results as the visitor types.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="compare wrap" id="compare">
+    <div class="section-head">
+      <div class="code-label">Compare</div>
+      <h2>Reef vs. a hosted search widget</h2>
+    </div>
+    <table class="compare-table">
+      <thead>
+        <tr><th></th><th>Reef</th><th>Typical hosted widget</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Setup</td><td class="good">One script tag</td><td>SDK + dashboard account</td></tr>
+        <tr><td>Cost</td><td class="good">Free, open source</td><td>Priced per search</td></tr>
+        <tr><td>Query data</td><td class="good">Never leaves the browser</td><td>Logged on a third-party server</td></tr>
+        <tr><td>Backend required</td><td class="good">None</td><td>Yes</td></tr>
+        <tr><td>Bundle size</td><td class="good">~6kb gzipped</td><td>30–150kb</td></tr>
+      </tbody>
+    </table>
+  </section>
+
   <section class="code-section wrap">
     <div class="code-label">Add to any static page</div>
     <div class="code-block" id="codeBlock">
@@ -55,9 +133,34 @@
     </div>
   </section>
 
+  <section class="faq wrap">
+    <div class="section-head">
+      <div class="code-label">FAQ</div>
+      <h2>Common questions</h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>Does it work with React, Vue, or plain HTML?</summary>
+        <p>Yes. It's a plain script tag, so it works the same regardless of framework.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Do I need a server or database?</summary>
+        <p>No. Indexing and searching both happen in the visitor's browser.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What happens to what people search for?</summary>
+        <p>Nothing — queries are never transmitted or logged anywhere.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How large is the script?</summary>
+        <p>About 6kb gzipped, so it won't noticeably affect page load.</p>
+      </details>
+    </div>
+  </section>
+
   <footer class="wrap">MIT licensed. No query ever leaves the browser.</footer>
 
   <script src="dist/spotlight.min.js" data-sitemap="/sitemap.xml"></script>
-  <script src = script.js></script>
+  <script src="script.js"></script>
 </body>
 </html>

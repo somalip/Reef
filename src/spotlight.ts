@@ -267,7 +267,8 @@ class SpotlightSearch {
         this.selectedIndex = Number(button.getAttribute('data-index')) ?? 0;
         this.renderResults();
       });
-      button.addEventListener('click', () => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
         const match = results[Number(button.getAttribute('data-index')) ?? 0];
         if (match) {
           window.location.href = match.url;
