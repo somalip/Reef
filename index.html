@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -7,9 +8,12 @@
   <meta name="description" content="Zero-build, Cmd+K search overlay for static sites" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,450;9..144,560;9..144,650&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,450;9..144,560;9..144,650&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
   <div class="tide" aria-hidden="true"></div>
@@ -35,9 +39,13 @@
   <header class="hero wrap">
     <div class="hero-eyebrow">client-side search · zero backend</div>
     <h1>Search that ships in<br>one <span class="tag-chip">&lt;script&gt;</span> tag</h1>
-    <p class="sub">Fuzzy, keyboard-first search for static sites. No backend, no build step, no account. Try it now — it works on this page.</p>
+    <p class="sub">Fuzzy, keyboard-first search for static sites. No backend, no build step, no account. Try it now — it
+      works on this page.</p>
     <div class="trigger" id="trigger" role="button" tabindex="0" aria-haspopup="dialog">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
       <span class="trigger-text">Search this page…</span>
       <span class="kbd-hint" id="kbdHint">⌘K</span>
     </div>
@@ -113,14 +121,38 @@
     </div>
     <table class="compare-table">
       <thead>
-        <tr><th></th><th>Reef</th><th>Typical hosted widget</th></tr>
+        <tr>
+          <th></th>
+          <th>Reef</th>
+          <th>Typical hosted widget</th>
+        </tr>
       </thead>
       <tbody>
-        <tr><td>Setup</td><td class="good">One script tag</td><td>SDK + dashboard account</td></tr>
-        <tr><td>Cost</td><td class="good">Free, open source</td><td>Priced per search</td></tr>
-        <tr><td>Query data</td><td class="good">Never leaves the browser</td><td>Logged on a third-party server</td></tr>
-        <tr><td>Backend required</td><td class="good">None</td><td>Yes</td></tr>
-        <tr><td>Bundle size</td><td class="good">~6kb gzipped</td><td>30–150kb</td></tr>
+        <tr>
+          <td>Setup</td>
+          <td class="good">One script tag</td>
+          <td>SDK + dashboard account</td>
+        </tr>
+        <tr>
+          <td>Cost</td>
+          <td class="good">Free, open source</td>
+          <td>Priced per search</td>
+        </tr>
+        <tr>
+          <td>Query data</td>
+          <td class="good">Never leaves the browser</td>
+          <td>Logged on a third-party server</td>
+        </tr>
+        <tr>
+          <td>Backend required</td>
+          <td class="good">None</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Bundle size</td>
+          <td class="good">~23kb</td>
+          <td>50–150kb</td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -155,14 +187,15 @@
       </details>
       <details class="faq-item">
         <summary>How large is the script?</summary>
-        <p>About 6kb gzipped, so it won't noticeably affect page load.</p>
+        <p>About 23kb, so it won't noticeably affect page load.</p>
       </details>
     </div>
   </section>
 
-  <footer class="wrap">MIT licensed. No query ever leaves the browser.</footer>
-
-  <script src="dist/spotlight.min.js" data-sitemap="/sitemap.xml"></script>
+  <footer class="wrap">© 2026 Pranav Somalinga. MIT licensed. Open forever.</footer>
+  <br><br>
+  <script src="dist/reef.min.js" data-sitemap="/sitemap.xml"></script>
   <script src="script.js"></script>
 </body>
+
 </html>

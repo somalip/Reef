@@ -1,10 +1,10 @@
 {
-  "name": "spotlight-search",
+  "name": "reef-search",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild src/spotlight.ts --bundle --format=iife --global-name=SpotlightSearch --outfile=dist/spotlight.min.js --minify",
+    "build": "esbuild src/reef.ts --bundle --format=iife --global-name=ReefSearch --outfile=dist/reef.min.js --minify",
     "test": "node --import tsx --test"
   },
   "devDependencies": {
