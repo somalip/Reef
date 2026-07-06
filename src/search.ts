@@ -551,7 +551,7 @@ export function addToIndex(index: SearchIndex, records: IndexRecord[]): void {
         index.bodyIndex.set(word, existing);
       }
     }
-    
+
     if (record.type === 'structured' && record.structuredData) {
       if (record.structuredData.question) {
         const questionWords = record.structuredData.question.toLowerCase().split(/\s+/);
@@ -577,70 +577,8 @@ export function addToIndex(index: SearchIndex, records: IndexRecord[]): void {
   }
 }
 
-export function searchSections(query: string, index: SearchIndex, limit: number = 8): IndexRecord[] {
-  const term = query.trim().toLowerCase();
-  if (!term) {
-    return index.allSections.slice(0, limit);
-  }
-
-  const seen = new Set<IndexRecord>();
-  const scored = new Map<IndexRecord, number>();
-
-  const headingExact = index.headingIds.get(term) ?? [];
-  for (const section of headingExact) {
-    scored.set(section, 100);
-    seen.add(section);
-  }
-
-  for (const [key, sections] of index.headingIds) {
-    if (key.includes(term) && key !== term) {
-      for (const section of sections) {
-        if (!seen.has(section)) {
-          seen.add(section);
-          scored.set(section, 80);
-        } else {
-          const score = scored.get(section) ?? 0;
-          scored.set(section, Math.max(score, 90));
-        }
-      }
-    }
-  }
-
-  for (const [key, sections] of index.headingIndex) {
-    if (key.includes(term)) {
-      for (const section of sections) {
-        if (!seen.has(section)) {
-          seen.add(section);
-          const headingLower = section.headingText.toLowerCase();
-          scored.set(section, headingLower.startsWith(term) ? 60 : 40);
-        } else {
-          const score = scored.get(section) ?? 0;
-          scored.set(section, Math.max(score, 50));
-        }
-      }
-    }
-  }
-
-  for (const [key, sections] of index.bodyIndex) {
-    if (key.includes(term)) {
-      for (const section of sections) {
-        if (!seen.has(section)) {
-          seen.add(section);
-          scored.set(section, 20);
-        } else {
-          const score = scored.get(section) ?? 0;
-          scored.set(section, score + 10);
-        }
-      }
-    }
-  }
-
-  const sorted = [...scored.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].headingText.localeCompare(b[0].headingText))
-    .map((e) => e[0]);
-
-  return sorted.slice(0, limit);
-}
+// Alias for test compatibility
+export const addSectionsToIndex = addToIndex;
 
 export function getAllSections(index: SearchIndex): IndexRecord[] {
   return index.allSections;
@@ -694,4 +632,69 @@ export function findClosestWord(query: string, index: SearchIndex, maxDistance =
   }
 
   return (closest as { word: string; distance: number } | null)?.word ?? null;
+}
+
+export function searchSections(
+  query: string,
+  index: SearchIndex,
+  limit = 8
+): IndexRecord[] {
+  const q = query.trim().toLowerCase();
+
+  if (!q) {
+    return index.allSections.slice(0, limit);
+  }
+
+  const scores = new Map<IndexRecord, number>();
+
+  const addScore = (record: IndexRecord, score: number) => {
+    scores.set(record, (scores.get(record) ?? 0) + score);
+  };
+
+  // Exact heading match
+  const exact = index.headingIds.get(q);
+  if (exact) {
+    for (const record of exact) {
+      addScore(record, 100);
+    }
+  }
+
+  // Heading prefix matches
+  const prefix = index.headingIndex.get(q);
+  if (prefix) {
+    for (const record of prefix) {
+      addScore(record, 50);
+    }
+  }
+
+  // Body word matches
+  const words = q.split(/\s+/);
+
+  for (const word of words) {
+    const bodyMatches = index.bodyIndex.get(word);
+    if (bodyMatches) {
+      for (const record of bodyMatches) {
+        addScore(record, 20);
+      }
+    }
+  }
+
+  // Fallback substring search
+  if (scores.size === 0) {
+    for (const record of index.allSections) {
+      const heading = record.headingText.toLowerCase();
+      const body = record.bodyText.toLowerCase();
+
+      if (heading.includes(q)) {
+        addScore(record, 40);
+      } else if (body.includes(q)) {
+        addScore(record, 10);
+      }
+    }
+  }
+
+  return [...scores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([record]) => record)
+    .slice(0, limit);
 }

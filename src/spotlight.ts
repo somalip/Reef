@@ -123,12 +123,59 @@ class SpotlightSearch {
     };
   }
 
+  private scrollSelectedIntoView(): void {
+    if (!this.resultsList) return;
+
+    const selected = this.resultsList.querySelector(
+      `.result[data-index="${this.selectedIndex}"]`
+    ) as HTMLElement | null;
+
+    selected?.scrollIntoView({
+      block: "nearest",
+      behavior: "smooth",
+    });
+  }
+  
   private registerHotkey() {
-    document.addEventListener('keydown', (event) => {
-      const isHotkey = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
-      if (isHotkey) {
-        event.preventDefault();
-        this.open();
+    this.input?.addEventListener("keydown", (event) => {
+      const results = this.getVisibleResults();
+
+      switch (event.key) {
+        case "ArrowDown":
+          event.preventDefault();
+          if (!results.length) return;
+
+          this.selectedIndex =
+            (this.selectedIndex + 1) % results.length;
+
+          this.renderResults();
+          this.scrollSelectedIntoView();
+          break;
+
+        case "ArrowUp":
+          event.preventDefault();
+          if (!results.length) return;
+
+          this.selectedIndex =
+            (this.selectedIndex - 1 + results.length) % results.length;
+
+          this.renderResults();
+          this.scrollSelectedIntoView();
+          break;
+
+        case "Enter":
+          event.preventDefault();
+          const match = results[this.selectedIndex];
+          if (match) {
+            this.executeAction(match);
+            this.close();
+          }
+          break;
+
+        case "Escape":
+          event.preventDefault();
+          this.close();
+          break;
       }
     });
   }
@@ -216,7 +263,7 @@ class SpotlightSearch {
 
   private async extractAllContent(html: string, url: string): Promise<IndexRecord[]> {
     const doc = new DOMParser().parseFromString(html, 'text/html');
-    
+
     // Apply scope if specified
     let rootElement: Element | Document = doc;
     if (this.config.scope) {
@@ -225,16 +272,16 @@ class SpotlightSearch {
         rootElement = scopeElement;
       }
     }
-    
+
     // Re-serialize the relevant part of the document
     let htmlToProcess = new XMLSerializer().serializeToString(rootElement as Element);
-    
+
     // Apply exclusions if specified
     if (this.config.excludeAction) {
       // In a real implementation, we would remove elements matching the exclude selector
       // For simplicity, we'll skip this in the extraction functions
     }
-    
+
     const sections = extractSections(htmlToProcess, url);
     const actions = this.config.indexActions ? extractActions(htmlToProcess, url) : [];
     const fields = this.config.indexActions ? extractFields(htmlToProcess, url) : []; // Fields are grouped with actions
@@ -242,7 +289,7 @@ class SpotlightSearch {
     const files = extractFiles(htmlToProcess, url);
     const media = this.config.indexMedia ? extractMedia(htmlToProcess, url) : [];
     const structured = this.config.indexStructuredData ? extractStructuredData(htmlToProcess, url) : [];
-    
+
     // Combine all results
     const combined: IndexRecord[] = [];
     combined.push(...sections);
@@ -377,7 +424,7 @@ class SpotlightSearch {
 
     shadow.querySelector('.panel')?.addEventListener('click', (event) => event.stopPropagation());
     host.addEventListener('click', () => this.close());
-    
+
     // Handle deferred actions from sessionStorage
     this.handleDeferredActions();
   }
@@ -414,39 +461,39 @@ class SpotlightSearch {
         const type = getResultTypeLabel(result.type);
         counts[type] = (counts[type] || 0) + 1;
       }
-      
+
       const countParts = Object.entries(counts)
         .map(([type, count]) => `${count} ${type.toLowerCase()}${count !== 1 ? 's' : ''}`)
         .join(', ');
-      
+
       countEl.textContent = countParts;
     }
 
     if (this.resultsList) {
       this.resultsList.innerHTML = results
         .map((result, index) => {
-        const isSelected = index === this.selectedIndex;
-        const snippet = getSnippet(result.bodyText, query);
-        const typeIcon = getResultTypeIcon(result.type);
-        const typeLabel = getResultTypeLabel(result.type);
-        
-        // Determine if this is an action that can be executed on the current page
-        const isAction = result.type === 'action';
-        const isSamePage = result.url === window.location.href.split('#')[0];
-        const canExecuteHere = isAction && isSamePage && !result.destructive;
-        const actionHint = canExecuteHere 
-          ? '<span class="result-action-hint run-here">↵ to run here</span>'
-          : '<span class="result-action-hint go-there">↵ to go there</span>';
-          
-        // For structured data, show an inline answer preview
-        let answerPreview = '';
-        if (result.type === 'structured' && result.structuredData) {
-          if (result.structuredData.answer) {
-            answerPreview = `<div class="answer-preview">${escapeHtml(result.structuredData.answer.substring(0, 100))}${result.structuredData.answer.length > 100 ? '…' : ''}</div>`;
-          } else if (result.structuredData.question && result.structuredData.answer) {
-            answerPreview = `<div class="answer-preview"><strong>${escapeHtml(result.structuredData.question)}</strong>: ${escapeHtml(result.structuredData.answer.substring(0, 100))}${result.structuredData.answer.length > 100 ? '…' : ''}</div>`;
+          const isSelected = index === this.selectedIndex;
+          const snippet = getSnippet(result.bodyText, query);
+          const typeIcon = getResultTypeIcon(result.type);
+          const typeLabel = getResultTypeLabel(result.type);
+
+          // Determine if this is an action that can be executed on the current page
+          const isAction = result.type === 'action';
+          const isSamePage = result.url === window.location.href.split('#')[0];
+          const canExecuteHere = isAction && isSamePage && !result.destructive;
+          const actionHint = canExecuteHere
+            ? '<span class="result-action-hint run-here">↵ to run here</span>'
+            : '<span class="result-action-hint go-there">↵ to go there</span>';
+
+          // For structured data, show an inline answer preview
+          let answerPreview = '';
+          if (result.type === 'structured' && result.structuredData) {
+            if (result.structuredData.answer) {
+              answerPreview = `<div class="answer-preview">${escapeHtml(result.structuredData.answer.substring(0, 100))}${result.structuredData.answer.length > 100 ? '…' : ''}</div>`;
+            } else if (result.structuredData.question && result.structuredData.answer) {
+              answerPreview = `<div class="answer-preview"><strong>${escapeHtml(result.structuredData.question)}</strong>: ${escapeHtml(result.structuredData.answer.substring(0, 100))}${result.structuredData.answer.length > 100 ? '…' : ''}</div>`;
+            }
           }
-        }
 
           return `
             <button class="result ${isSelected ? 'is-selected' : ''}" type="button" data-index="${index}">
@@ -465,10 +512,10 @@ class SpotlightSearch {
         .join('');
 
       this.resultsList.querySelectorAll('button').forEach((button) => {
-      button.addEventListener('mouseenter', () => {
-        this.selectedIndex = Number(button.getAttribute('data-index')) ?? 0;
-        this.renderResults();
-      });
+        button.addEventListener('mouseenter', () => {
+          this.selectedIndex = Number(button.getAttribute('data-index')) ?? 0;
+          this.renderResults();
+        });
         button.addEventListener('click', (event) => {
           event.stopPropagation();
           const match = results[Number(button.getAttribute('data-index')) ?? 0];
@@ -589,91 +636,91 @@ class SpotlightSearch {
     }, 2000);
   }
 
- private handleDeferredActions(): void {
+  private handleDeferredActions(): void {
     // Check if we have a deferred action to execute
     const deferredActionStr = sessionStorage.getItem('spotlight-deferred-action');
     if (!deferredActionStr) return;
-    
+
     try {
-        const deferredAction = JSON.parse(deferredActionStr);
-        // Clear the stored action
-        sessionStorage.removeItem('spotlight-deferred-action');
-        
-        // Find the element and execute the action
-        if (deferredAction.selector) {
-            const element = document.querySelector(deferredAction.selector);
-            if (element) {
-                if (deferredAction.type === 'action' && !deferredAction.destructive) {
-                    // Execute the action
-                    const clickEvent = new MouseEvent('click', {
-                        bubbles: true,
-                        cancelable: true,
-                        view: window
-                    });
-                    element.dispatchEvent(clickEvent);
-                } else if (deferredAction.type === 'field') {
-                    // Focus the field
-                    (element as HTMLElement).focus();
-                }
-            }
+      const deferredAction = JSON.parse(deferredActionStr);
+      // Clear the stored action
+      sessionStorage.removeItem('spotlight-deferred-action');
+
+      // Find the element and execute the action
+      if (deferredAction.selector) {
+        const element = document.querySelector(deferredAction.selector);
+        if (element) {
+          if (deferredAction.type === 'action' && !deferredAction.destructive) {
+            // Execute the action
+            const clickEvent = new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+              view: window
+            });
+            element.dispatchEvent(clickEvent);
+          } else if (deferredAction.type === 'field') {
+            // Focus the field
+            (element as HTMLElement).focus();
+          }
         }
+      }
     } catch (error) {
-        console.error('Failed to handle deferred action:', error);
-        sessionStorage.removeItem('spotlight-deferred-action');
+      console.error('Failed to handle deferred action:', error);
+      sessionStorage.removeItem('spotlight-deferred-action');
     }
-}
+  }
 
   private setupDeferredAction(result: IndexRecord): void {
     // Store the action in sessionStorage to be executed on page load
     const deferredAction = {
-        selector: result.selector,
-        type: result.type,
-        label: result.label,
-        destructive: result.destructive
+      selector: result.selector,
+      type: result.type,
+      label: result.label,
+      destructive: result.destructive
     };
-    
+
     sessionStorage.setItem('spotlight-deferred-action', JSON.stringify(deferredAction));
-    
+
     // Navigate to the target page
     window.location.href = result.url;
-}
+  }
 
   private highlightAndNavigate(result: IndexRecord): void {
     // Navigate to the page
     window.location.href = result.url;
-    
+
     // If we have a selector, try to highlight the element after navigation
     if (result.selector) {
-        const selector = result.selector;
-        // We'll use a MutationObserver to check when the DOM is ready
-        const observer = new MutationObserver(() => {
-            const element = document.querySelector(selector) as HTMLElement | null;
-            if (element) {
-                // Scroll the element into view
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // Add a temporary highlight effect
-                element.style.boxShadow = '0 0 0 3px rgba(108, 140, 255, 0.5)';
-                element.style.borderRadius = '4px';
-                
-                // Remove the highlight after a short delay
-                setTimeout(() => {
-                    element.style.boxShadow = '';
-                    element.style.borderRadius = '';
-                }, 1500);
-                
-                observer.disconnect();
-            }
-        });
-        
-        observer.observe(document.body, { childList: true, subtree: true });
-        
-        // Also set a timeout to disconnect the observer after a while
-        setTimeout(() => {
-            observer.disconnect();
-        }, 5000);
+      const selector = result.selector;
+      // We'll use a MutationObserver to check when the DOM is ready
+      const observer = new MutationObserver(() => {
+        const element = document.querySelector(selector) as HTMLElement | null;
+        if (element) {
+          // Scroll the element into view
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+          // Add a temporary highlight effect
+          element.style.boxShadow = '0 0 0 3px rgba(108, 140, 255, 0.5)';
+          element.style.borderRadius = '4px';
+
+          // Remove the highlight after a short delay
+          setTimeout(() => {
+            element.style.boxShadow = '';
+            element.style.borderRadius = '';
+          }, 1500);
+
+          observer.disconnect();
+        }
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      // Also set a timeout to disconnect the observer after a while
+      setTimeout(() => {
+        observer.disconnect();
+      }, 5000);
     }
-}
+  }
 }
 
 const spotlight = new SpotlightSearch();
