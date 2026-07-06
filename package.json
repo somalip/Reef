@@ -1,0 +1,17 @@
+{
+  "name": "spotlight-search",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/spotlight.ts --bundle --format=iife --global-name=SpotlightSearch --outfile=dist/spotlight.min.js --minify",
+    "test": "node --import tsx --test"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "tsx": "^4.20.0"
+  },
+  "dependencies": {
+    "flexsearch": "^0.7.0"
+  }
+}
