@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Spotlight Search</title>
+  <meta name="description" content="Zero-build, Cmd+K search overlay for static sites" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0b;
+      --bg-elev: #131316;
+      --bg-elev-2: #1a1a1e;
+      --text: #edebe6;
+      --text-dim: #8a8a8f;
+      --text-faint: #55555a;
+      --border: #232326;
+      --accent: #6c8cff;
+      --accent-dim: rgba(108,140,255,0.14);
+    }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; }
+    body{
+      background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
+      -webkit-font-smoothing:antialiased; min-height:100vh;
+    }
+    a{ color:inherit; }
+    .wrap{ max-width:760px; margin:0 auto; padding:0 24px; }
+    nav{ display:flex; align-items:center; justify-content:space-between; padding:28px 0; }
+    .logo{ font-family:'JetBrains Mono',monospace; font-weight:600; font-size:14px; display:flex; align-items:center; gap:8px; }
+    .logo-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); }
+    .nav-links{ display:flex; gap:24px; font-size:13px; color:var(--text-dim); }
+    .nav-links a{ text-decoration:none; }
+    .hero{ padding:56px 0 40px; text-align:center; }
+    h1{ font-family:'JetBrains Mono',monospace; font-weight:600; font-size:clamp(26px,4.6vw,38px); margin:0 0 18px; line-height:1.28; }
+    .sub{ font-size:15.5px; color:var(--text-dim); max-width:480px; margin:0 auto 36px; line-height:1.6; }
+    .trigger{ display:flex; align-items:center; gap:10px; max-width:440px; margin:0 auto; background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; padding:12px 14px; cursor:pointer; }
+    .trigger:hover{ border-color:#33333a; background:var(--bg-elev-2); }
+    .trigger svg{ flex-shrink:0; opacity:0.55; }
+    .trigger-text{ flex:1; text-align:left; color:var(--text-faint); font-size:14px; }
+    .kbd-hint{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); background:var(--bg-elev-2); border:1px solid var(--border); border-radius:5px; padding:2px 6px; }
+    .cta{ display:flex; gap:14px; margin-top:18px; flex-wrap:wrap; justify-content:center; }
+    .btn{ font-family:'Inter',sans-serif; font-weight:500; font-size:13.5px; border-radius:8px; padding:9px 16px; cursor:pointer; border:1px solid transparent; transition:transform .12s ease,background .15s; }
+    .btn:active{ transform:scale(0.97); }
+    .btn-primary{ background:var(--accent); color:#0a0a0b; }
+    .btn-primary:hover{ background:#82a0ff; }
+    .btn-ghost{ background:transparent; border-color:var(--border); color:var(--text-dim); }
+    .btn-ghost:hover{ color:var(--text); border-color:#3a3a40; }
+    .features{ display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin:52px 0; }
+    .feature{ padding:28px 20px; border-left:1px solid var(--border); }
+    .feature:first-child{ border-left:none; }
+    .feature h3{ font-family:'JetBrains Mono',monospace; font-size:13px; margin:0 0 8px; }
+    .feature p{ font-size:13px; color:var(--text-dim); margin:0; line-height:1.55; }
+    .code-section{ margin-bottom:64px; }
+    .code-label{ font-size:12px; color:var(--text-faint); margin-bottom:10px; font-family:'JetBrains Mono',monospace; }
+    .code-block{ background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; padding:16px 18px; font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#b9d2ff; position:relative; }
+    .copy-btn{ position:absolute; top:10px; right:10px; background:var(--bg-elev-2); border:1px solid var(--border); color:var(--text-dim); font-size:11px; border-radius:6px; padding:5px 9px; cursor:pointer; }
+    .copy-btn:hover{ color:var(--text); }
+    footer{ padding:20px 0 48px; text-align:center; font-size:12px; color:var(--text-faint); }
+    @media(max-width:560px){ .features{ grid-template-columns:1fr; } .feature{ border-left:none; border-top:1px solid var(--border); } .feature:first-child{ border-top:none; } }
+  </style>
+</head>
+<body>
+  <nav class="wrap">
+    <div class="logo"><span class="logo-dot"></span>spotlight</div>
+    <div class="nav-links">
+      <a href="fixture/index.html">Docs</a>
+      <a href="https://github.com">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero wrap">
+    <h1>Search that ships in<br>one <span style="background:var(--bg-elev-2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:0.72em;">&lt;script&gt;</span> tag</h1>
+    <p class="sub">Fuzzy, keyboard-first search for static sites. No backend, no build step, no account. Try it now — it works on this page.</p>
+    <div class="trigger" id="trigger" role="button" tabindex="0" aria-haspopup="dialog">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <span class="trigger-text">Search this page…</span>
+      <span class="kbd-hint" id="kbdHint">⌘K</span>
+    </div>
+    <div class="cta">
+      <a href="fixture/" class="btn btn-primary">Try the demo</a>
+      <button class="btn btn-ghost" id="viewCode">View install ↓</button>
+    </div>
+  </header>
+
+  <section class="features wrap">
+    <div class="feature">
+      <h3>One script tag</h3>
+      <p>Paste it, done. No bundler, no config file, no signup.</p>
+    </div>
+    <div class="feature">
+      <h3>⌘K anywhere</h3>
+      <p>Opens instantly. Arrow keys move, Enter selects, Esc closes.</p>
+    </div>
+    <div class="feature">
+      <h3>Stays local</h3>
+      <p>Indexed and searched entirely in the visitor's browser.</p>
+    </div>
+  </section>
+
+  <section class="code-section wrap">
+    <div class="code-label">Add to any static page</div>
+    <div class="code-block" id="codeBlock">
+      <button class="copy-btn" id="copyBtn">Copy</button>
+      <code id="codeText">&lt;script src="dist/spotlight.min.js"&gt;&lt;/script&gt;</code>
+    </div>
+  </section>
+
+  <footer class="wrap">MIT licensed. No query ever leaves the browser.</footer>
+
+  <script src="dist/spotlight.min.js" data-sitemap="/sitemap.xml"></script>
+  <script>
+    (function(){
+      var kbdHint = document.getElementById('kbdHint');
+      kbdHint.textContent = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘K' : 'Ctrl K';
+      
+      document.getElementById('trigger').addEventListener('click', function(){
+        if(window.Spotlight) window.Spotlight.open();
+      });
+      
+      document.getElementById('viewCode').addEventListener('click', function(){
+        document.querySelector('.code-section').scrollIntoView({behavior:'smooth',block:'center'});
+      });
+      
+      document.getElementById('copyBtn').addEventListener('click', function(){
+        var text = '<script src="dist/spotlight.min.js"><\/script>';
+        navigator.clipboard.writeText(text).then(function(){
+          var btn = document.getElementById('copyBtn');
+          btn.textContent = 'Copied';
+          setTimeout(function(){ btn.textContent = 'Copy'; }, 1400);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

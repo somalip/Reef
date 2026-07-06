@@ -6,6 +6,18 @@ export interface SectionDocument {
   bodyText: string;
 }
 
+export function resolveUrl(value: string, base: string): string {
+  if (!value) {
+    return base;
+  }
+
+  try {
+    return new URL(value, base).toString();
+  } catch {
+    return value;
+  }
+}
+
 function stripTags(value: string): string {
   return value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
@@ -22,14 +34,16 @@ export function extractSections(html: string, url: string): SectionDocument[] {
     .replace(/<!--([\s\S]*?)-->/g, ' ');
 
   const headingRegex = /<(h[1-6])\b([^>]*)>([\s\S]*?)<\/\1>/gi;
-  const matches: Array<{ index: number; text: string; id: string }> = [];
+  const matches: Array<{ level: number; index: number; text: string; id: string }> = [];
 
   let match: RegExpExecArray | null;
   while ((match = headingRegex.exec(cleanHtml)) !== null) {
-    const [, , attrs, text] = match;
+    const [, tag, attrs, text] = match;
     const idMatch = attrs.match(/\bid=["']([^"']+)['"]/i);
     const headingText = stripTags(text);
+    const level = parseInt(tag[1], 10);
     matches.push({
+      level,
       index: match.index,
       text: headingText,
       id: idMatch?.[1] ?? headingText.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
@@ -39,18 +53,21 @@ export function extractSections(html: string, url: string): SectionDocument[] {
   const sections: SectionDocument[] = [];
   matches.forEach((heading, index) => {
     const nextHeading = matches[index + 1];
-    const start = heading.index + heading.text.length + 0;
+    const start = heading.index + heading.text.length;
     const end = nextHeading?.index ?? cleanHtml.length;
     const content = cleanHtml.slice(start, end);
-    const bodyText = stripTags(content)
-      .replace(/\s+/g, ' ')
-      .trim();
+    const bodyText = stripTags(content).replace(/\s+/g, ' ').trim();
+
+    const breadcrumb = matches
+      .slice(0, index + 1)
+      .map((h) => h.text)
+      .join(' › ');
 
     sections.push({
       url: `${url}#${heading.id}`,
       headingText: heading.text,
       headingId: heading.id,
-      breadcrumb: heading.text,
+      breadcrumb,
       bodyText,
     });
   });

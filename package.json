@@ -8,7 +8,8 @@
     "test": "node --import tsx --test"
   },
   "devDependencies": {
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.28.1",
+    "esbuild-wasm": "^0.28.1",
     "tsx": "^4.20.0"
   },
   "dependencies": {

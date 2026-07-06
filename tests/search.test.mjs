@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { extractSections, searchSections } from '../src/search.js';
+import { extractSections, resolveUrl, searchSections } from '../src/search.js';
 
 test('extractSections returns heading-based sections from HTML', () => {
   const html = `
@@ -47,4 +47,9 @@ test('searchSections ranks heading matches ahead of body-only matches', () => {
 
   assert.equal(results[0].headingText, 'Installation');
   assert.equal(results[1].headingText, 'Configuration');
+});
+
+test('resolveUrl resolves relative paths from the current page location', () => {
+  assert.equal(resolveUrl('sitemap.xml', 'https://example.com/fixture/index.html'), 'https://example.com/fixture/sitemap.xml');
+  assert.equal(resolveUrl('/docs/guide', 'https://example.com/fixture/index.html'), 'https://example.com/docs/guide');
 });
