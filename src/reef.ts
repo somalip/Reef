@@ -12,6 +12,7 @@ import {
   type IndexRecord,
   createSearchIndex,
   findClosestWord,
+  getAllSections,
 } from './search.js';
 
 export interface ReefConfig {
@@ -35,10 +36,13 @@ export interface ReefConfig {
   theme?: 'light' | 'dark' | 'auto';
   fontFamily?: string;
   mode?: 'regular' | 'opaque' | 'high-contrast';
+  // Developer API fields
+  hotkey?: string;
+  placeholder?: string;
 }
 
 function escapeHtml(s: string): string {
-  const map: Record<string, string> = { '&': '&', '<': '<', '>': '>', '"': '"', "'": "'" };
+  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
   let result = '';
   for (let i = 0; i < s.length; i++) {
     result += map[s[i]] ?? s[i];
@@ -71,14 +75,14 @@ function getSnippet(text: string, query: string): string {
 
 function getResultTypeIcon(type: string): string {
   switch (type) {
-    case 'section': return '📄';
-    case 'action': return '⚡';
-    case 'field': return '📝';
-    case 'link': return '🔗';
-    case 'file': return '📎';
-    case 'media': return '🎵';
-    case 'structured': return '🔍';
-    default: return '📄';
+    case 'section': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    case 'action': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+    case 'field': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+    case 'link': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.51l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.51l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>';
+    case 'file': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.44l-5.12 5.12a5 5 0 0 1-1.62.98l-2.6.45a2.43 2.43 0 0 1-2.89-2.04l-.26-2.16a5 5 0 0 1 .89-4.08l5.12-5.12a5 5 0 0 1 6.36 6.36z"/><circle cx="7" cy="7" r="1"/></svg>';
+    case 'media': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 15"/></svg>';
+    case 'structured': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><polyline points="7 11 11 15 15 9"/></svg>';
+    default: return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
   }
 }
 
@@ -107,10 +111,12 @@ class ReefSearch {
   private currentQuery = '';
   private searchDebounce = 0;
   private deferredActions: { action: IndexRecord; pageUrl: string }[] = [];
+  private selectCallback: ((result: IndexRecord) => void) | null = null;
+  private hotkeyHandler: ((event: KeyboardEvent) => void) | null = null;
 
   constructor() {
     this.config = this.readConfig();
-    this.applyConfigToUI(); // Apply initial styling
+    this.applyConfigToUI();
     this.registerHotkey();
     void this.boot();
   }
@@ -129,7 +135,6 @@ class ReefSearch {
       fileExtensions: dataset.fileExtensions,
       excludeAction: dataset.excludeAction,
       actionsMode: dataset.actionsMode as 'execute' | 'navigate-only' || 'execute',
-      // Customization fields
       primaryColor: dataset.primaryColor,
       secondaryColor: dataset.secondaryColor,
       backgroundColor: dataset.backgroundColor,
@@ -139,6 +144,8 @@ class ReefSearch {
       theme: dataset.theme as 'light' | 'dark' | 'auto' | undefined,
       fontFamily: dataset.fontFamily,
       mode: dataset.mode as 'regular' | 'opaque' | 'high-contrast' | undefined,
+      hotkey: dataset.hotkey,
+      placeholder: dataset.placeholder,
     };
   }
 
@@ -153,7 +160,6 @@ class ReefSearch {
     this.host.style.setProperty('--radius', cfg.radius?.toString() ?? '16');
     this.host.style.setProperty('--font-family', cfg.fontFamily ?? 'Inter, system-ui, sans-serif');
 
-    // Apply mode class
     this.host.classList.remove('mode-regular', 'mode-opaque', 'mode-high-contrast');
     switch (cfg.mode) {
       case 'opaque':
@@ -179,12 +185,31 @@ class ReefSearch {
   }
 
   private registerHotkey() {
-    document.addEventListener('keydown', (event) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k' && !event.shiftKey && !event.altKey) {
+    this.unregisterHotkey();
+    this.hotkeyHandler = (event) => {
+      const hotkey = this.config.hotkey || 'ctrlk,cmdk';
+      const handlers: Record<string, boolean> = {
+        'ctrlk': event.ctrlKey && event.key === 'k' && !event.shiftKey && !event.altKey && !event.metaKey,
+        'cmdk': event.metaKey && event.key === 'k' && !event.shiftKey && !event.altKey && !event.ctrlKey,
+        'ctrlshiftk': event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'k',
+        'altk': event.altKey && event.key === 'k',
+        'f': event.ctrlKey && event.key === 'f',
+      };
+      
+      const matched = hotkey.split(',').some(k => handlers[k.trim()]);
+      
+      if (matched) {
         event.preventDefault();
         this.open();
       }
-    });
+    };
+    document.addEventListener('keydown', this.hotkeyHandler);
+  }
+
+  private unregisterHotkey() {
+    if (this.hotkeyHandler) {
+      document.removeEventListener('keydown', this.hotkeyHandler);
+    }
   }
 
   private getSitemapCandidates(): string[] {
@@ -320,6 +345,10 @@ class ReefSearch {
     if (!this.root) {
       this.renderUI();
     }
+    const placeholder = this.config.placeholder || 'Search this site';
+    if (this.input) {
+      this.input.placeholder = placeholder;
+    }
     this.isOpen = true;
     this.selectedIndex = 0;
     this.host?.classList.remove('is-hidden');
@@ -340,12 +369,12 @@ class ReefSearch {
     document.body.appendChild(host);
     this.host = host;
 
-    // Apply current config styling
     this.applyConfigToUI();
 
     const shadow = host.attachShadow({ mode: 'open' });
     this.root = shadow;
 
+    const placeholder = this.config.placeholder || 'Search this site';
     const currentMode = this.config.mode ?? 'regular';
     shadow.innerHTML = `
       <style>
@@ -469,7 +498,17 @@ class ReefSearch {
           margin-bottom: 0.25rem;
         }
         .result-type-icon {
-          font-size: 0.9rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
+        }
+        .result-type-icon svg {
+          width: 14px;
+          height: 14px;
+          stroke: var(--primary-color, #43d9c8);
         }
         .result-type-label {
           font-family: ui-monospace, monospace;
@@ -536,7 +575,7 @@ class ReefSearch {
       <div class="panel" role="dialog" aria-modal="true" aria-label="Site search">
         <div class="input-row">
           <svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input class="input" type="text" placeholder="Search this site" autocomplete="off" />
+          <input class="input" type="text" placeholder="${placeholder}" autocomplete="off" />
           <span class="hint">ESC</span>
         </div>
         <div class="settings-row" style="padding:0.5rem 1rem;border-bottom:1px solid var(--border-color,rgba(67,217,200,0.15));font-size:0.75rem;color:var(--text-color,#8a8a8f);">
@@ -555,7 +594,6 @@ class ReefSearch {
     this.input = shadow.querySelector('input') as HTMLInputElement | null;
     this.resultsList = shadow.querySelector('.results') as HTMLElement | null;
 
-    // Mode selector event listener
     const modeSelect = shadow.querySelector('#modeSelect') as HTMLSelectElement | null;
     modeSelect?.addEventListener('change', (e) => {
       const mode = (e.target as HTMLSelectElement).value as 'regular' | 'opaque' | 'high-contrast';
@@ -583,6 +621,7 @@ class ReefSearch {
         event.preventDefault();
         const match = this.getVisibleResults()[this.selectedIndex];
         if (match) {
+          this.runSelectCallback(match);
           this.executeAction(match);
           this.close();
         }
@@ -609,7 +648,6 @@ class ReefSearch {
       }
     });
 
-    // Handle deferred actions from sessionStorage
     this.handleDeferredActions();
   }
 
@@ -700,6 +738,7 @@ class ReefSearch {
           event.stopPropagation();
           const match = results[Number(button.getAttribute('data-index')) ?? 0];
           if (match) {
+            this.runSelectCallback(match);
             this.executeAction(match);
             const isNavType = ['section', 'link', 'file', 'media', 'structured'].includes(match.type);
             if (!isNavType) {
@@ -712,6 +751,7 @@ class ReefSearch {
           event.stopPropagation();
           const match = results[Number(button.getAttribute('data-index')) ?? 0];
           if (match) {
+            this.runSelectCallback(match);
             this.executeAction(match);
             const isNavType = ['section', 'link', 'file', 'media', 'structured'].includes(match.type);
             if (!isNavType) {
@@ -907,32 +947,6 @@ class ReefSearch {
   }
 
   public setTheme(theme: 'light' | 'dark' | 'auto'): void {
-    const schemes: Record<'light' | 'dark' | 'auto', { primary: string, secondary: string, background: string, text: string, border: string, radius: number }> = {
-      light: {
-        primary: '#ff8562',
-        secondary: '#ffab8c',
-        background: 'rgba(255,255,255,0.8)',
-        text: '#111111',
-        border: '#cccccc',
-        radius: 8,
-      },
-      dark: {
-        primary: '#43d9c8',
-        secondary: '#ff8562',
-        background: 'rgba(0,0,0,0.7)',
-        text: '#f0f0f0',
-        border: '#555555',
-        radius: 8,
-      },
-      auto: {
-        primary: '#43d9c8',
-        secondary: '#ff8562',
-        background: 'rgba(20,30,28,0.65)',
-        text: '#edebe6',
-        border: '#1e3634',
-        radius: 16,
-      },
-    };
     this.config.theme = theme;
     if (this.isOpen) {
       this.applyConfigToUI();
@@ -950,6 +964,82 @@ class ReefSearch {
     this.config.mode = mode;
     if (this.isOpen) {
       this.applyConfigToUI();
+    }
+  }
+
+  public setHotkey(hotkey: string): void {
+    this.config.hotkey = hotkey;
+    this.registerHotkey();
+  }
+
+  public setPlaceholder(placeholder: string): void {
+    this.config.placeholder = placeholder;
+    if (this.input) {
+      this.input.placeholder = placeholder;
+    }
+  }
+
+  public onselect(callback: (result: IndexRecord) => void): void {
+    this.selectCallback = callback;
+  }
+
+  public offselect(): void {
+    this.selectCallback = null;
+  }
+
+  public reindex(): void {
+    this.index = createSearchIndex();
+    void this.boot();
+  }
+
+  public getIndex(): IndexRecord[] {
+    return getAllSections(this.index);
+  }
+
+  public addCustomRecords(records: IndexRecord[]): void {
+    addToIndex(this.index, records);
+  }
+
+  public clearCustomRecords(): void {
+    this.index = createSearchIndex();
+    void this.boot();
+  }
+
+  public openWithQuery(query: string): void {
+    if (!this.root) {
+      this.renderUI();
+    }
+    this.currentQuery = query;
+    this.isOpen = true;
+    this.selectedIndex = 0;
+    this.host?.classList.remove('is-hidden');
+    this.host?.classList.add('open');
+    if (this.input) {
+      this.input.value = query;
+    }
+    this.input?.focus();
+    this.renderResults();
+  }
+
+  public getHotkey(): string {
+    return this.config.hotkey || 'ctrlk,cmdk';
+  }
+
+  public isOpenState(): boolean {
+    return this.isOpen;
+  }
+
+  public getConfig(): ReefConfig {
+    return { ...this.config };
+  }
+
+  private runSelectCallback(result: IndexRecord): void {
+    if (this.selectCallback) {
+      try {
+        this.selectCallback(result);
+      } catch (error) {
+        console.error('[reef] select callback error:', error);
+      }
     }
   }
 }
