@@ -57,6 +57,23 @@ function extractHeadingId(fullMatch: string, text: string): string {
   return stripped || Math.random().toString(36).slice(2);
 }
 
+// Whether the heading actually carries a real id="" in the source HTML,
+// as opposed to a slug/random id we invented for bookkeeping. Only a real
+// id is safe to use as a CSS selector against the live page.
+function hasExplicitId(fullMatch: string): boolean {
+  return /\bid=["'][^"']+["']/i.test(fullMatch);
+}
+
+function findParentSectionId(html: string, headingMatchEnd: number): string | null {
+  const afterHeading = html.slice(headingMatchEnd, headingMatchEnd + 500);
+  const idMatch = afterHeading.match(/<section[^>]*id="([^"]+)"/i);
+  if (idMatch?.[1]) return idMatch[1];
+  const articleMatch = afterHeading.match(/<article[^>]*id="([^"]+)"/i);
+  if (articleMatch?.[1]) return articleMatch[1];
+  return null;
+}
+
+
 export function extractSections(html: string, url: string): IndexRecord[] {
   if (headingCache.has(url)) {
     return headingCache.get(url)!;
@@ -68,7 +85,7 @@ export function extractSections(html: string, url: string): IndexRecord[] {
     .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
     .replace(/<!--[\s\S]*?-->/g, ' ');
 
-  const matches: Array<{ level: number; index: number; text: string; id: string }> = [];
+  const matches: Array<{ level: number; index: number; text: string; id: string; hasRealId: boolean }> = [];
   let match: RegExpExecArray | null;
 
   headingRegexGlobal.lastIndex = 0;
@@ -81,6 +98,7 @@ export function extractSections(html: string, url: string): IndexRecord[] {
       index: match.index,
       text: headingText,
       id: extractHeadingId(match[0], headingText),
+      hasRealId: hasExplicitId(match[0]),
     });
   }
 
@@ -101,6 +119,17 @@ export function extractSections(html: string, url: string): IndexRecord[] {
       breadcrumb += matches[j].text;
     }
 
+    // A CSS id-selector is only trustworthy if the id actually exists in the
+    // markup. If the heading itself lacks a real id, fall back to a real id
+    // on an enclosing <section>/<article>. If neither exists, leave selector
+    // undefined — the caller (reef.ts) falls back to matching by heading text.
+    const parentSectionId = heading.hasRealId ? null : findParentSectionId(cleanHtml, heading.index + heading.text.length);
+    const selector = heading.hasRealId
+      ? '#' + heading.id
+      : parentSectionId
+        ? '#' + parentSectionId
+        : undefined;
+
     sections[i] = {
       id: `${url}#${heading.id}`,
       url: `${url}#${heading.id}`,
@@ -109,6 +138,7 @@ export function extractSections(html: string, url: string): IndexRecord[] {
       breadcrumb,
       bodyText,
       type: 'section',
+      selector,
     };
   }
 

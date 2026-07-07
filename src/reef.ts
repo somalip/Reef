@@ -118,6 +118,7 @@ class ReefSearch {
     this.config = this.readConfig();
     this.applyConfigToUI();
     this.registerHotkey();
+    this.handleDeferredScroll();
     void this.boot();
   }
 
@@ -774,10 +775,132 @@ class ReefSearch {
       case 'link':
       case 'file':
       case 'media':
-      case 'section':
       case 'structured':
         window.location.href = result.url;
         break;
+      case 'section':
+        this.navigateToSection(result);
+        break;
+    }
+  }
+
+  private findHeadingElementByText(headingText: string): HTMLElement | null {
+    const normalized = headingText.trim().toLowerCase();
+    if (!normalized) return null;
+    const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    for (const heading of Array.from(headings)) {
+      if (heading.textContent?.trim().toLowerCase() === normalized) {
+        return heading as HTMLElement;
+      }
+    }
+    return null;
+  }
+
+  private highlightAndScrollTo(element: HTMLElement): void {
+    this.close();
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    element.style.boxShadow = '0 0 0 3px rgba(67, 217, 200, 0.5)';
+    element.style.borderRadius = '4px';
+    setTimeout(() => {
+      element.style.boxShadow = '';
+    }, 2000);
+  }
+
+  private navigateToSection(result: IndexRecord): void {
+    const currentUrl = window.location.href.split('#')[0];
+    const targetUrl = result.url.split('#')[0];
+    const isSamePage = currentUrl === targetUrl;
+
+    // Try direct selector-based navigation first. This only works when the
+    // heading (or an ancestor section/article) has a real id in the markup.
+    if (result.selector) {
+      const element = document.querySelector(result.selector);
+      if (element) {
+        this.highlightAndScrollTo(element as HTMLElement);
+        return;
+      }
+    }
+
+    // Most headings don't have an explicit id, so there's often no usable
+    // selector above. On the current page we can still find the heading by
+    // matching its text directly, instead of silently doing nothing.
+    if (isSamePage) {
+      const heading = this.findHeadingElementByText(result.headingText);
+      if (heading) {
+        this.highlightAndScrollTo(heading);
+        return;
+      }
+    }
+
+    // Different page: remember what we were looking for so the destination
+    // page can scroll to it once it loads, then navigate there.
+    this.setupDeferredScroll(result);
+    this.close();
+    window.location.href = result.url;
+  }
+
+  private setupDeferredScroll(result: IndexRecord): void {
+    const target = {
+      headingText: result.headingText,
+      selector: result.selector,
+    };
+    try {
+      sessionStorage.setItem('reef-deferred-scroll', JSON.stringify(target));
+    } catch (error) {
+      console.error('[reef] Failed to store deferred scroll target:', error);
+    }
+  }
+
+  private handleDeferredScroll(): void {
+    const raw = sessionStorage.getItem('reef-deferred-scroll');
+    if (!raw) return;
+    sessionStorage.removeItem('reef-deferred-scroll');
+
+    let target: { headingText: string; selector?: string } | null = null;
+    try {
+      target = JSON.parse(raw);
+    } catch (error) {
+      console.error('[reef] Failed to parse deferred scroll target:', error);
+      return;
+    }
+    if (!target || !target.headingText) return;
+    const deferredTarget = target;
+
+    const findTarget = (): HTMLElement | null => {
+      if (deferredTarget.selector) {
+        const element = document.querySelector(deferredTarget.selector) as HTMLElement | null;
+        if (element) return element;
+      }
+      return this.findHeadingElementByText(deferredTarget.headingText);
+    };
+
+    const attempt = (): boolean => {
+      const element = findTarget();
+      if (!element) return false;
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.style.boxShadow = '0 0 0 3px rgba(67, 217, 200, 0.5)';
+      element.style.borderRadius = '4px';
+      setTimeout(() => {
+        element.style.boxShadow = '';
+      }, 2000);
+      return true;
+    };
+
+    const start = () => {
+      if (attempt()) return;
+      // The heading may not be in the DOM yet (late-rendered content,
+      // hydration, etc.) — keep watching briefly before giving up.
+      const observer = new MutationObserver(() => {
+        if (attempt()) observer.disconnect();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      setTimeout(() => observer.disconnect(), 5000);
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start, { once: true });
+    } else {
+      start();
     }
   }
 
