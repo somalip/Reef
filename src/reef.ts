@@ -25,9 +25,17 @@ export interface ReefConfig {
   fileExtensions?: string;
   excludeAction?: string;
   actionsMode?: 'execute' | 'navigate-only';
+  // Customization fields
+  primaryColor?: string;
+  secondaryColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  borderColor?: string;
+  radius?: number;
+  theme?: 'light' | 'dark' | 'auto';
+  fontFamily?: string;
+  mode?: 'regular' | 'opaque' | 'high-contrast';
 }
-
-
 
 function escapeHtml(s: string): string {
   const map: Record<string, string> = { '&': '&', '<': '<', '>': '>', '"': '"', "'": "'" };
@@ -102,6 +110,7 @@ class ReefSearch {
 
   constructor() {
     this.config = this.readConfig();
+    this.applyConfigToUI(); // Apply initial styling
     this.registerHotkey();
     void this.boot();
   }
@@ -120,22 +129,55 @@ class ReefSearch {
       fileExtensions: dataset.fileExtensions,
       excludeAction: dataset.excludeAction,
       actionsMode: dataset.actionsMode as 'execute' | 'navigate-only' || 'execute',
+      // Customization fields
+      primaryColor: dataset.primaryColor,
+      secondaryColor: dataset.secondaryColor,
+      backgroundColor: dataset.backgroundColor,
+      textColor: dataset.textColor,
+      borderColor: dataset.borderColor,
+      radius: dataset.radius ? Number(dataset.radius) : 16,
+      theme: dataset.theme as 'light' | 'dark' | 'auto' | undefined,
+      fontFamily: dataset.fontFamily,
+      mode: dataset.mode as 'regular' | 'opaque' | 'high-contrast' | undefined,
     };
+  }
+
+  private applyConfigToUI(): void {
+    if (!this.host) return;
+    const cfg = this.config;
+    this.host.style.setProperty('--primary-color', cfg.primaryColor ?? '#43d9c8');
+    this.host.style.setProperty('--secondary-color', cfg.secondaryColor ?? '#ff8562');
+    this.host.style.setProperty('--background-color', cfg.backgroundColor ?? 'rgba(20,30,28,0.65)');
+    this.host.style.setProperty('--text-color', cfg.textColor ?? '#edebe6');
+    this.host.style.setProperty('--border-color', cfg.borderColor ?? 'rgba(67,217,200,0.25)');
+    this.host.style.setProperty('--radius', cfg.radius?.toString() ?? '16');
+    this.host.style.setProperty('--font-family', cfg.fontFamily ?? 'Inter, system-ui, sans-serif');
+
+    // Apply mode class
+    this.host.classList.remove('mode-regular', 'mode-opaque', 'mode-high-contrast');
+    switch (cfg.mode) {
+      case 'opaque':
+        this.host.classList.add('mode-opaque');
+        break;
+      case 'high-contrast':
+        this.host.classList.add('mode-high-contrast');
+        break;
+      default:
+        this.host.classList.add('mode-regular');
+    }
   }
 
   private scrollSelectedIntoView(): void {
     if (!this.resultsList) return;
-
     const selected = this.resultsList.querySelector(
       `.result[data-index="${this.selectedIndex}"]`
     ) as HTMLElement | null;
-
     selected?.scrollIntoView({
       block: "nearest",
       behavior: "smooth",
     });
   }
-  
+
   private registerHotkey() {
     document.addEventListener('keydown', (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 'k' && !event.shiftKey && !event.altKey) {
@@ -178,7 +220,6 @@ class ReefSearch {
 
         const maxPages = this.config.maxPages ?? 500;
         const fetchedSections = await this.fetchPagesParallel(urls.slice(0, maxPages), candidate);
-
         if (fetchedSections.length) {
           addToIndex(this.index, fetchedSections);
           console.info(`[reef] indexed ${fetchedSections.length} sections`);
@@ -229,7 +270,6 @@ class ReefSearch {
   private async extractAllContent(html: string, url: string): Promise<IndexRecord[]> {
     const doc = new DOMParser().parseFromString(html, 'text/html');
 
-    // Apply scope if specified
     let rootElement: Element | Document = doc;
     if (this.config.scope) {
       const scopeElement = doc.querySelector(this.config.scope);
@@ -238,24 +278,20 @@ class ReefSearch {
       }
     }
 
-    // Re-serialize the relevant part of the document
     let htmlToProcess = new XMLSerializer().serializeToString(rootElement as Element);
 
-    // Apply exclusions if specified
     if (this.config.excludeAction) {
-      // In a real implementation, we would remove elements matching the exclude selector
-      // For simplicity, we'll skip this in the extraction functions
+      // Exclusion logic would go here
     }
 
     const sections = extractSections(htmlToProcess, url);
     const actions = this.config.indexActions ? extractActions(htmlToProcess, url) : [];
-    const fields = this.config.indexActions ? extractFields(htmlToProcess, url) : []; // Fields are grouped with actions
+    const fields = this.config.indexActions ? extractFields(htmlToProcess, url) : [];
     const links = extractLinks(htmlToProcess, url);
     const files = extractFiles(htmlToProcess, url);
     const media = this.config.indexMedia ? extractMedia(htmlToProcess, url) : [];
     const structured = this.config.indexStructuredData ? extractStructuredData(htmlToProcess, url) : [];
 
-    // Combine all results
     const combined: IndexRecord[] = [];
     combined.push(...sections);
     combined.push(...actions);
@@ -304,44 +340,204 @@ class ReefSearch {
     document.body.appendChild(host);
     this.host = host;
 
+    // Apply current config styling
+    this.applyConfigToUI();
+
     const shadow = host.attachShadow({ mode: 'open' });
     this.root = shadow;
 
+    const currentMode = this.config.mode ?? 'regular';
     shadow.innerHTML = `
       <style>
-        :host { position: fixed; inset: 0; z-index: 2147483647; display: flex; align-items: flex-start; justify-content: center; padding: 12vh 1.25rem 0; background: rgba(5, 5, 6, 0.45); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity 0.14s ease; }
+        :host {
+          position: fixed;
+          inset: 0;
+          z-index: 2147483647;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding: 12vh 1.25rem 0;
+          background: var(--background-color, rgba(5,5,6,0.45));
+          backdrop-filter: blur(10px);
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.14s ease;
+        }
         :host(.is-hidden) { display: none; }
         :host(.open) { opacity: 1; pointer-events: auto; }
-        .panel { width: 100%; max-width: 560px; background: rgba(20, 30, 28, 0.65); color: #edebe6; border: 1px solid rgba(67, 217, 200, 0.25); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.05); overflow: hidden; transform: translateY(-8px) scale(0.98); transition: transform 0.14s ease; }
+
+        :host(.mode-opaque) {
+          background: rgba(5,5,6,0.2) !important;
+        }
+        :host(.mode-high-contrast) {
+          --primary-color: #fff;
+          --text-color: #000;
+          --border-color: #000;
+          background: rgba(255,255,255,0.9) !important;
+        }
+
+        .panel {
+          width: 100%;
+          max-width: 560px;
+          background: var(--background-color, rgba(20,30,28,0.65));
+          color: var(--text-color, #edebe6);
+          border: 1px solid var(--border-color, rgba(67,217,200,0.25));
+          border-radius: var(--radius, 16px);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.05);
+          overflow: hidden;
+          transform: translateY(-8px) scale(0.98);
+          transition: transform 0.14s ease;
+        }
         :host(.open) .panel { transform: translateY(0) scale(1); }
-        .input-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.95rem 1rem; border-bottom: 1px solid rgba(67, 217, 200, 0.15); }
-        .icon { opacity: 0.6; flex-shrink: 0; stroke: #43d9c8; }
-        .input { flex: 1; background: transparent; border: 0; outline: none; color: #edebe6; font-size: 1rem; font-family: Inter, system-ui, sans-serif; }
-        .input::placeholder { color: #55555a; }
-        .hint { font-family: ui-monospace, monospace; font-size: 0.72rem; color: #8a8a8f; border: 1px solid rgba(67, 217, 200, 0.2); border-radius: 6px; padding: 0.15rem 0.5rem; }
-        .results { max-height: 340px; overflow-y: auto; padding: 0.5rem; }
-        .result { display: flex; flex-direction: column; gap: 0.25rem; width: 100%; text-align: left; padding: 0.8rem 0.75rem; border-radius: 10px; margin-top: 0.25rem; cursor: pointer; border: 0; background: transparent; color: inherit; }
-        .result:hover, .result.is-selected { background: rgba(67, 217, 200, 0.12); }
-        .result-type { display: flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; margin-bottom: 0.25rem; }
-        .result-type-icon { font-size: 0.9rem; }
-        .result-type-label { font-family: ui-monospace, monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: #43d9c8; }
-        .result .breadcrumb { font-family: ui-monospace, monospace; font-size: 0.75rem; color: #8a8a8f; }
-        .result .heading { font-size: 0.95rem; font-weight: 500; color: #edebe6; }
-        .result .snippet { font-size: 0.85rem; color: #8a8a8f; line-height: 1.5; }
-        .result mark { background: rgba(67, 217, 200, 0.22); color: #43d9c8; border-radius: 2px; padding: 0 1px; }
-        .result-action-hint { font-size: 0.75rem; font-family: ui-monospace, monospace; color: #55555a; margin-top: 0.25rem; }
-        .result-action-hint.run-here { color: #43d9c8; }
+
+        :host(.mode-high-contrast) .panel {
+          background: rgba(255,255,255,0.95);
+        }
+
+        .input-row {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.95rem 1rem;
+          border-bottom: 1px solid var(--border-color, rgba(67,217,200,0.15));
+        }
+
+        .icon {
+          opacity: 0.6;
+          flex-shrink: 0;
+          stroke: var(--primary-color, #43d9c8);
+        }
+
+        .input {
+          flex: 1;
+          background: transparent;
+          border: 0;
+          outline: none;
+          color: var(--text-color, #edebe6);
+          font-size: 1rem;
+          font-family: var(--font-family, Inter, system-ui, sans-serif);
+        }
+        .input::placeholder {
+          color: #55555a;
+        }
+
+        .hint {
+          font-family: ui-monospace, monospace;
+          font-size: 0.72rem;
+          color: #8a8a8f;
+          border: 1px solid var(--border-color, rgba(67,217,200,0.2));
+          border-radius: 6px;
+          padding: 0.15rem 0.5rem;
+        }
+
+        .results {
+          max-height: 340px;
+          overflow-y: auto;
+          padding: 0.5rem;
+        }
+
+        .result {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          width: 100%;
+          text-align: left;
+          padding: 0.8rem 0.75rem;
+          border-radius: var(--radius, 10px);
+          margin-top: 0.25rem;
+          cursor: pointer;
+          border: 0;
+          background: transparent;
+          color: inherit;
+        }
+        .result:hover, .result.is-selected {
+          background: rgba(67,217,200,0.12);
+        }
+        .result-type {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          font-size: 0.7rem;
+          margin-bottom: 0.25rem;
+        }
+        .result-type-icon {
+          font-size: 0.9rem;
+        }
+        .result-type-label {
+          font-family: ui-monospace, monospace;
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--primary-color, #43d9c8);
+        }
+        .result .breadcrumb {
+          font-family: ui-monospace, monospace;
+          font-size: 0.75rem;
+          color: #8a8a8f;
+        }
+        .result .heading {
+          font-size: 0.95rem;
+          font-weight: 500;
+          color: var(--text-color, #edebe6);
+        }
+        .result .snippet {
+          font-size: 0.85rem;
+          color: var(--text-color, #8a8a8f);
+          line-height: 1.5;
+        }
+        .result mark {
+          background: rgba(67,217,200,0.22);
+          color: var(--primary-color, #43d9c8);
+          border-radius: 2px;
+          padding: 0 1px;
+        }
+        .result-action-hint {
+          font-size: 0.75rem;
+          font-family: ui-monospace, monospace;
+          color: #55555a;
+          margin-top: 0.25rem;
+        }
+        .result-action-hint.run-here { color: var(--primary-color, #43d9c8); }
         .result-action-hint.go-there { color: #8a8a8f; }
-        .empty { padding: 2rem; color: #55555a; text-align: center; font-size: 0.9rem; }
-        .footer { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-top: 1px solid rgba(67, 217, 200, 0.15); color: #55555a; font-size: 0.75rem; font-family: ui-monospace, monospace; }
-        .k { border: 1px solid rgba(67, 217, 200, 0.2); border-radius: 4px; padding: 0.1rem 0.4rem; margin: 0 0.2rem; }
-        @media (prefers-reduced-motion: reduce) { :host, .panel { transition: none; } }
+        .empty {
+          padding: 2rem;
+          color: #55555a;
+          text-align: center;
+          font-size: 0.9rem;
+        }
+        .footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.75rem 1rem;
+          border-top: 1px solid var(--border-color, rgba(67,217,200,0.15));
+          color: #55555a;
+          font-size: 0.75rem;
+          font-family: ui-monospace, monospace;
+        }
+        .k {
+          border: 1px solid var(--border-color, rgba(67,217,200,0.2));
+          border-radius: 4px;
+          padding: 0.1rem 0.4rem;
+          margin: 0 0.2rem;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          :host, .panel { transition: none; }
+        }
       </style>
       <div class="panel" role="dialog" aria-modal="true" aria-label="Site search">
         <div class="input-row">
           <svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <input class="input" type="text" placeholder="Search this site" autocomplete="off" />
           <span class="hint">ESC</span>
+        </div>
+        <div class="settings-row" style="padding:0.5rem 1rem;border-bottom:1px solid var(--border-color,rgba(67,217,200,0.15));font-size:0.75rem;color:var(--text-color,#8a8a8f);">
+          <label for="modeSelect">Mode:</label>
+          <select id="modeSelect" style="margin-left:0.5rem;background:transparent;border:1px solid var(--border-color,rgba(67,217,200,0.2));border-radius:4px;color:var(--text-color,#edebe6);font-family:ui-monospace,monospace;font-size:0.7rem;">
+            <option value="regular" ${currentMode === 'regular' ? 'selected' : ''}>Regular</option>
+            <option value="opaque" ${currentMode === 'opaque' ? 'selected' : ''}>Opaque</option>
+            <option value="high-contrast" ${currentMode === 'high-contrast' ? 'selected' : ''}>High Contrast</option>
+          </select>
         </div>
         <div class="results" aria-live="polite"></div>
         <div class="footer"><span><span class="k">↑↓</span> navigate <span class="k">↵</span> open</span><span id="count"></span></div>
@@ -350,6 +546,13 @@ class ReefSearch {
 
     this.input = shadow.querySelector('input') as HTMLInputElement | null;
     this.resultsList = shadow.querySelector('.results') as HTMLElement | null;
+
+    // Mode selector event listener
+    const modeSelect = shadow.querySelector('#modeSelect') as HTMLSelectElement | null;
+    modeSelect?.addEventListener('change', (e) => {
+      const mode = (e.target as HTMLSelectElement).value as 'regular' | 'opaque' | 'high-contrast';
+      this.setMode(mode);
+    });
 
     this.input?.addEventListener('input', () => {
       this.currentQuery = this.input?.value ?? '';
@@ -420,17 +623,14 @@ class ReefSearch {
     }
 
     if (countEl) {
-      // Count by type for the footer
       const counts: Record<string, number> = {};
       for (const result of results) {
         const type = getResultTypeLabel(result.type);
         counts[type] = (counts[type] || 0) + 1;
       }
-
       const countParts = Object.entries(counts)
         .map(([type, count]) => `${count} ${type.toLowerCase()}${count !== 1 ? 's' : ''}`)
         .join(', ');
-
       countEl.textContent = countParts;
     }
 
@@ -442,7 +642,6 @@ class ReefSearch {
           const typeIcon = getResultTypeIcon(result.type);
           const typeLabel = getResultTypeLabel(result.type);
 
-          // Determine if this is an action that can be executed on the current page
           const isAction = result.type === 'action';
           const isSamePage = result.url === window.location.href.split('#')[0];
           const canExecuteHere = isAction && isSamePage && !result.destructive;
@@ -450,7 +649,6 @@ class ReefSearch {
             ? '<span class="result-action-hint run-here">↵ to run here</span>'
             : '<span class="result-action-hint go-there">↵ to go there</span>';
 
-          // For structured data, show an inline answer preview
           let answerPreview = '';
           if (result.type === 'structured' && result.structuredData) {
             if (result.structuredData.answer) {
@@ -560,7 +758,6 @@ class ReefSearch {
 
   private focusField(result: IndexRecord): void {
     if (!result.selector) return;
-
     try {
       const element = document.querySelector(result.selector);
       if (element) {
@@ -589,7 +786,6 @@ class ReefSearch {
     toast.style.transition = 'opacity 0.3s';
 
     document.body.appendChild(toast);
-
     void toast.offsetWidth;
     toast.style.opacity = '1';
 
@@ -602,29 +798,24 @@ class ReefSearch {
   }
 
   private handleDeferredActions(): void {
-    // Check if we have a deferred action to execute
     const deferredActionStr = sessionStorage.getItem('reef-deferred-action');
     if (!deferredActionStr) return;
 
     try {
       const deferredAction = JSON.parse(deferredActionStr);
-      // Clear the stored action
       sessionStorage.removeItem('reef-deferred-action');
 
-      // Find the element and execute the action
       if (deferredAction.selector) {
         const element = document.querySelector(deferredAction.selector);
         if (element) {
           if (deferredAction.type === 'action' && !deferredAction.destructive) {
-            // Execute the action
             const clickEvent = new MouseEvent('click', {
               bubbles: true,
               cancelable: true,
-              view: window
+              view: window,
             });
             element.dispatchEvent(clickEvent);
           } else if (deferredAction.type === 'field') {
-            // Focus the field
             (element as HTMLElement).focus();
           }
         }
@@ -636,54 +827,97 @@ class ReefSearch {
   }
 
   private setupDeferredAction(result: IndexRecord): void {
-    // Store the action in sessionStorage to be executed on page load
     const deferredAction = {
       selector: result.selector,
       type: result.type,
       label: result.label,
-      destructive: result.destructive
+      destructive: result.destructive,
     };
-
     sessionStorage.setItem('reef-deferred-action', JSON.stringify(deferredAction));
-
-    // Navigate to the target page
     window.location.href = result.url;
   }
 
   private highlightAndNavigate(result: IndexRecord): void {
-    // Navigate to the page
     window.location.href = result.url;
-
-    // If we have a selector, try to highlight the element after navigation
     if (result.selector) {
       const selector = result.selector;
-      // We'll use a MutationObserver to check when the DOM is ready
       const observer = new MutationObserver(() => {
         const element = document.querySelector(selector) as HTMLElement | null;
         if (element) {
-          // Scroll the element into view
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-          // Add a temporary highlight effect
           element.style.boxShadow = '0 0 0 3px rgba(108, 140, 255, 0.5)';
           element.style.borderRadius = '4px';
-
-          // Remove the highlight after a short delay
-          setTimeout(() => {
-            element.style.boxShadow = '';
-            element.style.borderRadius = '';
-          }, 1500);
-
           observer.disconnect();
         }
       });
-
       observer.observe(document.body, { childList: true, subtree: true });
+      setTimeout(() => observer.disconnect(), 5000);
+    }
+  }
 
-      // Also set a timeout to disconnect the observer after a while
-      setTimeout(() => {
-        observer.disconnect();
-      }, 5000);
+  private setConfig(partial: Partial<ReefConfig>): void {
+    Object.assign(this.config, partial);
+    if (this.isOpen) {
+      this.applyConfigToUI();
+    }
+  }
+
+  public setColorScheme(scheme: {primary:string, secondary:string, background:string, text:string, border:string, radius:number}): void {
+    this.config.primaryColor = scheme.primary;
+    this.config.secondaryColor = scheme.secondary;
+    this.config.backgroundColor = scheme.background;
+    this.config.textColor = scheme.text;
+    this.config.borderColor = scheme.border;
+    this.config.radius = scheme.radius;
+    if (this.isOpen) {
+      this.applyConfigToUI();
+    }
+  }
+
+  public setTheme(theme: 'light' | 'dark' | 'auto'): void {
+    const schemes: Record<'light'|'dark'|'auto', {primary:string, secondary:string, background:string, text:string, border:string, radius:number}> = {
+      light: {
+        primary: '#ff8562',
+        secondary: '#ffab8c',
+        background: 'rgba(255,255,255,0.8)',
+        text: '#111111',
+        border: '#cccccc',
+        radius: 8,
+      },
+      dark: {
+        primary: '#43d9c8',
+        secondary: '#ff8562',
+        background: 'rgba(0,0,0,0.7)',
+        text: '#f0f0f0',
+        border: '#555555',
+        radius: 8,
+      },
+      auto: {
+        primary: '#43d9c8',
+        secondary: '#ff8562',
+        background: 'rgba(20,30,28,0.65)',
+        text: '#edebe6',
+        border: '#1e3634',
+        radius: 16,
+      },
+    };
+    this.config.theme = theme;
+    if (this.isOpen) {
+      this.applyConfigToUI();
+    }
+  }
+
+  public setFontFamily(fontFamily:string): void {
+    this.config.fontFamily = fontFamily;
+    if (this.isOpen) {
+      this.applyConfigToUI();
+    }
+  }
+
+  public setMode(mode: 'regular' | 'opaque' | 'high-contrast'): void {
+    this.config.mode = mode;
+    if (this.isOpen) {
+      this.applyConfigToUI();
     }
   }
 }
