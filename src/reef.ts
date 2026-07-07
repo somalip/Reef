@@ -366,14 +366,26 @@ class ReefSearch {
         :host(.is-hidden) { display: none; }
         :host(.open) { opacity: 1; pointer-events: auto; }
 
-        :host(.mode-opaque) {
-          background: rgba(5,5,6,0.2) !important;
+        :host(.mode-opaque) .panel {
+          background: rgba(20,30,28,0.85) !important;
         }
-        :host(.mode-high-contrast) {
-          --primary-color: #fff;
-          --text-color: #000;
-          --border-color: #000;
-          background: rgba(255,255,255,0.9) !important;
+        :host(.mode-high-contrast) .panel {
+          background: rgba(255,255,255,0.95);
+          --primary-color: #0066cc;
+          --text-color: #111111;
+          --border-color: #000000;
+        }
+        :host(.mode-high-contrast) .input {
+          color: #111111;
+        }
+        :host(.mode-high-contrast) .result-type-label {
+          color: #0066cc;
+        }
+        :host(.mode-high-contrast) .result .heading {
+          color: #111111;
+        }
+        :host(.mode-high-contrast) .result .snippet {
+          color: #333333;
         }
 
         .panel {
@@ -389,10 +401,6 @@ class ReefSearch {
           transition: transform 0.14s ease;
         }
         :host(.open) .panel { transform: translateY(0) scale(1); }
-
-        :host(.mode-high-contrast) .panel {
-          background: rgba(255,255,255,0.95);
-        }
 
         .input-row {
           display: flex;
@@ -562,13 +570,14 @@ class ReefSearch {
     });
 
     this.input?.addEventListener('keydown', (event) => {
+      const results = this.getVisibleResults();
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        this.selectedIndex = (this.selectedIndex + 1) % 8;
+        if (results.length) this.selectedIndex = (this.selectedIndex + 1) % results.length;
         this.renderResults();
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
-        this.selectedIndex = (this.selectedIndex - 1 + 8) % 8;
+        if (results.length) this.selectedIndex = (this.selectedIndex - 1 + results.length) % results.length;
         this.renderResults();
       } else if (event.key === 'Enter') {
         event.preventDefault();
@@ -590,8 +599,15 @@ class ReefSearch {
       }
     });
 
-    shadow.querySelector('.panel')?.addEventListener('click', (event) => event.stopPropagation());
-    host.addEventListener('click', () => this.close());
+    host.addEventListener('click', (event) => {
+      const path = event.composedPath();
+      const clickedInsidePanel = path.some(
+        (el) => el instanceof Element && el.classList.contains('panel')
+      );
+      if (!clickedInsidePanel) {
+        this.close();
+      }
+    });
 
     // Handle deferred actions from sessionStorage
     this.handleDeferredActions();
@@ -680,11 +696,27 @@ class ReefSearch {
           this.renderResults();
         });
         button.addEventListener('click', (event) => {
+          event.preventDefault();
           event.stopPropagation();
           const match = results[Number(button.getAttribute('data-index')) ?? 0];
           if (match) {
             this.executeAction(match);
-            this.close();
+            const isNavType = ['section', 'link', 'file', 'media', 'structured'].includes(match.type);
+            if (!isNavType) {
+              this.close();
+            }
+          }
+        });
+        button.addEventListener('pointerup', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const match = results[Number(button.getAttribute('data-index')) ?? 0];
+          if (match) {
+            this.executeAction(match);
+            const isNavType = ['section', 'link', 'file', 'media', 'structured'].includes(match.type);
+            if (!isNavType) {
+              this.close();
+            }
           }
         });
       });
@@ -862,7 +894,7 @@ class ReefSearch {
     }
   }
 
-  public setColorScheme(scheme: {primary:string, secondary:string, background:string, text:string, border:string, radius:number}): void {
+  public setColorScheme(scheme: { primary: string, secondary: string, background: string, text: string, border: string, radius: number }): void {
     this.config.primaryColor = scheme.primary;
     this.config.secondaryColor = scheme.secondary;
     this.config.backgroundColor = scheme.background;
@@ -875,7 +907,7 @@ class ReefSearch {
   }
 
   public setTheme(theme: 'light' | 'dark' | 'auto'): void {
-    const schemes: Record<'light'|'dark'|'auto', {primary:string, secondary:string, background:string, text:string, border:string, radius:number}> = {
+    const schemes: Record<'light' | 'dark' | 'auto', { primary: string, secondary: string, background: string, text: string, border: string, radius: number }> = {
       light: {
         primary: '#ff8562',
         secondary: '#ffab8c',
@@ -907,7 +939,7 @@ class ReefSearch {
     }
   }
 
-  public setFontFamily(fontFamily:string): void {
+  public setFontFamily(fontFamily: string): void {
     this.config.fontFamily = fontFamily;
     if (this.isOpen) {
       this.applyConfigToUI();

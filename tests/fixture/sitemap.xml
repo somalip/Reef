@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>index.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>docs/install.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>docs/setup.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>docs/troubleshooting.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>api/core.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>api/search.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>api/index.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>reference/config.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>reference/themes.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>reference/actions.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>examples/demo.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>examples/advanced-demo.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>guides/intro.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>guides/quickstart.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>guides/tutorial.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>advanced/forms.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>advanced/performance.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>advanced/themes.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>api/extract.html</loc><lastmod>2026-07-07</lastmod></url>
+  <url><loc>docs/faq.html</loc><lastmod>2026-07-07</lastmod></url>
+</urlset>
