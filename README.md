@@ -49,9 +49,7 @@ It crawls your sitemap, extracts page content in the browser, and can optionally
 ## Install
 
 ```html
-<script type="module">
-  import reefSearch from 'https://cdn.jsdelivr.net/npm/reef-search@0.1.0/+esm'
-</script>
+<script src="dist/reef.min.js"></script>
 ```
 
 Press **Cmd/Ctrl+K** on the page to open the overlay.
