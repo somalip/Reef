@@ -51,7 +51,7 @@ It crawls your sitemap, extracts page content in the browser, and can optionally
 ## Install
 
 ```html
-<script src="dist/reef.min.js"></script>
+<script src="reef.min.js"></script>
 ```
 
 Press **Cmd/Ctrl+K** on the page to open the overlay.
@@ -237,7 +237,7 @@ npm install
 npm run build
 ```
 
-The generated bundle is written to `dist/reef.min.js`.
+The generated bundle is written to `reef.min.js`.
 
 Run the test suite:
 

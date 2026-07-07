@@ -106,7 +106,7 @@
     <section class="doc-section" id="quick-install">
       <h2>Quick Installation</h2>
       <p>The fastest way to add Reef Search to any static site:</p>
-      <pre><code>&lt;script src="dist/reef.min.js"&gt;&lt;/script&gt;</code></pre>
+      <pre><code>&lt;script src="reef.min.js"&gt;&lt;/script&gt;</code></pre>
       <p>This single script tag is all that's required. Reef Search will automatically:</p>
       <ul>
         <li>Fetch your <code>/sitemap.xml</code> to discover all pages</li>
@@ -126,10 +126,10 @@
       <h3>1. CDN (Recommended for most users)</h3>
       <p>Load directly from a CDN without hosting the file yourself:</p>
       <pre><code>&lt;!-- jsDelivr (automatic latest version) --&gt;
-&lt;script src="https://cdn.jsdelivr.net/npm/reef-search/dist/reef.min.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/reef-search/reef.min.js"&gt;&lt;/script&gt;
 
 &lt;!-- unpkg (explicit version recommended) --&gt;
-&lt;script src="dist/reef.min.js"&gt;&lt;/script&gt;</code></pre>
+&lt;script src="reef.min.js"&gt;&lt;/script&gt;</code></pre>
 
       <h3>2. Self-hosted (Download the bundle)</h3>
       <p>For complete control over the script location:</p>
@@ -140,7 +140,7 @@ curl -L https://github.com/reef-search/reef-search/releases/latest/download/reef
 npm install
 npm run build</code></pre>
       <p>Then include in your HTML:</p>
-      <pre><code>&lt;script src="/dist/reef.min.js"&gt;&lt;/script&gt;</code></pre>
+      <pre><code>&lt;script src="/reef.min.js"&gt;&lt;/script&gt;</code></pre>
 
       <h3>3. NPM Package (For bundlers)</h3>
       <p>Install as a dependency in your project:</p>
@@ -168,7 +168,7 @@ import { useEffect } from 'react';
 
 useEffect(() => {
   const script = document.createElement('script');
-  script.src = '/dist/reef.min.js';
+  script.src = '/reef.min.js';
   script.setAttribute('data-sitemap', '/sitemap.xml');
   document.head.appendChild(script);
   return () => document.head.removeChild(script);
@@ -178,7 +178,7 @@ useEffect(() => {
 function useReef() {
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = '/dist/reef.min.js';
+    script.src = '/reef.min.js';
     script.async = true;
     document.head.appendChild(script);
     return () => document.head.removeChild(script);
@@ -189,7 +189,7 @@ function useReef() {
       <p>For Vue 3 applications:</p>
       <pre><code>// In main.js or a plugin file
 const script = document.createElement('script');
-script.src = '/dist/reef.min.js';
+script.src = '/reef.min.js';
 script.setAttribute('data-sitemap', '/sitemap.xml');
 document.head.appendChild(script);
 
@@ -200,7 +200,7 @@ export default {
   setup() {
     onMounted(() => {
       const script = document.createElement('script');
-      script.src = '/dist/reef.min.js';
+      script.src = '/reef.min.js';
       document.head.appendChild(script);
     });
     onUnmounted(() => {
@@ -215,7 +215,7 @@ export default {
   import { onMount } from 'svelte';
   onMount(() => {
     const script = document.createElement('script');
-    script.src = '/dist/reef.min.js';
+    script.src = '/reef.min.js';
     document.head.appendChild(script);
     return () => script.remove();
   });
@@ -234,7 +234,7 @@ export default function Document() {
         &lt;Main /&gt;
         &lt;NextScript /&gt;
         &lt;script 
-          src="/dist/reef.min.js" 
+          src="/reef.min.js" 
           data-sitemap="/sitemap.xml" 
         /&gt;
       &lt;/body&gt;
@@ -249,7 +249,7 @@ export default function Document() {
       <h3>Jekyll / GitHub Pages</h3>
       <p>Copy <code>reef.min.js</code> to your <code>_includes</code> directory and include in your layout:</p>
       <pre><code>{# _includes/head.html #}
-&lt;script src="{{ '/dist/reef.min.js' | relative_url }}"&gt;&lt;/script&gt;</code></pre>
+&lt;script src="{{ '/reef.min.js' | relative_url }}"&gt;&lt;/script&gt;</code></pre>
 
       <h3>VitePress / VuePress</h3>
       <p>Configure in <code>config.js</code> or add to your theme:</p>

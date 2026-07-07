@@ -52,6 +52,14 @@
     </div>
     <div class="cta">
       <a href="fixture/index.html" class="btn btn-primary" style="text-decoration:none;">Try the demo</a>
+      <button class="btn btn-ghost" id="downloadBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Download
+      </button>
       <button class="btn btn-ghost" id="viewCode">View install ↓</button>
     </div>
   </header>
@@ -162,7 +170,7 @@
     </div>
     <div class="code-block" id="codeBlock">
       <button class="copy-btn" id="copyBtn">Copy</button>
-      <code id="codeText">&lt;script src="dist/reef.min.js"&gt;&lt;/script&gt;</code>
+      <code id="codeText">&lt;script src="reef.min.js"&gt;&lt;/script&gt;</code>
     </div>
   </section>
 
@@ -196,6 +204,24 @@
   <script type="module">
     import reefSearch from 'https://cdn.jsdelivr.net/npm/reef-search@0.2.0/+esm';
     reefSearch({ sitemap: '/sitemap.xml' });
+  </script>
+  
+  <script>
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      fetch('dist/reef.min.js')
+        .then(res => res.blob())
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'reef.min.js';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Download failed:', err));
+    });
   </script>
   
   <script src="script.js"></script>

@@ -11,7 +11,7 @@
   });
 
   document.getElementById('copyBtn').addEventListener('click', function () {
-    var text = '<script src="dist/reef.min.js"><\/script>';
+    var text = '<script src="reef.min.js"><\/script>';
     navigator.clipboard.writeText(text).then(function () {
       var btn = document.getElementById('copyBtn');
       btn.textContent = 'Copied';
