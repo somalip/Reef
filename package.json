@@ -1,6 +1,6 @@
 {
   "name": "reef-search",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fuzzy, keyboard-first search for static sites. No backend, no build step, no account. Works across web pages, and indexes links as well for navigation.",
   "keywords": [
     "js",

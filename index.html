@@ -193,7 +193,10 @@
 
   <footer class="wrap">© 2026 Pranav Somalinga. MIT licensed. Open forever.</footer>
   <br><br>
-  <script src="dist/reef.min.js" data-sitemap="/sitemap.xml"></script>
+  <script type="module">
+    import reefSearch from 'https://cdn.jsdelivr.net/npm/reef-search@0.2.0/+esm';
+    reefSearch({ sitemap: '/sitemap.xml' });
+  </script>
   
   <script src="script.js"></script>
 </body>
