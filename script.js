@@ -19,6 +19,22 @@
     });
   });
 
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+      fetch('dist/reef.min.js')
+        .then(res => res.blob())
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'reef.min.js';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error('Download failed:', err));
+    });
+
   // Depth gauge: renders scroll position as a diving depth (0m surface -> reef floor)
   var fill = document.getElementById('gaugeFill');
   var marker = document.getElementById('gaugeMarker');

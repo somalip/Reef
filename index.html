@@ -195,7 +195,7 @@
       </details>
       <details class="faq-item">
         <summary>How large is the script?</summary>
-        <p>About 37kb, so it won't noticeably affect page load.</p>
+        <p>About 35kb, so it won't noticeably affect page load.</p>
       </details>
     </div>
   </section>
@@ -203,24 +203,6 @@
   <footer class="wrap">© 2026 Pranav Somalinga. MIT licensed. Open forever.</footer>
   <br><br>
   <script src = "dist/reef.min.js"></script>
-  
-  <script>
-    document.getElementById('downloadBtn').addEventListener('click', () => {
-      fetch('dist/reef.min.js')
-        .then(res => res.blob())
-        .then(blob => {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'reef.min.js';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        })
-        .catch(err => console.error('Download failed:', err));
-    });
-  </script>
   
   <script src="script.js"></script>
 </body>
