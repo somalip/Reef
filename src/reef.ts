@@ -1,3 +1,8 @@
+/**
+ * @file Main ReefSearch class implementation.
+ * Provides modal search UI, content indexing, and navigation functionality.
+ */
+
 import {
   extractSections,
   extractActions,
@@ -14,35 +19,7 @@ import {
   findClosestWord,
   getAllSections,
 } from './search.js';
-
-export interface ReefConfig {
-  sitemap?: string;
-  maxPages?: number;
-  scope?: string;
-  indexActions?: boolean;
-  indexMedia?: boolean;
-  indexStructuredData?: boolean;
-  indexHidden?: boolean;
-  fileExtensions?: string;
-  excludeAction?: string;
-  actionsMode?: 'execute' | 'navigate-only';
-  // Customization fields
-  primaryColor?: string;
-  secondaryColor?: string;
-  backgroundColor?: string;
-  textColor?: string;
-  borderColor?: string;
-  radius?: number;
-  theme?: 'light' | 'dark' | 'auto';
-  fontFamily?: string;
-  mode?: 'regular' | 'opaque' | 'high-contrast';
-  // Developer API fields
-  hotkey?: string;
-  placeholder?: string;
-  // Headless mode
-  headless?: boolean;
-  onReady?: (data: { index: IndexRecord[] }) => void;
-}
+import { ReefConfig } from './types.js';
 
 function escapeHtml(s: string): string {
   const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -203,9 +180,9 @@ class ReefSearch {
         'altk': event.altKey && event.key === 'k',
         'f': event.ctrlKey && event.key === 'f',
       };
-      
+
       const matched = hotkey.split(',').some(k => handlers[k.trim()]);
-      
+
       if (matched) {
         event.preventDefault();
         this.open();
@@ -834,8 +811,6 @@ class ReefSearch {
     const targetUrl = result.url.split('#')[0];
     const isSamePage = currentUrl === targetUrl;
 
-    // Try direct selector-based navigation first. This only works when the
-    // heading (or an ancestor section/article) has a real id in the markup.
     if (result.selector) {
       const element = document.querySelector(result.selector);
       if (element) {
@@ -844,9 +819,6 @@ class ReefSearch {
       }
     }
 
-    // Most headings don't have an explicit id, so there's often no usable
-    // selector above. On the current page we can still find the heading by
-    // matching its text directly, instead of silently doing nothing.
     if (isSamePage) {
       const heading = this.findHeadingElementByText(result.headingText);
       if (heading) {
@@ -855,8 +827,6 @@ class ReefSearch {
       }
     }
 
-    // Different page: remember what we were looking for so the destination
-    // page can scroll to it once it loads, then navigate there.
     this.setupDeferredScroll(result);
     this.close();
     window.location.href = result.url;
@@ -911,8 +881,6 @@ class ReefSearch {
 
     const start = () => {
       if (attempt()) return;
-      // The heading may not be in the DOM yet (late-rendered content,
-      // hydration, etc.) — keep watching briefly before giving up.
       const observer = new MutationObserver(() => {
         if (attempt()) observer.disconnect();
       });

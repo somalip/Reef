@@ -1,4 +1,4 @@
-export type { ReefConfig } from './src/reef.js';
+export type { ReefConfig, IndexRecord, SectionDocument } from './src/types.js';
 
 export {
   extractSections,
@@ -16,7 +16,5 @@ export {
   getAllSections,
   levenshteinDistance,
 } from './src/search.js';
-
-export type { IndexRecord, SectionDocument } from './src/search.js';
 
 export { ReefSearch } from './src/reef.js';
