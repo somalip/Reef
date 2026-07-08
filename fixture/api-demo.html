@@ -75,6 +75,7 @@
       <a href="install.html">Installation</a>
       <a href="config.html">Configuration</a>
       <a href="advanced.html">Advanced</a>
+      <a href="parity.html">Parity Features</a>
       <a href="api-demo.html" class="active">Developer API</a>
     </div>
   </nav>
@@ -315,6 +316,48 @@ createDropdownSearch();</code></pre>
       </div>
     </section>
 
+    <section class="doc-section" id="parity-demo">
+      <h2>Parity Features Demo</h2>
+      
+      <h3>Autocomplete / Suggest</h3>
+      <div class="demo-area">
+        <h4>Search Suggestions</h4>
+        <p>Type in the box below to see auto-suggested completions:</p>
+        <input type="text" id="suggestInput" placeholder="Type to get suggestions..." style="width:100%; padding:0.5rem; background:var(--bg-elev-2); border:1px solid var(--border); border-radius:4px; color:var(--text); font-family:'JetBrains Mono',monospace;" />
+        <div id="suggestResults" style="margin-top:0.5rem; font-size:12px; color:var(--text-dim);"></div>
+        <div class="output-box" id="suggestOutput">Suggestions: (none yet)</div>
+      </div>
+
+      <h3>Faceted Filtering</h3>
+      <div class="demo-area">
+        <h4>Filter by Record Type</h4>
+        <p>Get counts and filter results by type:</p>
+        <button class="btn" onclick="showFacets()">Show All Facets</button>
+        <button class="btn" onclick="filterActions()">Filter: Actions Only</button>
+        <button class="btn" onclick="filterSections()">Filter: Sections Only</button>
+        <div class="output-box" id="facetOutput">Click to see faceted counts and filtered results</div>
+      </div>
+
+      <h3>BM25 Scoring</h3>
+      <div class="demo-area">
+        <h4>Compare Scoring Algorithms</h4>
+        <p>Test both classic and BM25 scoring:</p>
+        <button class="btn" onclick="searchClassic()">Classic Scoring</button>
+        <button class="btn" onclick="searchBM25()">BM25 Scoring</button>
+        <div class="output-box" id="scoringOutput">Search results will appear with scores here</div>
+      </div>
+
+      <h3>Query Analytics</h3>
+      <div class="demo-area">
+        <h4>Track Popular Queries</h4>
+        <p>Track queries and retrieve popular ones:</p>
+        <input type="text" id="trackQueryInput" placeholder="Enter query to track..." style="width:70%; padding:0.5rem; background:var(--bg-elev-2); border:1px solid var(--border); border-radius:4px; color:var(--text); font-family:'JetBrains Mono',monospace;" />
+        <button class="btn" onclick="trackQuery()">Track Query</button>
+        <button class="btn" onclick="showPopular()">Show Popular</button>
+        <div class="output-box" id="analyticsOutput">Query analytics will appear here</div>
+      </div>
+    </section>
+
     <script>
       function showDemoMessage() {
         document.getElementById('actionOutput').innerHTML = '<div class="log-entry">Demo button clicked at ' + new Date().toLocaleTimeString() + '</div>';
@@ -406,6 +449,64 @@ createDropdownSearch();</code></pre>
         window.Reef.setMode('regular');
         document.getElementById('styleOutput').textContent = 'Mode: regular (default)';
       }
+
+      function showFacets() {
+        const counts = window.Reef.facets ? window.Reef.facets() : {};
+        document.getElementById('facetOutput').innerHTML = 
+          '<div class="log-entry">Facets: ' + JSON.stringify(counts) + '</div>';
+      }
+
+      function filterActions() {
+        const index = window.Reef.getIndex();
+        const filtered = index.filter(r => r.type === 'action');
+        document.getElementById('facetOutput').innerHTML = 
+          '<div class="log-entry">Found ' + filtered.length + ' actions</div>';
+      }
+
+      function filterSections() {
+        const index = window.Reef.getIndex();
+        const filtered = index.filter(r => r.type === 'section');
+        document.getElementById('facetOutput').innerHTML = 
+          '<div class="log-entry">Found ' + filtered.length + ' sections</div>';
+      }
+
+      function searchClassic() {
+        const results = window.Reef.search('search', 10);
+        document.getElementById('scoringOutput').innerHTML = 
+          '<div class="log-entry">Classic results: ' + results.length + ' matches</div>';
+      }
+
+      function searchBM25() {
+        const results = window.Reef.searchSections ? 
+          window.Reef.searchSections('search', { scoringAlgorithm: 'bm25', includeScore: true }) :
+          [];
+        const top3 = results.slice(0, 3).map(r => r.record.headingText + ' (score: ' + r.score.toFixed(3) + ')').join('<br/>');
+        document.getElementById('scoringOutput').innerHTML = 
+          '<div class="log-entry">' + top3 + '</div>';
+      }
+
+      function trackQuery() {
+        const input = document.getElementById('trackQueryInput').value;
+        if (input) {
+          window.Reef.trackQuery(input);
+          document.getElementById('analyticsOutput').innerHTML = 
+            '<div class="log-entry">Tracked: ' + input + '</div>';
+        }
+      }
+
+      function showPopular() {
+        const popular = window.Reef.getPopularQueries ? window.Reef.getPopularQueries(5) : [];
+        document.getElementById('analyticsOutput').innerHTML = 
+          '<div class="log-entry">Popular: ' + popular.map(p => p.query + ' (' + p.count + ')').join(', ') + '</div>';
+      }
+
+      const suggestInput = document.getElementById('suggestInput');
+      suggestInput?.addEventListener('input', () => {
+        if (window.Reef.suggest) {
+          const results = window.Reef.suggest(suggestInput.value, 5);
+          document.getElementById('suggestOutput').textContent = results.join(', ');
+        }
+      });
 
       window.Reef.onselect(function(result) {
         document.getElementById('callbackOutput').innerHTML = 

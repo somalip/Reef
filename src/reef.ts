@@ -14,10 +14,18 @@ import {
   resolveUrl,
   searchSections,
   addToIndex,
-  type IndexRecord,
   createSearchIndex,
   findClosestWord,
   getAllSections,
+  deserializeIndex,
+  suggest,
+  facets,
+  trackQuery,
+  getPopularQueries,
+  type IndexRecord,
+  type ScoredRecord,
+  type SearchOptions,
+  type TokenFilter,
 } from './search.js';
 import { ReefConfig } from './types.js';
 
@@ -107,6 +115,51 @@ class ReefSearch {
   private readConfig(): ReefConfig {
     const script = document.currentScript as HTMLScriptElement | null;
     const dataset = script?.dataset ?? {};
+    
+    // Build tokenization pipeline from data attributes
+    let tokenizePipeline: TokenFilter[] | undefined = undefined;
+    if (dataset.stemming === 'true' || dataset.stopwords === 'true' || dataset.diacritics === 'true') {
+      const pipeline: TokenFilter[] = [];
+      
+      // Stop words filter
+      if (dataset.stopwords === 'true') {
+        const stopWords = new Set([
+          'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+          'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below',
+        ]);
+        pipeline.push((token: string) => stopWords.has(token) ? null : token);
+      }
+      
+      // Diacritics filter
+      if (dataset.diacritics === 'true') {
+        pipeline.push((token: string) => token.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+      }
+      
+      // Stemming filter
+      if (dataset.stemming === 'true') {
+        pipeline.push((token: string) => {
+          if (token.length <= 2) return token;
+          if (/ing$/.test(token)) return token.slice(0, -3);
+          if (/ed$/.test(token)) return token.slice(0, -2);
+          if (/es$/.test(token) && token.length > 3) return token.slice(0, -2);
+          if (/s$/.test(token) && token.length > 3) return token.slice(0, -1);
+          return token;
+        });
+      }
+      
+      tokenizePipeline = pipeline.length > 0 ? pipeline : undefined;
+    }
+    
+    // Parse synonyms from data attribute (JSON format)
+    let synonyms: Record<string, string[]> | undefined = undefined;
+    if (dataset.synonyms) {
+      try {
+        synonyms = JSON.parse(dataset.synonyms);
+      } catch {
+        console.warn('[reef] Invalid synonyms JSON in data-synonyms attribute');
+      }
+    }
+    
     return {
       sitemap: dataset.sitemap ?? '/sitemap.xml',
       maxPages: Number(dataset.maxPages ?? 500),
@@ -131,6 +184,10 @@ class ReefSearch {
       placeholder: dataset.placeholder,
       headless: dataset.headless === 'true',
       onReady: undefined,
+      tokenizePipeline,
+      synonyms,
+      prebuiltIndexUrl: dataset.prebuiltIndexUrl,
+      useWorkerIndexing: dataset.useWorkerIndexing === 'true',
     };
   }
 
@@ -212,6 +269,22 @@ class ReefSearch {
   }
 
   private async boot() {
+    // Try prebuilt index first if configured
+    if (this.config.prebuiltIndexUrl) {
+      try {
+        const response = await fetch(this.config.prebuiltIndexUrl);
+        if (response.ok) {
+          const json = await response.text();
+          this.index = deserializeIndex(json);
+          console.info(`[reef] loaded prebuilt index with ${this.index.allSections.length} sections`);
+          this.callOnReady();
+          return;
+        }
+      } catch (error) {
+        console.warn('[reef] prebuilt index fetch failed, falling back to crawling', error);
+      }
+    }
+
     const candidates = this.getSitemapCandidates();
 
     for (const candidate of candidates) {
@@ -231,7 +304,7 @@ class ReefSearch {
         const maxPages = this.config.maxPages ?? 500;
         const fetchedSections = await this.fetchPagesParallel(urls.slice(0, maxPages), candidate);
         if (fetchedSections.length) {
-          addToIndex(this.index, fetchedSections);
+          addToIndex(this.index, fetchedSections, this.config.tokenizePipeline);
           console.info(`[reef] indexed ${fetchedSections.length} sections`);
           this.callOnReady();
           return;
@@ -321,6 +394,23 @@ class ReefSearch {
     combined.push(...files);
     combined.push(...media);
     combined.push(...structured);
+
+    // Apply synonym expansion to labels if configured
+    if (this.config.synonyms) {
+      for (const record of combined) {
+        if (record.label) {
+          const tokens = record.label.toLowerCase().split(/\s+/);
+          for (const token of tokens) {
+            const expanded = this.config.synonyms[token];
+            if (expanded) {
+              // Store synonym info for matching - could be used during search
+              (record as IndexRecord & { synonymExpanded?: string[] }).synonymExpanded = expanded;
+            }
+          }
+        }
+      }
+    }
+
     return combined;
   }
 
@@ -330,7 +420,7 @@ class ReefSearch {
       if (!response.ok) return;
       const html = await response.text();
       const sections = await this.extractAllContent(html, window.location.href.split('#')[0]);
-      addToIndex(this.index, sections);
+      addToIndex(this.index, sections, this.config.tokenizePipeline);
       console.info(`[reef] indexed ${sections.length} sections from current page`);
       this.callOnReady();
     } catch (error) {
@@ -1178,6 +1268,26 @@ class ReefSearch {
   public search(query: string, limit: number = 8): IndexRecord[] {
     return searchSections(query, this.index, limit) as IndexRecord[];
   }
+
+  public searchSections(query: string, options?: SearchOptions | number): ScoredRecord[] {
+    return searchSections(query, this.index, options ?? 8) as ScoredRecord[];
+  }
+
+  public suggest(query: string, limit: number = 10): string[] {
+    return suggest(query, this.index, limit);
+  }
+
+  public facets(): Record<string, number> {
+    return facets(this.index);
+  }
+
+  public trackQuery(query: string): void {
+    trackQuery(this.index, query);
+  }
+
+public getPopularQueries(n: number = 10): string[] {
+     return getPopularQueries(this.index, n);
+   }
 
   public setOnReady(callback: (data: { index: IndexRecord[] }) => void): void {
     this.config.onReady = callback;

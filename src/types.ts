@@ -31,6 +31,8 @@ export interface SearchOptions {
   includeMatches?: boolean;
   weights?: Partial<Record<'headingText' | 'bodyText' | 'label' | 'breadcrumb', number>>;
   extended?: boolean;
+  scoringAlgorithm?: 'reef-classic' | 'bm25';
+  filter?: (record: IndexRecord) => boolean;
   sortFn?: (a: ScoredRecord, b: ScoredRecord) => number;
 }
 
@@ -39,6 +41,8 @@ export interface MatchSpan {
   start: number;
   end: number;
 }
+
+export type TokenFilter = (token: string) => string | null;
 
 export interface ScoredRecord {
   record: IndexRecord;
@@ -70,4 +74,8 @@ export interface ReefConfig {
   placeholder?: string;
   headless?: boolean;
   onReady?: (data: { index: IndexRecord[] }) => void;
+  tokenizePipeline?: TokenFilter[];
+  synonyms?: Record<string, string[]>;
+  prebuiltIndexUrl?: string;
+  useWorkerIndexing?: boolean;
 }

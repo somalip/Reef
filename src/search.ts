@@ -3,7 +3,7 @@
  * Re-exports functions from search-index.ts and extraction.ts for external use.
  */
 
-export type { IndexRecord, SectionDocument, SearchOptions, ScoredRecord, MatchSpan } from './types.js';
+export type { IndexRecord, SectionDocument, SearchOptions, ScoredRecord, MatchSpan, TokenFilter } from './types.js';
 export {
   createSearchIndex,
   addToIndex,
@@ -17,6 +17,10 @@ export {
   serializeIndex,
   deserializeIndex,
   parseExtendedQuery,
+  suggest,
+  facets,
+  trackQuery,
+  getPopularQueries,
   type QueryNode,
 } from './search-index.js';
 export {

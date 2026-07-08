@@ -4,7 +4,7 @@ import { extractSections, searchSections, createSearchIndex, addToIndex } from '
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const fixturePath = resolve(import.meta.dirname, '../tests/fixture');
+const fixturePath = resolve(import.meta.dirname, '../fixture');
 
 function readFixture(file) {
   return readFileSync(resolve(fixturePath, file), 'utf-8');

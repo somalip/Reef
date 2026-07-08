@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Parity Features - Reef Search Documentation</title>
+  <meta name="description" content="Feature parity with Fuse.js and other search libraries - BM25, fuzzy search, autocomplete, and more" />
+  <script src="../dist/reef.min.js" data-sitemap="sitemap.xml"></script>
+  <style>
+    :root {
+      --bg: #071312;
+      --bg-elev: #0d1f1e;
+      --bg-elev-2: #142e2c;
+      --text: #eaf3f0;
+      --text-dim: rgb(134, 172, 165);
+      --text-faint: #4d6e69;
+      --border: #1e3634;
+      --coral: #ff8562;
+      --coral-soft: #ffab8c;
+      --teal: #43d9c8;
+      --link: #6c8cff;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
+      -webkit-font-smoothing:antialiased; min-height:100vh; margin:0;
+      line-height:1.6;
+    }
+    h1,h2,h3,h4{margin:0 0 1rem; font-family:'Fraunces',serif; font-optical-sizing:auto; font-weight:560; line-height:1.3;}
+    h1{font-size:clamp(28px,4vw,36px); letter-spacing:-0.01em;}
+    h2{font-size:22px;}
+    h3{font-size:18px;}
+    h4{color:var(--coral-soft);}
+    p{margin:0 0 1rem; color:var(--text-dim);}
+    a{color:var(--link); text-decoration:none;}
+    a:hover{color:var(--teal); text-decoration:underline;}
+    code{background:var(--bg-elev); padding:0.15rem 0.4rem; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:0.9em; color:var(--coral-soft);}
+    pre{background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; padding:1rem; overflow-x:auto; margin:0 0 1rem;}
+    pre code{background:none; padding:0; color:var(--coral-soft);}
+    ul,ol{margin:0 0 1rem; padding-left:1.5rem;}
+    li{color:var(--text-dim); margin:0.25rem 0;}
+    .container{max-width:760px; margin:0 auto; padding:40px 24px;}
+    .doc-nav{display:flex; gap:1rem; margin:2rem 0 2rem; padding:0.75rem 1rem; background:var(--bg-elev); border:1px solid var(--border); border-radius:10px;}
+    .doc-nav a{color:var(--text-dim); font-size:13px;}
+    .doc-nav a:hover{color:var(--text);}
+    .doc-nav a.active{color:var(--teal); font-weight:500;}
+    .doc-section{margin:0 0 3rem;}
+    .doc-section h2{color:var(--teal); font-size:14px; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 0.5rem; font-family:'JetBrains Mono',monospace;}
+    .back-link{display:inline-block; margin:0 0 2rem; color:var(--text-dim); font-size:13px;}
+    .back-link:hover{color:var(--text);}
+    table{width:100%; border-collapse:collapse; margin:1rem 0; font-size:14px;}
+    th,td{padding:0.75rem 1rem; text-align:left; border-bottom:1px solid var(--border);}
+    th{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em;}
+    tr:last-child td{border-bottom:none;}
+    td:first-child{color:var(--text-dim); font-family:'JetBrains Mono',monospace; font-size:13px;}
+    .feature-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem; margin:1.5rem 0;}
+    .feature-card{background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; padding:1.25rem;}
+    .feature-card h4{margin:0 0 0.5rem; color:var(--teal); font-family:'JetBrains Mono',monospace; font-size:13px;}
+    .feature-card p{margin:0; font-size:13px; color:var(--text-dim); line-height:1.5;}
+    .code-label{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--teal); text-transform:uppercase; letter-spacing:0.04em;}
+  </style>
+</head>
+<body>
+  <nav class="container">
+    <a href="index.html" class="back-link">← Reef Search Documentation</a>
+    <div class="doc-nav">
+      <a href="index.html">Overview</a>
+      <a href="install.html">Installation</a>
+      <a href="config.html">Configuration</a>
+      <a href="advanced.html">Advanced</a>
+      <a href="parity.html" class="active">Parity Features</a>
+      <a href="api-demo.html">Developer API</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <header class="doc-section">
+      <h1>Parity Features</h1>
+      <p>Reef Search now matches (and exceeds) the capabilities of established search libraries like Fuse.js, MiniSearch, and Pagefind.</p>
+    </header>
+
+    <section class="doc-section" id="fuse-parity">
+      <h2>Fuse.js Compatibility</h2>
+
+      <h3>Normalized Scores</h3>
+      <p>Enable <code>includeScore: true</code> to receive 0-1 normalized scores instead of raw additive values:</p>
+      <pre><code>const results = searchSections(index, {
+  query: 'search',
+  includeScore: true
+});
+// results[0].score: 0.95 (normalized between 0 and 1)</code></pre>
+
+      <h3>Match Spans</h3>
+      <p>Use <code>includeMatches: true</code> to get character ranges for highlighting:</p>
+      <pre><code>const results = searchSections(index, {
+  query: 'install',
+  includeMatches: true
+});
+// results[0].matches: [{ key: 'headingText', start: 0, end: 7 }]</code></pre>
+
+      <h3>Extended Query Syntax</h3>
+      <p>Search supports advanced operators:</p>
+      <pre><code>// Exact phrase match
+searchSections(index, { query: '"exact phrase"' });
+
+// Exclude terms (NOT or -)
+searchSections(index, { query: 'install NOT beta' });
+searchSections(index, { query: 'install -beta' });
+
+// OR operator
+searchSections(index, { query: 'install OR setup' });</code></pre>
+
+      <h3>Field Weights</h3>
+      <p>Custom scoring weights via <code>weights</code> option:</p>
+      <pre><code>const results = searchSections(index, {
+  query: 'search',
+  weights: { headingText: 100, bodyText: 50 }
+});</code></pre>
+    </section>
+
+    <section class="doc-section" id="bm25-scoring">
+      <h2>BM25 Scoring</h2>
+      <p>Enable BM25 (TF-IDF) scoring for more principled relevance ranking across large indexes:</p>
+      <pre><code>const results = searchSections(index, {
+  query: 'installation',
+  scoringAlgorithm: 'bm25',
+  includeScore: true
+});</code></pre>
+      <p>BM25 considers:</p>
+      <ul>
+        <li>Document frequency of query terms</li>
+        <li>Field length normalization (shorter, more focused matches rank higher)</li>
+        <li>Term frequency with saturation</li>
+      </ul>
+    </section>
+
+    <section class="doc-section" id="autocomplete">
+      <h2>Autocomplete / Suggest</h2>
+      <p>Get search suggestions as users type:</p>
+      <pre><code>const suggestions = suggest(index, 'inst');
+// ['installation', 'instructions', 'instance']</code></pre>
+      <p>This powers inline suggestions in custom implementations.</p>
+    </section>
+
+    <section class="doc-section" id="faceting">
+      <h2>Faceted Search</h2>
+      <p>Get counts of indexed records by type:</p>
+      <pre><code>const counts = facets(index);
+// { section: 150, action: 24, field: 12, link: 8 }</code></pre>
+      <p>Use with filter to build faceted UIs:</p>
+      <pre><code>const results = searchSections(index, {
+  query: 'search',
+  filter: (r) => r.type === 'action'
+});</code></pre>
+    </section>
+
+    <section class="doc-section" id="query-analytics">
+      <h2>Query Analytics</h2>
+      <p>Track popular queries locally (no backend required):</p>
+      <pre><code>// Track when users perform searches
+trackQuery(index, currentQuery);
+
+// Get most popular queries
+const popular = getPopularQueries(index, 10);
+// [{ query: 'install', count: 42 }, ...]</code></pre>
+      <p>Useful for analytics dashboards and improving search UX.</p>
+    </section>
+
+    <section class="doc-section" id="indexing">
+      <h2>Index Manipulation</h2>
+
+      <h3>Index Mutations</h3>
+      <p>Remove or update records after indexing:</p>
+      <pre><code>// Remove a record
+removeFromIndex(index, 'record-id');
+
+// Update/replace a record
+updateRecord(index, {
+  id: 'record-id',
+  url: '/new-url',
+  headingText: 'New Title',
+  bodyText: 'New content...',
+  type: 'section'
+});</code></pre>
+
+      <h3>Serialization</h3>
+      <p>Export and import indexes for pre-built search:</p>
+      <pre><code>// Serialize index to JSON
+const json = serializeIndex(index);
+
+// Restore from JSON
+const restored = deserializeIndex(json);</code></pre>
+
+      <h3>Prebuilt Index</h3>
+      <p>Load a pre-built index instead of crawling:</p>
+      <pre><code>// In browser config
+const config: ReefConfig = {
+  prebuiltIndexUrl: '/search-index.json'
+};</code></pre>
+    </section>
+
+    <section class="doc-section" id="text-processing">
+      <h2>Text Processing Pipeline</h2>
+
+      <h3>Stemming &amp; Stop Words</h3>
+      <p>Enable tokenization pipeline for stemming, stop words, and diacritic folding:</p>
+      <pre><code>const config: ReefConfig = {
+  tokenizePipeline: [
+    (tokens) => tokens.map(t => t.toLowerCase()),
+    (tokens) => tokens.filter(t => !stopWords.has(t)),
+    (tokens) => tokens.map(t => stem(t))
+  ]
+};</code></pre>
+
+      <h3>Synonym Expansion</h3>
+      <p>Map alternate terms to improve recall:</p>
+      <pre><code>const config: ReefConfig = {
+  synonyms: {
+    'log out': ['sign out', 'logout'],
+    'log in': ['sign in', 'login'],
+    'delete': ['remove']
+  }
+};</code></pre>
+
+      <h3>Diacritic Folding</h3>
+      <p>Automatic accent normalization (café ↔ cafe) can be enabled in the tokenization pipeline.</p>
+    </section>
+
+    <section class="doc-section" id="feature-comparison">
+      <h2>Feature Comparison</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4>Indexed + Fuzzy</h4>
+          <p>Reef uses inverted indexes for fast candidate shortlisting, then applies fuzzy matching. This outperforms full-scan libraries at scale.</p>
+        </div>
+        <div class="feature-card">
+          <h4>7 Record Types</h4>
+          <p>Unique to Reef: sections, actions, fields, links, files, media, and structured data. No other search library indexes UI controls.</p>
+        </div>
+        <div class="feature-card">
+          <h4>Live DOM Extraction</h4>
+          <p>Reef indexes the real live DOM, extracting actionable elements that generic search libraries cannot see.</p>
+        </div>
+        <div class="feature-card">
+          <h4>Zero Dependencies</h4>
+          <p>Everything runs in the browser using Web APIs. No Node.js, no build step required.</p>
+        </div>
+        <div class="feature-card">
+          <h4>Backward Compatible</h4>
+          <p>Existing SearchSections API continues working. New features are opt-in via configuration options.</p>
+        </div>
+        <div class="feature-card">
+          <h4>Query Caching</h4>
+          <p>LRU cache stores recent queries for faster incremental searches (pric → pricing).</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

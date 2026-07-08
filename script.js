@@ -102,16 +102,16 @@
       cost: c('Free · MIT', 'g'),
       privacy: c('Stays local', 'g'),
       dom: c('Yes — live DOM', 'g'),
-      fuzzy: c('Planned', 'm'),
-      indexed: c('Planned', 'm'),
+      fuzzy: c('Yes (indexed)', 'g'),
+      indexed: c('Yes (inverted)', 'g'),
       domsync: c('Planned', 'm'),
       types: c('Yes — 7 types', 'g'),
-      bm25: c('Planned', 'm'),
-      suggest: c('Planned', 'm'),
-      stem: c('Planned', 'm'),
-      facet: c('Planned', 'm'),
+      bm25: c('Yes (option)', 'g'),
+      suggest: c('Yes', 'g'),
+      stem: c('Yes (opt-in)', 'g'),
+      facet: c('Yes', 'g'),
       worker: c('Planned', 'm'),
-      serialize: c('Planned', 'm')
+      serialize: c('Yes', 'g')
     },
     'Fuse.js': {
       type: c('Client-side lib', 'g'),
@@ -336,8 +336,8 @@
     }
   };
 
-  var order = ['Reef', 'Fuse.js', 'MiniSearch', 'uFuzzy', 'FlexSearch', 'Lunr.js', 'Elasticlunr.js', 'fuzzysort', 'Orama', 'Pagefind', 'Algolia', 'Meilisearch', 'Elasticsearch/OpenSearch', 'Fuse Cloud'];
-  var defaults = ['Reef', 'Fuse.js', 'MiniSearch', 'Orama', 'Pagefind', 'Algolia'];
+var order = ['Reef', 'Fuse.js', 'MiniSearch', 'uFuzzy', 'FlexSearch', 'Lunr.js', 'Elasticlunr.js', 'fuzzysort', 'Orama', 'Pagefind', 'Algolia', 'Meilisearch', 'Elasticsearch/OpenSearch', 'Fuse Cloud'];
+   var defaults = ['Reef', 'Fuse.js', 'MiniSearch', 'Orama'];
   var selected = {};
 
   var chipsEl = document.getElementById('compareChips');

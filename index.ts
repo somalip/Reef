@@ -1,4 +1,4 @@
-export type { ReefConfig, IndexRecord, SectionDocument, SearchOptions, ScoredRecord, MatchSpan } from './src/types.js';
+export type { ReefConfig, IndexRecord, SectionDocument, SearchOptions, ScoredRecord, MatchSpan, TokenFilter } from './src/types.js';
 
 export {
   extractSections,
@@ -20,6 +20,10 @@ export {
   serializeIndex,
   deserializeIndex,
   parseExtendedQuery,
+  suggest,
+  facets,
+  trackQuery,
+  getPopularQueries,
   type QueryNode,
 } from './src/search.js';
 
