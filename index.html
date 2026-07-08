@@ -40,9 +40,9 @@
   <header class="hero wrap">
     <div class="hero-eyebrow">client-side search · zero backend</div>
     <h1>Search that ships in<br>one <span class="tag-chip">&lt;script&gt;</span> tag</h1>
-    <p class="sub">Fuzzy, keyboard-first search for static sites. No backend, no build step, no account. Try it now — it
-      works on this page.</p>
-    <p class = "sub">NPM and jsdelivr build coming soon!</p>
+    <p class="sub">Fuzzy, keyboard-first search for static sites. No backend, no build step, no account — drop in one
+      script and it works on this page. But the real game changer is the DOM extraction and tion layer Reef doesn't just search for things, it can act on them. A revolutionary yet simple tool for AI agents to act on websites, and more.</p>
+    <p class="sub">NPM and jsdelivr build coming soon!</p>
     <div class="trigger" id="trigger" role="button" tabindex="0" aria-haspopup="dialog">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="7"></circle>
@@ -125,44 +125,25 @@
   <section class="compare wrap" id="compare">
     <div class="section-head">
       <div class="code-label">Compare</div>
-      <h2>Reef vs. a hosted search widget</h2>
+      <h2>Reef vs. the whole search landscape</h2>
     </div>
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Reef</th>
-          <th>Typical hosted widget</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Setup</td>
-          <td class="good">One script tag</td>
-          <td>SDK + dashboard account</td>
-        </tr>
-        <tr>
-          <td>Cost</td>
-          <td class="good">Free, open source</td>
-          <td>Priced per search</td>
-        </tr>
-        <tr>
-          <td>Query data</td>
-          <td class="good">Never leaves the browser</td>
-          <td>Logged on a third-party server</td>
-        </tr>
-        <tr>
-          <td>Backend required</td>
-          <td class="good">None</td>
-          <td>Yes</td>
-        </tr>
-        <tr>
-          <td>Bundle size</td>
-          <td class="good">~35kb</td>
-          <td>50–150kb</td>
-        </tr>
-      </tbody>
-    </table>
+    <p class="compare-intro">Reef is the only option that indexes <strong>live DOM content</strong> — headings, buttons, fields, files, media, and structured data — straight from the page. Toggle the tools from our parity plan to see how it stacks up.</p>
+
+    <div class="compare-toolbar">
+      <div class="compare-chips" id="compareChips"></div>
+      <div class="compare-actions">
+        <button class="chip-btn" id="compareAll" type="button">All</button>
+        <button class="chip-btn" id="compareNone" type="button">None</button>
+      </div>
+    </div>
+
+    <div class="compare-scroll">
+      <table class="compare-matrix" id="compareMatrix">
+        <thead id="compareHead"></thead>
+        <tbody id="compareBody"></tbody>
+      </table>
+    </div>
+    <p class="compare-note">"Planned" marks capabilities on Reef's roadmap drawn from our parity plan. Competitor rows reflect each project's current public feature set.</p>
   </section>
 
   <section class="code-section wrap">

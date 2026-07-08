@@ -654,7 +654,7 @@ class ReefSearch {
 
   private getVisibleResults(): IndexRecord[] {
     const query = this.currentQuery;
-    return searchSections(query, this.index, 8);
+    return searchSections(query, this.index, 8) as IndexRecord[];
   }
 
   private renderResults() {
@@ -1176,7 +1176,7 @@ class ReefSearch {
   }
 
   public search(query: string, limit: number = 8): IndexRecord[] {
-    return searchSections(query, this.index, limit);
+    return searchSections(query, this.index, limit) as IndexRecord[];
   }
 
   public setOnReady(callback: (data: { index: IndexRecord[] }) => void): void {

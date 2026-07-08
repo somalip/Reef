@@ -22,6 +22,30 @@ export interface IndexRecord extends SectionDocument {
   structuredData?: any;
 }
 
+export interface SearchOptions {
+  limit?: number;
+  fuzzy?: boolean;
+  fuzzyThreshold?: number;
+  fuzzyDistance?: number;
+  includeScore?: boolean;
+  includeMatches?: boolean;
+  weights?: Partial<Record<'headingText' | 'bodyText' | 'label' | 'breadcrumb', number>>;
+  extended?: boolean;
+  sortFn?: (a: ScoredRecord, b: ScoredRecord) => number;
+}
+
+export interface MatchSpan {
+  key: string;
+  start: number;
+  end: number;
+}
+
+export interface ScoredRecord {
+  record: IndexRecord;
+  score: number;
+  matches?: MatchSpan[];
+}
+
 export interface ReefConfig {
   sitemap?: string;
   maxPages?: number;
