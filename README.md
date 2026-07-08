@@ -77,6 +77,8 @@ Set these as attributes on the script tag (or `data-*` equivalents where noted).
 | `data-border-color` | `rgba(67,217,200,0.25)` | Border color |
 | `data-radius` | `16` | Border radius in pixels |
 | `data-mode` | `regular` | `regular`, `opaque`, or `high-contrast` |
+| `data-headless` | `false` | When `true`, builds index without rendering the modal |
+| `data-on-ready` | — | (Runtime API use) Callback fired when index is ready |
 
 ## Result types
 
@@ -92,10 +94,45 @@ Set these as attributes on the script tag (or `data-*` equivalents where noted).
 
 ## Runtime API
 
-- `window.Reef.open()` — opens the modal.
-- `window.Reef.close()` — closes the modal.
+- `window.Reef.open()` — opens the modal (no-op in headless mode).
+- `window.Reef.close()` — closes the modal (no-op in headless mode).
+
+When in headless mode, use `window.Reef.search(query)` and `window.Reef.getIndex()` to query and access indexed data.
 
 ## Developer API
+
+### Headless Mode
+
+For developers who want to build their own UI or integrate Reef into custom projects, use headless mode to get the indexed data without the default modal:
+
+```js
+// Initialize in headless mode
+window.Reef = new ReefSearch({ headless: true });
+
+// Or via script attribute
+<script src="reef.min.js" data-headless="true"></script>
+```
+
+```js
+// Get all indexed records (available after indexing completes)
+const allRecords = window.Reef.getIndex();
+
+// Search the index programmatically
+const results = window.Reef.search('installation', 10);
+
+// Set a callback that fires when the index is ready
+window.Reef.setOnReady(({ index }) => {
+  console.log('Index ready with', index.length, 'records');
+});
+
+// Get sitemap URLs without building the index
+window.Reef.getSitemapUrls().then(urls => {
+  console.log('Found URLs:', urls);
+});
+
+// Rebuild the index (useful after adding custom records)
+window.Reef.reindex();
+```
 
 ### Hotkey Management
 
@@ -149,6 +186,9 @@ if (window.Reef.isOpenState()) {
 // Get all indexed records
 const allRecords = window.Reef.getIndex();
 
+// Search the index programmatically (limit optional, default 8)
+const results = window.Reef.search('query', 10);
+
 // Add custom records
 window.Reef.addCustomRecords([{
   id: 'custom-1',
@@ -162,6 +202,21 @@ window.Reef.addCustomRecords([{
 
 // Rebuild index (re-crawls sitemap)
 window.Reef.reindex();
+
+// Rebuild index and wait for it to complete
+window.Reef.rebuildIndex().then(() => {
+  console.log('Index rebuilt');
+});
+```
+
+### Headless Control
+
+```js
+// Switch to headless mode (removes modal and hotkey)
+window.Reef.setHeadless(true);
+
+// Switch back to regular mode (requires re-initialization)
+window.Reef.setHeadless(false);
 ```
 
 ### Runtime Styling
@@ -193,6 +248,176 @@ window.Reef.setPlaceholder('Search docs...');
 // Get current configuration
 const config = window.Reef.getConfig();
 console.log(config.hotkey, config.mode);
+```
+
+### Custom Modal Examples
+
+#### Minimal Custom Modal
+
+Build your own search interface using the headless API:
+
+```html
+<script src="reef.min.js" data-headless="true"></script>
+
+<div id="custom-search" style="display:none;">
+  <input type="text" id="search-input" placeholder="Search..." />
+  <ul id="search-results"></ul>
+</div>
+```
+
+```js
+const searchModal = document.getElementById('custom-search');
+const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+
+window.Reef.setOnReady(() => {
+  searchModal.style.display = 'block';
+});
+
+searchInput.addEventListener('input', (e) => {
+  const query = e.target.value;
+  const results = window.Reef.search(query, 10);
+  
+  searchResults.innerHTML = results.map(r => `
+    <li>
+      <strong>${r.headingText}</strong>
+      <small>${r.breadcrumb || r.url}</small>
+    </li>
+  `).join('');
+});
+
+// Open your custom modal
+document.getElementById('open-search').addEventListener('click', () => {
+  searchModal.style.display = 'block';
+  searchInput.focus();
+});
+```
+
+#### React/Vue Component Integration
+
+```jsx
+// React example
+import { useEffect, useState } from 'react';
+
+function SearchComponent() {
+  const [index, setIndex] = useState([]);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    // Wait for Reef to be ready
+    if (window.Reef) {
+      window.Reef.setOnReady(({ index }) => {
+        setIndex(index);
+      });
+    }
+  }, []);
+
+  const handleSearch = (e) => {
+    const q = e.target.value;
+    setQuery(q);
+    setResults(window.Reef?.search(q, 10) || []);
+  };
+
+  return (
+    <div>
+      <input value={query} onChange={handleSearch} placeholder="Search..." />
+      <ul>
+        {results.map(r => (
+          <li key={r.id} onClick={() => window.location.href = r.url}>
+            {r.headingText}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+#### Custom Styled Dropdown Search
+
+```js
+// Create a dropdown search in your navbar
+const createDropdownSearch = () => {
+  const container = document.createElement('div');
+  container.innerHTML = `
+    <div class="dropdown-search">
+      <button id="search-trigger">Search</button>
+      <div class="dropdown-menu" style="display:none;">
+        <input type="text" placeholder="Type to search..." />
+        <div class="results"></div>
+      </div>
+    </div>
+  `;
+  document.querySelector('nav').appendChild(container);
+
+  window.Reef.setOnReady(({ index }) => {
+    const input = container.querySelector('input');
+    const resultsDiv = container.querySelector('.results');
+    
+    input.addEventListener('input', (e) => {
+      const results = window.Reef.search(e.target.value, 5);
+      resultsDiv.innerHTML = results.map(r => `
+        <div class="result" data-url="${r.url}">
+          ${r.headingText}
+        </div>
+      `).join('');
+    });
+  });
+};
+
+createDropdownSearch();
+```
+
+#### Build-Time Index Generation
+
+Use Reef in headless mode during static site generation to pre-compute your index:
+
+```js
+// In your build script
+import { extractSections, createSearchIndex, addToIndex } from 'reef-search';
+import { readFileSync, readdirSync } from 'fs';
+
+async function generateIndex() {
+  const index = createSearchIndex();
+  const files = readdirSync('./docs').filter(f => f.endsWith('.html'));
+  
+  for (const file of files) {
+    const html = readFileSync(`./docs/${file}`, 'utf-8');
+    const sections = extractSections(html, `/docs/${file}`);
+    addToIndex(index, sections);
+  }
+  
+  // Write index to JSON file
+  require('fs').writeFileSync(
+    './dist/search-index.json', 
+    JSON.stringify(index.allSections)
+  );
+}
+```
+
+#### Custom Result Renderer
+
+```js
+const renderResults = (results) => {
+  return `
+    <div class="custom-results">
+      ${results.map(r => `
+        <div class="result-item" data-type="${r.type}">
+          <span class="type-badge">${r.type}</span>
+          <span class="title">${r.headingText}</span>
+          <span class="snippet">${r.bodyText.substring(0, 80)}...</span>
+          ${r.destructive ? '<span class="warning">⚠️</span>' : ''}
+        </div>
+      `).join('')}
+    </div>
+  `;
+};
+
+// Use with headless mode
+window.Reef.setOnReady(() => {
+  document.getElementById('results').innerHTML = renderResults(window.Reef.getIndex());
+});
 ```
 
 ## Keyboard shortcuts

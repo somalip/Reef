@@ -39,6 +39,9 @@ export interface ReefConfig {
   // Developer API fields
   hotkey?: string;
   placeholder?: string;
+  // Headless mode
+  headless?: boolean;
+  onReady?: (data: { index: IndexRecord[] }) => void;
 }
 
 function escapeHtml(s: string): string {
@@ -116,8 +119,10 @@ class ReefSearch {
 
   constructor() {
     this.config = this.readConfig();
-    this.applyConfigToUI();
-    this.registerHotkey();
+    if (!this.config.headless) {
+      this.applyConfigToUI();
+      this.registerHotkey();
+    }
     this.handleDeferredScroll();
     void this.boot();
   }
@@ -147,6 +152,8 @@ class ReefSearch {
       mode: dataset.mode as 'regular' | 'opaque' | 'high-contrast' | undefined,
       hotkey: dataset.hotkey,
       placeholder: dataset.placeholder,
+      headless: dataset.headless === 'true',
+      onReady: undefined,
     };
   }
 
@@ -249,6 +256,7 @@ class ReefSearch {
         if (fetchedSections.length) {
           addToIndex(this.index, fetchedSections);
           console.info(`[reef] indexed ${fetchedSections.length} sections`);
+          this.callOnReady();
           return;
         }
       } catch (error) {
@@ -257,6 +265,16 @@ class ReefSearch {
     }
 
     this.indexCurrentPage();
+  }
+
+  private callOnReady(): void {
+    if (this.config.onReady) {
+      try {
+        this.config.onReady({ index: this.getIndex() });
+      } catch (error) {
+        console.error('[reef] onReady callback error:', error);
+      }
+    }
   }
 
   private async fetchPagesParallel(urls: string[], sitemapUrl: string): Promise<IndexRecord[]> {
@@ -337,12 +355,17 @@ class ReefSearch {
       const sections = await this.extractAllContent(html, window.location.href.split('#')[0]);
       addToIndex(this.index, sections);
       console.info(`[reef] indexed ${sections.length} sections from current page`);
+      this.callOnReady();
     } catch (error) {
       console.warn('[reef] current page indexing failed', error);
     }
   }
 
   public open() {
+    if (this.config.headless) {
+      console.warn('[reef] Cannot open modal in headless mode. Use getIndex() instead.');
+      return;
+    }
     if (!this.root) {
       this.renderUI();
     }
@@ -1057,6 +1080,18 @@ class ReefSearch {
     }
   }
 
+  public setHeadless(headless: boolean): void {
+    this.config.headless = headless;
+    if (headless) {
+      this.unregisterHotkey();
+      if (this.host) {
+        this.host.remove();
+        this.host = null;
+        this.root = null;
+      }
+    }
+  }
+
   public setColorScheme(scheme: { primary: string, secondary: string, background: string, text: string, border: string, radius: number }): void {
     this.config.primaryColor = scheme.primary;
     this.config.secondaryColor = scheme.secondary;
@@ -1115,6 +1150,18 @@ class ReefSearch {
     void this.boot();
   }
 
+  public rebuildIndex(): Promise<void> {
+    return new Promise((resolve) => {
+      this.index = createSearchIndex();
+      const originalOnReady = this.config.onReady;
+      this.config.onReady = ({ index }) => {
+        originalOnReady?.({ index });
+        resolve();
+      };
+      void this.boot();
+    });
+  }
+
   public getIndex(): IndexRecord[] {
     return getAllSections(this.index);
   }
@@ -1129,6 +1176,10 @@ class ReefSearch {
   }
 
   public openWithQuery(query: string): void {
+    if (this.config.headless) {
+      console.warn('[reef] openWithQuery not available in headless mode. Use search() instead.');
+      return;
+    }
     if (!this.root) {
       this.renderUI();
     }
@@ -1154,6 +1205,50 @@ class ReefSearch {
 
   public getConfig(): ReefConfig {
     return { ...this.config };
+  }
+
+  public search(query: string, limit: number = 8): IndexRecord[] {
+    return searchSections(query, this.index, limit);
+  }
+
+  public setOnReady(callback: (data: { index: IndexRecord[] }) => void): void {
+    this.config.onReady = callback;
+    if (this.index.allSections.length > 0) {
+      try {
+        callback({ index: this.getIndex() });
+      } catch (error) {
+        console.error('[reef] onReady callback error:', error);
+      }
+    }
+  }
+
+  public getSitemapUrls(): Promise<string[]> {
+    return this.fetchSitemapUrls(this.getSitemapCandidates());
+  }
+
+  private fetchSitemapUrls(candidates: string[]): Promise<string[]> {
+    return new Promise(async (resolve) => {
+      for (const candidate of candidates) {
+        try {
+          const response = await fetch(candidate);
+          if (!response.ok) continue;
+          const xml = await response.text();
+          const urls: string[] = [];
+          const locRegex = /<loc>(.*?)<\/loc>/g;
+          let match: RegExpExecArray | null;
+          while ((match = locRegex.exec(xml)) !== null) {
+            urls.push(match[1].trim());
+          }
+          if (urls.length) {
+            resolve(urls);
+            return;
+          }
+        } catch {
+          continue;
+        }
+      }
+      resolve([]);
+    });
   }
 
   private runSelectCallback(result: IndexRecord): void {
