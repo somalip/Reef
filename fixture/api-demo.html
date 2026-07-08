@@ -191,6 +191,130 @@
       </div>
     </section>
 
+    <section class="doc-section" id="headless-demo">
+      <h2>Headless Mode Demo</h2>
+      <p>In headless mode, Reef builds the index without showing the default modal. Use <code>data-headless="true"</code> on the script tag or <code>new ReefSearch({ headless: true })</code> to get indexed data for custom implementations.</p>
+
+      <div class="demo-area">
+        <h3>Code Examples</h3>
+        <pre><code id="headless-code">&lt;!-- Initialize in headless mode --&gt;
+&lt;script src="reef.min.js" data-headless="true"&gt;&lt;/script&gt;
+
+&lt;script&gt;
+// Get all indexed records (available after indexing completes)
+window.Reef.setOnReady(({ index }) => {
+  console.log('Index ready with', index.length, 'records');
+});
+
+// Search the index programmatically
+const results = window.Reef.search('installation', 10);
+
+// Get sitemap URLs without building the index
+window.Reef.getSitemapUrls().then(urls => {
+  console.log('Found URLs:', urls);
+});
+
+// Rebuild the index (useful after adding custom records)
+window.Reef.rebuildIndex().then(() => {
+  console.log('Index rebuilt');
+});
+&lt;/script&gt;
+&lt;!-- Custom modal implementation --&gt;
+&lt;div id="custom-search-modal" class="custom-modal"&gt;
+  &lt;div class="modal-backdrop"&gt;&lt;/div&gt;
+  &lt;div class="modal-panel"&gt;
+    &lt;input type="text" id="custom-search-input" placeholder="Search..." /&gt;
+    &lt;div id="custom-search-results"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+// Minimal custom modal with vanilla JS
+const modal = document.getElementById('custom-search-modal');
+const input = document.getElementById('custom-search-input');
+const resultsDiv = document.getElementById('custom-search-results');
+
+window.Reef.setOnReady(() => modal.style.display = 'block');
+
+input.addEventListener('input', (e) => {
+  const results = window.Reef.search(e.target.value, 10);
+  resultsDiv.innerHTML = results.map(r => `
+    &lt;div class="custom-result" data-url="${r.url}"&gt;
+      &lt;span class="result-type"&gt;${r.type}&lt;/span&gt;
+      &lt;span class="result-title"&gt;${r.headingText}&lt;/span&gt;
+    &lt;/div&gt;
+  `).join('');
+});
+&lt;/script&gt;</code></pre>
+      </div>
+
+      <div class="demo-area">
+        <h3>React Integration Example</h3>
+        <pre><code id="react-code">import { useEffect, useState } from 'react';
+
+function SearchComponent() {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    window.Reef?.setOnReady(({ index }) => {
+      setIndex(index);
+    });
+  }, []);
+
+  const handleSearch = (e) => {
+    const q = e.target.value;
+    setQuery(q);
+    setResults(window.Reef?.search(q, 10) || []);
+  };
+
+  return (
+    &lt;div className="search-container"&gt;
+      &lt;input value={query} onChange={handleSearch} placeholder="Search..." /&gt;
+      &lt;ul&gt;
+        {results.map(r =&gt; (
+          &lt;li key={r.id} onClick={() =&gt; window.location.href = r.url}&gt;
+            {r.headingText}
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+      </div>
+
+      <div class="demo-area">
+        <h3>Dropdown Search Example</h3>
+        <pre><code id="dropdown-code">const createDropdownSearch = () => {
+  const container = document.createElement('div');
+  container.innerHTML = `
+    &lt;div class="dropdown-search"&gt;
+      &lt;button id="search-trigger"&gt;Search&lt;/button&gt;
+      &lt;div class="dropdown-menu"&gt;
+        &lt;input type="text" placeholder="Type to search..." /&gt;
+        &lt;div class="results"&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `;
+  document.querySelector('nav').appendChild(container);
+
+  const input = container.querySelector('input');
+  const resultsDiv = container.querySelector('.results');
+  
+  window.Reef.setOnReady(() => {
+    input.addEventListener('input', (e) => {
+      const results = window.Reef.search(e.target.value, 5);
+      resultsDiv.innerHTML = results.map(r => `
+        &lt;div class="result" data-url="${r.url}"&gt;${r.headingText}&lt;/div&gt;
+      `).join('');
+    });
+  });
+};
+
+createDropdownSearch();</code></pre>
+      </div>
+    </section>
+
     <script>
       function showDemoMessage() {
         document.getElementById('actionOutput').innerHTML = '<div class="log-entry">Demo button clicked at ' + new Date().toLocaleTimeString() + '</div>';
