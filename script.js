@@ -1,6 +1,12 @@
 (function () {
   var kbdHint = document.getElementById('kbdHint');
-  kbdHint.textContent = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘K' : 'Ctrl K';
+  if (kbdHint) {
+    kbdHint.textContent = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘K' : 'Ctrl K';
+  }
+
+  document.querySelectorAll('.mod-k').forEach(el => {
+    el.textContent = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘K' : 'Ctrl K';
+  });
 
   document.getElementById('trigger').addEventListener('click', function () {
     if (window.Reef) window.Reef.open();

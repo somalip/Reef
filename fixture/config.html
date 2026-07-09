@@ -322,7 +322,7 @@ setTimeout(() => {
       <table>
         <thead><tr><th>Key Combination</th><th>Action</th></tr></thead>
         <tbody>
-          <tr><td><kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd></td>
+          <tr><td><kbd class="mod-k">⌘K</kbd> / <kbd class="mod-k">Ctrl+K</kbd></td>
             <td>Open search modal</td></tr>
           <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td>
             <td>Navigate results</td></tr>
@@ -370,5 +370,6 @@ setTimeout(() => {
 &lt;/script&gt;</code></pre>
     </section>
   </main>
+  <script>document.querySelectorAll('.mod-k').forEach(el => { const k = el; k.textContent = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘K' : 'Ctrl K'; });</script>
 </body>
 </html>

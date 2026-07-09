@@ -89,7 +89,7 @@
           <li><strong>Zero backend required</strong> &mdash; No servers, no database, no external API calls</li>
           <li><strong>Privacy-first</strong> &mdash; All indexing and search happens locally in the browser</li>
           <li><strong>Framework agnostic</strong> &mdash; Works with plain HTML, React, Vue, Svelte, or any framework</li>
-          <li><strong>Keyboard-first UX</strong> &mdash; Press <kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd> to open the search modal</li>
+          <li><strong>Keyboard-first UX</strong> — Press <kbd class="mod-k">⌘K</kbd> or <kbd class="mod-k">Ctrl+K</kbd> to open the search modal</li>
           <li><strong>Small footprint</strong> &mdash; Approximately 6.2KB gzipped (excluding fonts)</li>
         </ul>
       </div>
@@ -137,7 +137,7 @@
       <ol>
         <li><strong>Script Load</strong> &mdash; The browser downloads <code>reef.min.js</code> from your server or CDN</li>
         <li><strong>Configuration Parse</strong> &mdash; The loader reads <code>data-*</code> attributes from the script tag</li>
-        <li><strong>Hotkey Registration</strong> &mdash; Listens for <kbd>⌘K</kbd>/<kbd>Ctrl+K</kbd> to open the modal</li>
+        <li><strong>Hotkey Registration</strong> — Listens for <kbd class="mod-k">⌘K</kbd>/<kbd class="mod-k">Ctrl+K</kbd> to open the modal</li>
         <li><strong>Sitemap Fetch (if available)</strong> &mdash; Retrieves <code>sitemap.xml</code> to discover all pages</li>
         <li><strong>Parallel Page Fetching</strong> &mdash; Fetches up to 6 pages concurrently (configurable via <code>data-max-pages</code>)</li>
         <li><strong>Content Extraction</strong> &mdash; Parses each page's HTML and extracts headings, body text, and other content types</li>
@@ -316,10 +316,9 @@
       <ul>
         <li>Look for <code>/sitemap.xml</code> at your site root</li>
         <li>Fetch and index all pages listed in the sitemap</li>
-        <li>Open the search modal when users press <kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd></li>
-      </ul>
-      <p>Having trouble? <a href="install.html">Installation guide →</a> covers troubleshooting, CDN options, and framework-specific setups.</p>
-    </section>
-  </main>
+<li>Press <kbd class="mod-k">⌘K</kbd> or <kbd class="mod-k">Ctrl+K</kbd> to test your search!</li>
+       </ul>
+   </main>
+   <script>document.querySelectorAll('.mod-k').forEach(el => { const k = el; k.textContent = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘K' : 'Ctrl K'; });</script>
 </body>
 </html>

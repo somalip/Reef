@@ -111,7 +111,7 @@
       <ul>
         <li>Fetch your <code>/sitemap.xml</code> to discover all pages</li>
         <li>Index headings and content from each page</li>
-        <li>Register the <kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd> keyboard shortcut</li>
+        <li>Register the <kbd class="mod-k">⌘K</kbd> / <kbd class="mod-k">Ctrl+K</kbd> keyboard shortcut</li>
       </ul>
 
       <div class="success-box">
@@ -342,7 +342,7 @@ export const onRenderBody = ({ setPostBodyComponents }) => {
       <ul>
         <li>Verify the script loaded correctly (check Network tab)</li>
         <li>Check browser console for errors</li>
-        <li>Ensure you're pressing <kbd>⌘K</kbd> (Mac) or <kbd>Ctrl+K</kbd> (Windows/Linux)</li>
+        <li>Ensure you're pressing <kbd class="mod-k">⌘K</kbd> (Mac) or <kbd class="mod-k">Ctrl+K</kbd> (Windows/Linux)</li>
         <li>Make sure no other element has focus that might intercept the shortcut</li>
       </ul>
 
@@ -392,15 +392,16 @@ fetch('/sitemap.xml')
       </table>
     </section>
 
-    <section class="doc-section" id="next-steps">
+<section class="doc-section" id="next-steps">
       <h2>Next Steps</h2>
       <p>After installation, configure Reef Search to match your needs:</p>
       <ul>
         <li><a href="config.html">Configuration Options →</a> Learn about all configuration attributes</li>
         <li><a href="advanced.html">Advanced Topics →</a> Performance tuning and security considerations</li>
-        <li>Press <kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd> to test your search!</li>
+        <li>Press <kbd class="mod-k">⌘K</kbd> or <kbd class="mod-k">Ctrl+K</kbd> to test your search!</li>
       </ul>
     </section>
   </main>
+  <script>document.querySelectorAll('.mod-k').forEach(el => { const k = el; k.textContent = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘K' : 'Ctrl K'; });</script>
 </body>
 </html>
