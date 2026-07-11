@@ -1,0 +1,451 @@
+/**
+ * @file UI rendering and focus management for the search modal.
+ * Handles creating the modal DOM, focus trapping, and ARIA attributes.
+ */
+
+import { getResultTypeIcon, getResultTypeLabel, escapeHtml, highlight, getSnippet } from './ui-helpers.js';
+import type { IndexRecord } from '../types.js';
+
+export class UIRenderer {
+  private host: HTMLDivElement | null = null;
+  private root: ShadowRoot | null = null;
+  private input: HTMLInputElement | null = null;
+  private resultsList: HTMLElement | null = null;
+  private focusableElements: HTMLElement[] = [];
+  private isOpen = false;
+  private modeChangeCallback: ((mode: string) => void) | null = null;
+
+  getHost(): HTMLDivElement | null { return this.host; }
+  getRoot(): ShadowRoot | null { return this.root; }
+  getInput(): HTMLInputElement | null { return this.input; }
+  getResultsList(): HTMLElement | null { return this.resultsList; }
+  getIsOpen(): boolean { return this.isOpen; }
+  getFocusableElements(): HTMLElement[] { return this.focusableElements; }
+
+  setIsOpen(open: boolean): void { this.isOpen = open; }
+  clearFocusableElements(): void { this.focusableElements = []; }
+
+  renderUI(
+    placeholder: string,
+    currentMode: 'regular' | 'opaque' | 'high-contrast',
+    onModeChange: (mode: string) => void
+  ): void {
+    this.modeChangeCallback = onModeChange;
+    const host = document.createElement('div');
+    host.className = 'reef-host is-hidden';
+    document.body.appendChild(host);
+    this.host = host;
+    this.root = host.attachShadow({ mode: 'open' });
+    const shadow = this.root;
+
+    shadow.innerHTML = `
+      <style>
+        :host {
+          position: fixed;
+          inset: 0;
+          z-index: 2147483647;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding: 12vh 1.25rem 0;
+          background: rgba(0, 0, 0, 0.6);
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.14s ease;
+        }
+        :host(.is-hidden) { display: none; }
+        :host(.open) { opacity: 1; pointer-events: auto; }
+
+        :host(.mode-opaque) .panel {
+          background: rgba(20,30,28,0.92) !important;
+        }
+        :host(.mode-high-contrast) .panel {
+          background: rgba(255,255,255,0.98);
+          --primary-color: #0066cc;
+          --text-color: #111111;
+          --border-color: #e0e0e0;
+        }
+        :host(.mode-high-contrast) .input {
+          color: #111111;
+        }
+        :host(.mode-high-contrast) .result-type-label {
+          color: #0066cc;
+        }
+        :host(.mode-high-contrast) .result .heading {
+          color: #111111;
+        }
+        :host(.mode-high-contrast) .result .snippet {
+          color: #444444;
+        }
+
+        .panel {
+          width: 100%;
+          max-width: 560px;
+          background: rgba(20,30,28,0.88);
+          color: var(--text-color, #edebe6);
+          border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+          border-radius: 24px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+          overflow: hidden;
+          transform: translateY(-8px) scale(0.98);
+          transition: transform 0.14s ease;
+        }
+        :host(.open) .panel { transform: translateY(0) scale(1); }
+
+        .input-row {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.95rem 1rem;
+          border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+        }
+
+        .icon {
+          opacity: 0.6;
+          flex-shrink: 0;
+          stroke: var(--primary-color, #66d9c8);
+        }
+
+        .input {
+          flex: 1;
+          background: transparent;
+          border: 0;
+          outline: none;
+          color: var(--text-color, #edebe6);
+          font-size: 1rem;
+          font-family: var(--font-family, Inter, system-ui, sans-serif);
+        }
+        .input::placeholder {
+          color: #8a8a8f;
+        }
+
+        .hint {
+          font-family: ui-monospace, monospace;
+          font-size: 0.72rem;
+          color: #a0a0a5;
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 10px;
+          padding: 0.2rem 0.6rem;
+        }
+
+        .results {
+          max-height: 340px;
+          overflow-y: auto;
+          padding: 0.5rem;
+        }
+
+        .result {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          width: 100%;
+          text-align: left;
+          padding: 0.8rem 1rem;
+          border-radius: 16px;
+          margin-top: 0.25rem;
+          cursor: pointer;
+          border: 0;
+          background: transparent;
+          color: inherit;
+        }
+        .result:hover, .result.is-selected {
+          background: rgba(255,255,255,0.08);
+        }
+        .result-type {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          font-size: 0.7rem;
+          margin-bottom: 0.25rem;
+        }
+        .result-type-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
+        }
+        .result-type-icon svg {
+          width: 14px;
+          height: 14px;
+          stroke: var(--primary-color, #66d9c8);
+        }
+        .result-type-label {
+          font-family: ui-monospace, monospace;
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--primary-color, #66d9c8);
+        }
+        .result .breadcrumb {
+          font-family: ui-monospace, monospace;
+          font-size: 0.75rem;
+          color: #a0a0a5;
+        }
+        .result .heading {
+          font-size: 0.95rem;
+          font-weight: 500;
+          color: var(--text-color, #edebe6);
+        }
+        .result .snippet {
+          font-size: 0.85rem;
+          color: var(--text-color, #a0a0a5);
+          line-height: 1.5;
+        }
+        .result mark {
+          background: rgba(255,255,255,0.2);
+          color: var(--primary-color, #66d9c8);
+          border-radius: 4px;
+          padding: 0 2px;
+        }
+        .result-action-hint {
+          font-size: 0.75rem;
+          font-family: ui-monospace, monospace;
+          color: #8a8a8f;
+          margin-top: 0.25rem;
+        }
+        .result-action-hint.run-here { color: var(--primary-color, #66d9c8); }
+        .result-action-hint.go-there { color: #a0a0a5; }
+        .empty {
+          padding: 2rem;
+          color: #8a8a8f;
+          text-align: center;
+          font-size: 0.9rem;
+        }
+        .footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.75rem 1rem;
+          border-top: 1px solid rgba(255,255,255,0.08);
+          color: #a0a0a5;
+          font-size: 0.75rem;
+          font-family: ui-monospace, monospace;
+        }
+        .k {
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 8px;
+          padding: 0.15rem 0.5rem;
+          margin: 0 0.2rem;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          :host, .panel { transition: none; }
+        }
+      </style>
+      <div class="panel" role="dialog" aria-modal="true" aria-label="Site search">
+        <div class="input-row">
+          <svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input class="input" type="text" placeholder="${placeholder}" autocomplete="off" />
+          <span class="hint">ESC</span>
+        </div>
+        <div class="settings-row" style="padding:0.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08);font-size:0.75rem;color:#a0a0a5;">
+          <label for="modeSelect">Mode:</label>
+          <select id="modeSelect" style="margin-left:0.5rem;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#edebe6;font-family:ui-monospace,monospace;font-size:0.7rem;">
+            <option value="regular" ${currentMode === 'regular' ? 'selected' : ''}>Regular</option>
+            <option value="opaque" ${currentMode === 'opaque' ? 'selected' : ''}>Opaque</option>
+            <option value="high-contrast" ${currentMode === 'high-contrast' ? 'selected' : ''}>High Contrast</option>
+          </select>
+        </div>
+        <div class="results" aria-live="polite"></div>
+        <div class="footer"><span><span class="k">↑↓</span> navigate <span class="k">↵</span> open</span><span id="count"></span></div>
+      </div>
+    `;
+
+    this.input = shadow.querySelector('input') as HTMLInputElement | null;
+    this.resultsList = shadow.querySelector('.results') as HTMLElement | null;
+
+    const modeSelect = shadow.querySelector('#modeSelect') as HTMLSelectElement | null;
+    modeSelect?.addEventListener('change', (e) => {
+      const mode = (e.target as HTMLSelectElement).value as 'regular' | 'opaque' | 'high-contrast';
+      this.modeChangeCallback?.(mode);
+    });
+  }
+
+  setupFocusTrap(): void {
+    const focusInHandler = (event: FocusEvent) => {
+      if (!this.isOpen || !this.host) return;
+
+      if (this.focusableElements.length === 0) {
+        this.focusableElements = this.getAllFocusableElements();
+      }
+
+      if (this.focusableElements.length === 0) return;
+
+      const first = this.focusableElements[0];
+      const last = this.focusableElements[this.focusableElements.length - 1];
+      const target = event.target as HTMLElement;
+
+      if (event.type === 'focusin' && target) {
+        if (!this.isElementInModal(target)) {
+          const activeElement = document.activeElement;
+          if (activeElement === first) {
+            last?.focus();
+          } else {
+            first?.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('focusin', focusInHandler);
+  }
+
+  private getAllFocusableElements(): HTMLElement[] {
+    if (!this.host) return [];
+    const focusableSelectors = [
+      'button', 'input', 'select', 'textarea', 'a[href]',
+      '[tabindex]:not([tabindex="-1"])', '[role="button"]'
+    ];
+    return Array.from(this.host.shadowRoot?.querySelectorAll(focusableSelectors.join(',')) ?? []) as HTMLElement[];
+  }
+
+  private isElementInModal(element: HTMLElement): boolean {
+    if (!this.host) return false;
+    return element.closest('.reef-host') === this.host;
+  }
+
+  applyAriaHidden(): void {
+    document.body.setAttribute('aria-hidden', 'true');
+    const mainContent = document.querySelector('main, [role="main"], body > *:not(.reef-host)');
+    if (mainContent) {
+      mainContent.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  restoreBodyAriaHidden(): void {
+    document.body.removeAttribute('aria-hidden');
+    const mainContent = document.querySelector('main, [role="main"], body > *:not(.reef-host)');
+    if (mainContent) {
+      mainContent.removeAttribute('aria-hidden');
+    }
+  }
+
+  scrollSelectedIntoView(selectedIndex: number): void {
+    if (!this.resultsList) return;
+    const selected = this.resultsList.querySelector(
+      `.result[data-index="${selectedIndex}"]`
+    ) as HTMLElement | null;
+    if (!selected) return;
+
+    const results = this.resultsList.querySelectorAll('.result');
+    if (!results.length) return;
+
+    const isFirst = selectedIndex === 0;
+    const isLast = selectedIndex === results.length - 1;
+
+    let block: ScrollLogicalPosition = 'center';
+    if (isFirst) block = 'start';
+    else if (isLast) block = 'end';
+
+    selected.scrollIntoView({ block, inline: 'nearest', behavior: 'smooth' });
+  }
+
+  renderResults(
+    query: string,
+    results: IndexRecord[],
+    selectedIndex: number,
+    onResultMouseEnter: (index: number) => void,
+    onResultClick: (event: MouseEvent, index: number) => void
+  ): void {
+    const countEl = this.root?.querySelector('#count');
+
+    if (!this.resultsList) return;
+
+    if (!results.length) {
+      this.resultsList.innerHTML = `<div class="empty">No sections match "${escapeHtml(query)}"</div>`;
+      if (countEl) countEl.textContent = '0 results';
+      return;
+    }
+
+    if (countEl) {
+      const counts: Record<string, number> = {};
+      for (const result of results) {
+        const type = getResultTypeLabel(result.type);
+        counts[type] = (counts[type] || 0) + 1;
+      }
+      const countParts = Object.entries(counts)
+        .map(([type, count]) => `${count} ${type.toLowerCase()}${count !== 1 ? 's' : ''}`)
+        .join(', ');
+      countEl.textContent = countParts;
+    }
+
+    if (this.resultsList) {
+      this.resultsList.innerHTML = results
+        .map((result, index) => {
+          const isSelected = index === selectedIndex;
+          const snippet = getSnippet(result.bodyText, query);
+          const typeIcon = getResultTypeIcon(result.type);
+          const typeLabel = getResultTypeLabel(result.type);
+
+          const isAction = result.type === 'action';
+          const isSamePage = result.url === window.location.href.split('#')[0];
+          const canExecuteHere = isAction && isSamePage && !result.destructive;
+          const actionHint = canExecuteHere
+            ? '<span class="result-action-hint run-here">↵ to run here</span>'
+            : '<span class="result-action-hint go-there">↵ to go there</span>';
+
+          let answerPreview = '';
+          if (result.type === 'structured' && result.structuredData) {
+            if (result.structuredData.answer) {
+              answerPreview = `<div class="answer-preview">${escapeHtml(result.structuredData.answer.substring(0, 100))}${result.structuredData.answer.length > 100 ? '…' : ''}</div>`;
+            } else if (result.structuredData.question && result.structuredData.answer) {
+              answerPreview = `<div class="answer-preview"><strong>${escapeHtml(result.structuredData.question)}</strong>: ${escapeHtml(result.structuredData.answer.substring(0, 100))}${result.structuredData.answer.length > 100 ? '…' : ''}</div>`;
+            }
+          }
+
+          return `
+            <button class="result ${isSelected ? 'is-selected' : ''}" type="button" data-index="${index}">
+              <div class="result-type">
+                <span class="result-type-icon">${typeIcon}</span>
+                <span class="result-type-label">${typeLabel}</span>
+              </div>
+              <div class="breadcrumb">${escapeHtml(result.breadcrumb)}</div>
+              <div class="heading">${highlight(result.headingText, query)}</div>
+              ${answerPreview}
+              <div class="snippet">${highlight(snippet, query)}</div>
+              ${isAction ? actionHint : ''}
+            </button>
+          `;
+        })
+        .join('');
+
+      this.resultsList.querySelectorAll('button').forEach((button) => {
+        button.addEventListener('mouseenter', () => {
+          const idx = Number(button.getAttribute('data-index')) ?? 0;
+          onResultMouseEnter(idx);
+        });
+        button.addEventListener('click', (event) => {
+          const idx = Number(button.getAttribute('data-index')) ?? 0;
+          onResultClick(event as unknown as MouseEvent, idx);
+        });
+      });
+    }
+  }
+
+  showToast(message: string): void {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.right = '20px';
+    toast.style.background = '#333';
+    toast.style.color = '#fff';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '4px';
+    toast.style.zIndex = '9999';
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s';
+
+    document.body.appendChild(toast);
+    void toast.offsetWidth;
+    toast.style.opacity = '1';
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 300);
+    }, 2000);
+  }
+}
