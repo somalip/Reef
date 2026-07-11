@@ -223,10 +223,19 @@ class ReefSearch {
     const selected = this.resultsList.querySelector(
       `.result[data-index="${this.selectedIndex}"]`
     ) as HTMLElement | null;
-    selected?.scrollIntoView({
-      block: "center",
-      behavior: "smooth",
-    });
+    if (!selected) return;
+
+    const results = this.resultsList.querySelectorAll('.result');
+    if (!results.length) return;
+
+    const isFirst = this.selectedIndex === 0;
+    const isLast = this.selectedIndex === results.length - 1;
+
+    let block: ScrollLogicalPosition = 'center';
+    if (isFirst) block = 'start';
+    else if (isLast) block = 'end';
+
+    selected.scrollIntoView({ block, inline: 'nearest', behavior: 'smooth' });
   }
 
   private registerHotkey() {
@@ -856,18 +865,18 @@ class ReefSearch {
       this.searchDebounce = requestAnimationFrame(() => this.renderResults());
     });
 
-this.input?.addEventListener('keydown', (event) => {
+    this.input?.addEventListener('keydown', (event) => {
       const results = this.getVisibleResults();
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         if (results.length) this.selectedIndex = (this.selectedIndex + 1) % results.length;
         this.renderResults();
-          this.scrollSelectedIntoView();
+        this.scrollSelectedIntoView();
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
         if (results.length) this.selectedIndex = (this.selectedIndex - 1 + results.length) % results.length;
         this.renderResults();
-          this.scrollSelectedIntoView();
+        this.scrollSelectedIntoView();
       } else if (event.key === 'Enter') {
         event.preventDefault();
         const match = this.getVisibleResults()[this.selectedIndex];
@@ -1048,26 +1057,12 @@ this.input?.addEventListener('keydown', (event) => {
         })
         .join('');
 
-      this.resultsList.querySelectorAll('button').forEach((button) => {
+this.resultsList.querySelectorAll('button').forEach((button) => {
         button.addEventListener('mouseenter', () => {
           this.selectedIndex = Number(button.getAttribute('data-index')) ?? 0;
           this.renderResults();
-           
         });
         button.addEventListener('click', (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          const match = results[Number(button.getAttribute('data-index')) ?? 0];
-          if (match) {
-            this.runSelectCallback(match);
-            this.executeAction(match);
-            const isNavType = ['section', 'link', 'file', 'media', 'structured'].includes(match.type);
-            if (!isNavType) {
-              this.close();
-            }
-          }
-        });
-        button.addEventListener('pointerup', (event) => {
           event.preventDefault();
           event.stopPropagation();
           const match = results[Number(button.getAttribute('data-index')) ?? 0];
