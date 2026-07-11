@@ -156,7 +156,7 @@ export function addToIndex(index: SearchIndex, records: IndexRecord[], tokenizeP
     // Also index the label if present
     if (record.label) {
       const labelLower = record.label.toLowerCase();
-      if (labelLower.length >= 2 && labelLower.length < 3) {
+      if (labelLower.length >= 2) {
         const existing = index.bodyIndex.get(labelLower) ?? [];
         existing.push(record);
         index.bodyIndex.set(labelLower, existing);
@@ -561,7 +561,7 @@ export function searchSections(
     }
   }
 
-  // Prefix matches on headingText (try both)
+// Prefix matches on headingText (try both)
   const prefix = index.headingIndex.get(normalizedQ.toLowerCase()) ?? index.headingIndex.get(q.toLowerCase());
   if (prefix) {
     for (const record of prefix) {
@@ -589,7 +589,7 @@ export function searchSections(
   // Word matches in bodyText (try both)
   const words = normalizedQ.toLowerCase().split(/\s+/);
   for (const word of words) {
-    const bodyMatches = index.bodyIndex.get(word) ?? index.bodyIndex.get(q.toLowerCase().split(/\s+/).find(w => w.includes(word)) ?? '');
+    const bodyMatches = index.bodyIndex.get(word);
     if (bodyMatches) {
       for (const record of bodyMatches) {
         if (scores.has(record)) continue;
@@ -607,12 +607,12 @@ export function searchSections(
         if (positions.length > 0) {
           const pos = positions[0];
           addScore(record, score, 'bodyText', pos.start, pos.end);
-        } else {
-          addScore(record, score, 'bodyText', 0, Math.min(word.length, record.bodyText.length));
-        }
-      }
-    }
-  }
+} else {
+           addScore(record, score, 'bodyText', 0, Math.min(word.length, record.bodyText.length));
+         }
+       }
+     }
+   }
 
   // Staged fuzzy search - exact → 1-typo → 2-typo, short-circuit on first hit
   if (options?.fuzzy) {
@@ -727,6 +727,38 @@ export function searchSections(
   }
 
   const topRecords = sortedEntries.slice(0, limit).map(([record]) => record);
+
+  // Apply type-based ranking boost
+  if (options?.typeWeights) {
+    const typeBoost = options.typeWeights;
+    for (const record of topRecords) {
+      const boost = typeBoost[record.type] ?? 1;
+      const currentScore = scores.get(record);
+      if (currentScore !== undefined && boost !== 1) {
+        scores.set(record, currentScore * boost);
+      }
+    }
+    sortedEntries = [...scores.entries()].sort((a, b) => b[1] - a[1]);
+    const boostedRecords = sortedEntries.slice(0, limit).map(([record]) => record);
+    
+    // Cache the boosted shortlist
+    cacheShortlist(q.toLowerCase(), boostedRecords, index);
+    
+    if (options?.includeScore || options?.includeMatches) {
+      return boostedRecords.map(record => {
+        const recordMatches = matches.get(record) ?? [];
+        const normalizedScore = scores.get(record) ?? 0;
+        const maxScore = useBM25 ? 100 : 200;
+        const score = Math.max(0, Math.min(1, 1 - normalizedScore / maxScore));
+        return {
+          record,
+          score,
+          matches: options.includeMatches ? recordMatches : undefined,
+        };
+      });
+    }
+    return boostedRecords;
+  }
 
   // Cache the shortlist
   cacheShortlist(q.toLowerCase(), topRecords, index);
@@ -905,3 +937,5 @@ export function getPopularQueries(index: SearchIndex, n: number = 5): string[] {
     .slice(0, n)
     .map(([q]) => q);
 }
+
+export { IndexRecord };

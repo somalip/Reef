@@ -11,6 +11,7 @@ import {
   extractFiles,
   extractMedia,
   extractStructuredData,
+  extractHiddenContent,
   resolveUrl,
   searchSections,
   addToIndex,
@@ -27,7 +28,7 @@ import {
   type SearchOptions,
   type TokenFilter,
 } from './search.js';
-import { ReefConfig } from './types.js';
+import { ReefConfig, CacheMetadata } from './types.js';
 
 function escapeHtml(s: string): string {
   const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -101,6 +102,7 @@ class ReefSearch {
   private deferredActions: { action: IndexRecord; pageUrl: string }[] = [];
   private selectCallback: ((result: IndexRecord) => void) | null = null;
   private hotkeyHandler: ((event: KeyboardEvent) => void) | null = null;
+  private worker: Worker | null = null;
 
   constructor() {
     this.config = this.readConfig();
@@ -176,10 +178,10 @@ class ReefSearch {
       backgroundColor: dataset.backgroundColor,
       textColor: dataset.textColor,
       borderColor: dataset.borderColor,
-      radius: dataset.radius ? Number(dataset.radius) : 16,
+      radius: dataset.radius ? Number(dataset.radius) : 24,
       theme: dataset.theme as 'light' | 'dark' | 'auto' | undefined,
       fontFamily: dataset.fontFamily,
-      mode: dataset.mode as 'regular' | 'opaque' | 'high-contrast' | undefined,
+      mode: dataset.mode ? dataset.mode as 'regular' | 'opaque' | 'high-contrast' : 'opaque',
       hotkey: dataset.hotkey,
       placeholder: dataset.placeholder,
       headless: dataset.headless === 'true',
@@ -188,18 +190,19 @@ class ReefSearch {
       synonyms,
       prebuiltIndexUrl: dataset.prebuiltIndexUrl,
       useWorkerIndexing: dataset.useWorkerIndexing === 'true',
+      ttl: dataset.ttl ? Number(dataset.ttl) : undefined,
     };
   }
 
   private applyConfigToUI(): void {
     if (!this.host) return;
     const cfg = this.config;
-    this.host.style.setProperty('--primary-color', cfg.primaryColor ?? '#43d9c8');
+    this.host.style.setProperty('--primary-color', cfg.primaryColor ?? '#66d9c8');
     this.host.style.setProperty('--secondary-color', cfg.secondaryColor ?? '#ff8562');
-    this.host.style.setProperty('--background-color', cfg.backgroundColor ?? 'rgba(20,30,28,0.65)');
+    this.host.style.setProperty('--background-color', cfg.backgroundColor ?? 'rgba(20,30,28,0.88)');
     this.host.style.setProperty('--text-color', cfg.textColor ?? '#edebe6');
-    this.host.style.setProperty('--border-color', cfg.borderColor ?? 'rgba(67,217,200,0.25)');
-    this.host.style.setProperty('--radius', cfg.radius?.toString() ?? '16');
+    this.host.style.setProperty('--border-color', cfg.borderColor ?? 'rgba(255,255,255,0.1)');
+    this.host.style.setProperty('--radius', cfg.radius?.toString() ?? '24');
     this.host.style.setProperty('--font-family', cfg.fontFamily ?? 'Inter, system-ui, sans-serif');
 
     this.host.classList.remove('mode-regular', 'mode-opaque', 'mode-high-contrast');
@@ -221,7 +224,7 @@ class ReefSearch {
       `.result[data-index="${this.selectedIndex}"]`
     ) as HTMLElement | null;
     selected?.scrollIntoView({
-      block: "nearest",
+      block: "center",
       behavior: "smooth",
     });
   }
@@ -285,6 +288,21 @@ class ReefSearch {
       }
     }
 
+    // Try IndexedDB cache first
+    try {
+      const { loadIndex, saveIndex, openDB } = await import('./cache.js');
+      const ttl = this.config.ttl;
+      const cached = await loadIndex(ttl);
+      if (cached?.index && cached.index.allSections.length > 0) {
+        this.index = cached.index;
+        console.info(`[reef] loaded cached index with ${this.index.allSections.length} sections`);
+        this.callOnReady();
+        return;
+      }
+    } catch (error) {
+      console.warn('[reef] cache load failed, continuing with fresh index', error);
+    }
+
     const candidates = this.getSitemapCandidates();
 
     for (const candidate of candidates) {
@@ -302,10 +320,30 @@ class ReefSearch {
         }
 
         const maxPages = this.config.maxPages ?? 500;
-        const fetchedSections = await this.fetchPagesParallel(urls.slice(0, maxPages), candidate);
-        if (fetchedSections.length) {
-          addToIndex(this.index, fetchedSections, this.config.tokenizePipeline);
-          console.info(`[reef] indexed ${fetchedSections.length} sections`);
+        if (this.config.useWorkerIndexing) {
+          const fetchedSections = await this.fetchPagesWithWorker(urls.slice(0, maxPages), candidate);
+          if (fetchedSections.length) {
+            console.info(`[reef] indexed ${fetchedSections.length} sections via worker`);
+          }
+        } else {
+          const fetchedSections = await this.fetchPagesParallel(urls.slice(0, maxPages), candidate);
+          if (fetchedSections.length) {
+            addToIndex(this.index, fetchedSections, this.config.tokenizePipeline);
+            console.info(`[reef] indexed ${fetchedSections.length} sections`);
+          }
+          // Save to cache
+          try {
+            const { saveIndex } = await import('./cache.js');
+            const versionHash = this.computeVersionHash(urls);
+            const metadata = {
+              versionHash,
+              buildTime: Date.now(),
+              pageMetadata: urls.reduce((acc, url) => ({ ...acc, [url]: versionHash }), {} as Record<string, string>)
+            };
+            await saveIndex(this.index, metadata);
+          } catch (e) {
+            console.warn('[reef] cache save failed', e);
+          }
           this.callOnReady();
           return;
         }
@@ -314,7 +352,54 @@ class ReefSearch {
       }
     }
 
-    this.indexCurrentPage();
+    this.crawlSameOrigin();
+  }
+
+  private computeVersionHash(urls: string[]): string {
+    let hash = 0;
+    for (const url of urls) {
+      for (let i = 0; i < url.length; i++) {
+        const char = url.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+    }
+    return hash.toString(36);
+  }
+
+  private crawlSameOrigin(): void {
+    const visited = new Set<string>();
+    const queue: string[] = [window.location.href];
+    const maxPages = this.config.maxPages ?? 500;
+
+    const processQueue = async () => {
+      while (queue.length && visited.size < maxPages) {
+        const url = queue.shift()!;
+        if (visited.has(url) || !url.startsWith(window.location.origin)) continue;
+        visited.add(url);
+
+        try {
+          const response = await fetch(url);
+          if (!response.ok) continue;
+          const html = await response.text();
+          const content = await this.extractAllContent(html, url);
+          addToIndex(this.index, content, this.config.tokenizePipeline);
+
+          // Add linked pages to queue
+          const links = extractLinks(html, url)
+            .filter(l => l.url.startsWith(window.location.origin))
+            .map(l => l.url)
+            .filter((u, i, arr) => arr.indexOf(u) === i);
+          queue.push(...links);
+        } catch (e) {
+          continue;
+        }
+      }
+      console.info(`[reef] indexed ${visited.size} pages via same-origin crawl`);
+      this.callOnReady();
+    };
+
+    processQueue();
   }
 
   private callOnReady(): void {
@@ -361,8 +446,80 @@ class ReefSearch {
     return sections;
   }
 
+  private async fetchPagesWithWorker(urls: string[], sitemapUrl: string): Promise<IndexRecord[]> {
+    const workerUrl = new URL('./worker.js', import.meta.url).href;
+    this.worker = new Worker(workerUrl);
+
+    return new Promise<IndexRecord[]>((resolve, reject) => {
+      const messageHandler = (e: MessageEvent) => {
+        const { result, error, json } = e.data;
+        if (error) {
+          console.error('[reef] worker error:', error);
+          reject(new Error(error));
+          return;
+        }
+        if (result === 'ok' && json) {
+          this.worker?.removeEventListener('message', messageHandler);
+          this.worker?.terminate();
+          this.worker = null;
+          this.index = deserializeIndex(json);
+          this.callOnReady();
+          resolve([]);
+        }
+      };
+
+      const errorHandler = (e: ErrorEvent) => {
+        console.error('[reef] worker error:', e.error);
+        reject(e.error);
+      };
+
+      this.worker!.addEventListener('message', messageHandler);
+      this.worker!.addEventListener('error', errorHandler);
+
+      // Fetch all pages first
+      const htmlMap: Record<string, string> = {};
+      const fetchPromises = urls.map(async (pageUrl) => {
+        try {
+          const resolvedUrl = resolveUrl(pageUrl, sitemapUrl);
+          const response = await fetch(resolvedUrl);
+          if (response.ok) {
+            htmlMap[resolvedUrl] = await response.text();
+          }
+        } catch (e) {
+          console.warn('[reef] failed to fetch page for worker:', pageUrl);
+        }
+      });
+
+      void Promise.all(fetchPromises).then(() => {
+        const config = {
+          scope: this.config.scope,
+          indexActions: this.config.indexActions,
+          indexMedia: this.config.indexMedia,
+          indexStructuredData: this.config.indexStructuredData,
+          indexHidden: this.config.indexHidden,
+          excludeAction: this.config.excludeAction,
+          fileExtensions: this.config.fileExtensions,
+        };
+
+        const id = Date.now();
+        this.worker?.postMessage({
+          id,
+          action: 'indexPages',
+          payload: {
+            pages: Object.entries(htmlMap),
+            config,
+          },
+        });
+      });
+    });
+  }
+
   private async extractAllContent(html: string, url: string): Promise<IndexRecord[]> {
     const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    if (this.config.indexHidden) {
+      extractHiddenContent(doc);
+    }
 
     let rootElement: Element | Document = doc;
     if (this.config.scope) {
@@ -374,15 +531,11 @@ class ReefSearch {
 
     let htmlToProcess = new XMLSerializer().serializeToString(rootElement as Element);
 
-    if (this.config.excludeAction) {
-      // Exclusion logic would go here
-    }
-
     const sections = extractSections(htmlToProcess, url);
-    const actions = this.config.indexActions ? extractActions(htmlToProcess, url) : [];
+    const actions = this.config.indexActions ? extractActions(htmlToProcess, url, this.config.excludeAction) : [];
     const fields = this.config.indexActions ? extractFields(htmlToProcess, url) : [];
     const links = extractLinks(htmlToProcess, url);
-    const files = extractFiles(htmlToProcess, url);
+    const files = extractFiles(htmlToProcess, url, this.config.fileExtensions);
     const media = this.config.indexMedia ? extractMedia(htmlToProcess, url) : [];
     const structured = this.config.indexStructuredData ? extractStructuredData(htmlToProcess, url) : [];
 
@@ -445,13 +598,19 @@ class ReefSearch {
     this.host?.classList.remove('is-hidden');
     this.host?.classList.add('open');
     this.input?.focus();
+    this.applyAriaHidden();
     this.renderResults();
   }
 
-  public close() {
+  private closeInternal(): void {
     this.isOpen = false;
     this.host?.classList.remove('open');
     this.host?.classList.add('is-hidden');
+  }
+
+  public close() {
+    this.restoreBodyAriaHidden();
+    this.closeInternal();
   }
 
   private renderUI() {
@@ -466,7 +625,7 @@ class ReefSearch {
     this.root = shadow;
 
     const placeholder = this.config.placeholder || 'Search this site';
-    const currentMode = this.config.mode ?? 'regular';
+    const currentMode = this.config.mode ?? 'opaque';
     shadow.innerHTML = `
       <style>
         :host {
@@ -477,8 +636,7 @@ class ReefSearch {
           align-items: flex-start;
           justify-content: center;
           padding: 12vh 1.25rem 0;
-          background: var(--background-color, rgba(5,5,6,0.45));
-          backdrop-filter: blur(10px);
+          background: rgba(0, 0, 0, 0.6);
           opacity: 0;
           pointer-events: none;
           transition: opacity 0.14s ease;
@@ -487,13 +645,13 @@ class ReefSearch {
         :host(.open) { opacity: 1; pointer-events: auto; }
 
         :host(.mode-opaque) .panel {
-          background: rgba(20,30,28,0.85) !important;
+          background: rgba(20,30,28,0.92) !important;
         }
         :host(.mode-high-contrast) .panel {
-          background: rgba(255,255,255,0.95);
+          background: rgba(255,255,255,0.98);
           --primary-color: #0066cc;
           --text-color: #111111;
-          --border-color: #000000;
+          --border-color: #e0e0e0;
         }
         :host(.mode-high-contrast) .input {
           color: #111111;
@@ -505,17 +663,17 @@ class ReefSearch {
           color: #111111;
         }
         :host(.mode-high-contrast) .result .snippet {
-          color: #333333;
+          color: #444444;
         }
 
         .panel {
           width: 100%;
           max-width: 560px;
-          background: var(--background-color, rgba(20,30,28,0.65));
+          background: rgba(20,30,28,0.88);
           color: var(--text-color, #edebe6);
-          border: 1px solid var(--border-color, rgba(67,217,200,0.25));
-          border-radius: var(--radius, 16px);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.05);
+          border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+          border-radius: 24px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.4);
           overflow: hidden;
           transform: translateY(-8px) scale(0.98);
           transition: transform 0.14s ease;
@@ -527,13 +685,13 @@ class ReefSearch {
           align-items: center;
           gap: 0.75rem;
           padding: 0.95rem 1rem;
-          border-bottom: 1px solid var(--border-color, rgba(67,217,200,0.15));
+          border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
         }
 
         .icon {
           opacity: 0.6;
           flex-shrink: 0;
-          stroke: var(--primary-color, #43d9c8);
+          stroke: var(--primary-color, #66d9c8);
         }
 
         .input {
@@ -546,16 +704,16 @@ class ReefSearch {
           font-family: var(--font-family, Inter, system-ui, sans-serif);
         }
         .input::placeholder {
-          color: #55555a;
+          color: #8a8a8f;
         }
 
         .hint {
           font-family: ui-monospace, monospace;
           font-size: 0.72rem;
-          color: #8a8a8f;
-          border: 1px solid var(--border-color, rgba(67,217,200,0.2));
-          border-radius: 6px;
-          padding: 0.15rem 0.5rem;
+          color: #a0a0a5;
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 10px;
+          padding: 0.2rem 0.6rem;
         }
 
         .results {
@@ -570,8 +728,8 @@ class ReefSearch {
           gap: 0.25rem;
           width: 100%;
           text-align: left;
-          padding: 0.8rem 0.75rem;
-          border-radius: var(--radius, 10px);
+          padding: 0.8rem 1rem;
+          border-radius: 16px;
           margin-top: 0.25rem;
           cursor: pointer;
           border: 0;
@@ -579,7 +737,7 @@ class ReefSearch {
           color: inherit;
         }
         .result:hover, .result.is-selected {
-          background: rgba(67,217,200,0.12);
+          background: rgba(255,255,255,0.08);
         }
         .result-type {
           display: flex;
@@ -599,19 +757,19 @@ class ReefSearch {
         .result-type-icon svg {
           width: 14px;
           height: 14px;
-          stroke: var(--primary-color, #43d9c8);
+          stroke: var(--primary-color, #66d9c8);
         }
         .result-type-label {
           font-family: ui-monospace, monospace;
           font-size: 0.7rem;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          color: var(--primary-color, #43d9c8);
+          color: var(--primary-color, #66d9c8);
         }
         .result .breadcrumb {
           font-family: ui-monospace, monospace;
           font-size: 0.75rem;
-          color: #8a8a8f;
+          color: #a0a0a5;
         }
         .result .heading {
           font-size: 0.95rem;
@@ -620,26 +778,26 @@ class ReefSearch {
         }
         .result .snippet {
           font-size: 0.85rem;
-          color: var(--text-color, #8a8a8f);
+          color: var(--text-color, #a0a0a5);
           line-height: 1.5;
         }
         .result mark {
-          background: rgba(67,217,200,0.22);
-          color: var(--primary-color, #43d9c8);
-          border-radius: 2px;
-          padding: 0 1px;
+          background: rgba(255,255,255,0.2);
+          color: var(--primary-color, #66d9c8);
+          border-radius: 4px;
+          padding: 0 2px;
         }
         .result-action-hint {
           font-size: 0.75rem;
           font-family: ui-monospace, monospace;
-          color: #55555a;
+          color: #8a8a8f;
           margin-top: 0.25rem;
         }
-        .result-action-hint.run-here { color: var(--primary-color, #43d9c8); }
-        .result-action-hint.go-there { color: #8a8a8f; }
+        .result-action-hint.run-here { color: var(--primary-color, #66d9c8); }
+        .result-action-hint.go-there { color: #a0a0a5; }
         .empty {
           padding: 2rem;
-          color: #55555a;
+          color: #8a8a8f;
           text-align: center;
           font-size: 0.9rem;
         }
@@ -648,15 +806,15 @@ class ReefSearch {
           justify-content: space-between;
           align-items: center;
           padding: 0.75rem 1rem;
-          border-top: 1px solid var(--border-color, rgba(67,217,200,0.15));
-          color: #55555a;
+          border-top: 1px solid rgba(255,255,255,0.08);
+          color: #a0a0a5;
           font-size: 0.75rem;
           font-family: ui-monospace, monospace;
         }
         .k {
-          border: 1px solid var(--border-color, rgba(67,217,200,0.2));
-          border-radius: 4px;
-          padding: 0.1rem 0.4rem;
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 8px;
+          padding: 0.15rem 0.5rem;
           margin: 0 0.2rem;
         }
         @media (prefers-reduced-motion: reduce) {
@@ -669,9 +827,9 @@ class ReefSearch {
           <input class="input" type="text" placeholder="${placeholder}" autocomplete="off" />
           <span class="hint">ESC</span>
         </div>
-        <div class="settings-row" style="padding:0.5rem 1rem;border-bottom:1px solid var(--border-color,rgba(67,217,200,0.15));font-size:0.75rem;color:var(--text-color,#8a8a8f);">
+        <div class="settings-row" style="padding:0.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08);font-size:0.75rem;color:#a0a0a5;">
           <label for="modeSelect">Mode:</label>
-          <select id="modeSelect" style="margin-left:0.5rem;background:transparent;border:1px solid var(--border-color,rgba(67,217,200,0.2));border-radius:4px;color:var(--text-color,#edebe6);font-family:ui-monospace,monospace;font-size:0.7rem;">
+          <select id="modeSelect" style="margin-left:0.5rem;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#edebe6;font-family:ui-monospace,monospace;font-size:0.7rem;">
             <option value="regular" ${currentMode === 'regular' ? 'selected' : ''}>Regular</option>
             <option value="opaque" ${currentMode === 'opaque' ? 'selected' : ''}>Opaque</option>
             <option value="high-contrast" ${currentMode === 'high-contrast' ? 'selected' : ''}>High Contrast</option>
@@ -698,16 +856,18 @@ class ReefSearch {
       this.searchDebounce = requestAnimationFrame(() => this.renderResults());
     });
 
-    this.input?.addEventListener('keydown', (event) => {
+this.input?.addEventListener('keydown', (event) => {
       const results = this.getVisibleResults();
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         if (results.length) this.selectedIndex = (this.selectedIndex + 1) % results.length;
         this.renderResults();
+          this.scrollSelectedIntoView();
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
         if (results.length) this.selectedIndex = (this.selectedIndex - 1 + results.length) % results.length;
         this.renderResults();
+          this.scrollSelectedIntoView();
       } else if (event.key === 'Enter') {
         event.preventDefault();
         const match = this.getVisibleResults()[this.selectedIndex];
@@ -739,7 +899,76 @@ class ReefSearch {
       }
     });
 
+    this.setupFocusTrap();
     this.handleDeferredActions();
+  }
+
+  private focusableElements: HTMLElement[] = [];
+
+  private setupFocusTrap(): void {
+    const focusInHandler = (event: FocusEvent) => {
+      if (!this.isOpen || !this.host) return;
+      
+      if (this.focusableElements.length === 0) {
+        this.focusableElements = this.getAllFocusableElements();
+      }
+
+      if (this.focusableElements.length === 0) return;
+
+      const first = this.focusableElements[0];
+      const last = this.focusableElements[this.focusableElements.length - 1];
+      const target = event.target as HTMLElement;
+
+      if (event.type === 'focusin' && target) {
+        if (!this.isElementInModal(target)) {
+          const activeElement = document.activeElement;
+          if (activeElement === first) {
+            last?.focus();
+          } else {
+            first?.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('focusin', focusInHandler);
+    
+    const originalClose = this.closeInternal.bind(this);
+    this.closeInternal = () => {
+      this.restoreBodyAriaHidden();
+      originalClose();
+    };
+  }
+
+  private getAllFocusableElements(): HTMLElement[] {
+    if (!this.host) return [];
+    const focusableSelectors = [
+      'button', 'input', 'select', 'textarea', 'a[href]', 
+      '[tabindex]:not([tabindex="-1"])', '[role="button"]'
+    ];
+    return Array.from(this.host.shadowRoot?.querySelectorAll(focusableSelectors.join(',')) ?? []) as HTMLElement[];
+  }
+
+  private isElementInModal(element: HTMLElement): boolean {
+    if (!this.host) return false;
+    return element.closest('.reef-host') === this.host;
+  }
+
+  private applyAriaHidden(): void {
+    if (!this.host) return;
+    document.body.setAttribute('aria-hidden', 'true');
+    const mainContent = document.querySelector('main, [role="main"], body > *:not(.reef-host)');
+    if (mainContent) {
+      mainContent.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  private restoreBodyAriaHidden(): void {
+    document.body.removeAttribute('aria-hidden');
+    const mainContent = document.querySelector('main, [role="main"], body > *:not(.reef-host)');
+    if (mainContent) {
+      mainContent.removeAttribute('aria-hidden');
+    }
   }
 
   private getVisibleResults(): IndexRecord[] {
@@ -823,6 +1052,7 @@ class ReefSearch {
         button.addEventListener('mouseenter', () => {
           this.selectedIndex = Number(button.getAttribute('data-index')) ?? 0;
           this.renderResults();
+           
         });
         button.addEventListener('click', (event) => {
           event.preventDefault();
@@ -1326,6 +1556,77 @@ public getPopularQueries(n: number = 10): string[] {
         }
       }
       resolve([]);
+    });
+  }
+
+  public act(recordId: string): Promise<{ success: boolean; reason?: string }> {
+    return new Promise((resolve) => {
+      const record = this.index.allSections.find(r => r.id === recordId);
+      if (!record) {
+        resolve({ success: false, reason: 'not-found' });
+        return;
+      }
+
+      if (record.type === 'action' && record.destructive && this.config.actionsMode !== 'execute') {
+        resolve({ success: false, reason: 'blocked-destructive' });
+        return;
+      }
+
+      try {
+        this.executeAction(record);
+        resolve({ success: true });
+      } catch (error) {
+        console.error('[reef] act() error:', error);
+        resolve({ success: false, reason: 'error' });
+      }
+    });
+  }
+
+  public fillField(recordId: string, value: string): Promise<{ success: boolean; reason?: string }> {
+    return new Promise((resolve) => {
+      const record = this.index.allSections.find(r => r.id === recordId);
+      if (!record) {
+        resolve({ success: false, reason: 'not-found' });
+        return;
+      }
+
+      if (record.type !== 'field') {
+        resolve({ success: false, reason: 'not-a-field' });
+        return;
+      }
+
+      if (!record.selector) {
+        resolve({ success: false, reason: 'no-selector' });
+        return;
+      }
+
+      try {
+        const element = document.querySelector(record.selector);
+        if (!element) {
+          resolve({ success: false, reason: 'element-not-found' });
+          return;
+        }
+
+        const inputElement = element as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+        
+        // Use native setter with event dispatch for React/Vue compatibility
+        const descriptor = Object.getOwnPropertyDescriptor(inputElement, 'value');
+        if (descriptor && descriptor.set) {
+          descriptor.set.call(inputElement, value);
+        } else {
+          inputElement.value = value;
+        }
+
+        const event = new Event('input', { bubbles: true });
+        inputElement.dispatchEvent(event);
+        const changeEvent = new Event('change', { bubbles: true });
+        inputElement.dispatchEvent(changeEvent);
+
+        resolve({ success: true });
+      } catch (error) {
+        console.error('[reef] fillField() error:', error);
+        resolve({ success: false, reason: 'error' });
+      }
     });
   }
 

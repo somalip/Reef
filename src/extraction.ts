@@ -178,7 +178,7 @@ export function isDestructiveAction(label: string): boolean {
   return destructiveVerbs.some(verb => lowerLabel.includes(verb));
 }
 
-export function extractActions(html: string, url: string): IndexRecord[] {
+export function extractActions(html: string, url: string, excludeSelectors?: string): IndexRecord[] {
   const actions: IndexRecord[] = [];
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
@@ -194,6 +194,8 @@ export function extractActions(html: string, url: string): IndexRecord[] {
   const elements = Array.from(doc.querySelectorAll(selectors.join(',')));
 
   for (const element of elements) {
+    if (excludeSelectors && element.matches(excludeSelectors)) continue;
+
     const label = extractActionName(element);
     if (!label) continue;
 
@@ -292,6 +294,16 @@ export function extractFields(html: string, url: string): IndexRecord[] {
   return fields;
 }
 
+export function extractHiddenContent(doc: Document): void {
+  doc.querySelectorAll('details').forEach(d => {
+    if (!d.hasAttribute('open')) d.setAttribute('data-reef-was-closed', 'true');
+    d.setAttribute('open', '');
+  });
+  doc.querySelectorAll('[aria-hidden="false"]').forEach(el => {
+    el.removeAttribute('aria-hidden');
+  });
+}
+
 export function extractLinks(html: string, url: string): IndexRecord[] {
   const links: IndexRecord[] = [];
   const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -299,6 +311,8 @@ export function extractLinks(html: string, url: string): IndexRecord[] {
   const anchors = Array.from(doc.querySelectorAll('a[href]'));
 
   for (const anchor of anchors) {
+    if (anchor.hasAttribute('rel') && anchor.getAttribute('rel')?.toLowerCase().includes('nofollow')) continue;
+
     const href = anchor.getAttribute('href');
     if (!href) continue;
 
@@ -326,11 +340,12 @@ export function extractLinks(html: string, url: string): IndexRecord[] {
   return links;
 }
 
-export function extractFiles(html: string, url: string): IndexRecord[] {
+export function extractFiles(html: string, url: string, extensions?: string): IndexRecord[] {
   const files: IndexRecord[] = [];
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
-  const fileExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'csv'];
+  const fileExtensions = extensions?.split(',').map(e => e.trim().toLowerCase()) ??
+    ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'csv'];
 
   const anchors = Array.from(doc.querySelectorAll('a[href]'));
 

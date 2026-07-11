@@ -34,12 +34,19 @@ export interface SearchOptions {
   scoringAlgorithm?: 'reef-classic' | 'bm25';
   filter?: (record: IndexRecord) => boolean;
   sortFn?: (a: ScoredRecord, b: ScoredRecord) => number;
+  typeWeights?: Partial<Record<IndexRecord['type'], number>>;
 }
 
 export interface MatchSpan {
   key: string;
   start: number;
   end: number;
+}
+
+export interface CacheMetadata {
+  versionHash: string;
+  buildTime: number;
+  pageMetadata: Record<string, string>;
 }
 
 export type TokenFilter = (token: string) => string | null;
@@ -78,4 +85,5 @@ export interface ReefConfig {
   synonyms?: Record<string, string[]>;
   prebuiltIndexUrl?: string;
   useWorkerIndexing?: boolean;
+  ttl?: number;
 }

@@ -38,5 +38,6 @@ export {
   extractFiles,
   extractMedia,
   extractStructuredData,
+  extractHiddenContent,
   resolveUrl,
 } from './extraction.js';
