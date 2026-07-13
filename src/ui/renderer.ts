@@ -15,15 +15,28 @@ export class UIRenderer {
   private isOpen = false;
   private modeChangeCallback: ((mode: string) => void) | null = null;
 
+  private activeCategory = 'all';
+  private categoryChangeCallback: ((category: string) => void) | null = null;
+  private settingsChangeCallback: ((key: string, value: any) => void) | null = null;
+  private rebuildIndexCallback: (() => void) | null = null;
+  private toggleInspectorCallback: ((active: boolean) => void) | null = null;
+  private isSettingsOpen = false;
+
   getHost(): HTMLDivElement | null { return this.host; }
   getRoot(): ShadowRoot | null { return this.root; }
   getInput(): HTMLInputElement | null { return this.input; }
   getResultsList(): HTMLElement | null { return this.resultsList; }
   getIsOpen(): boolean { return this.isOpen; }
   getFocusableElements(): HTMLElement[] { return this.focusableElements; }
+  getActiveCategory(): string { return this.activeCategory; }
 
   setIsOpen(open: boolean): void { this.isOpen = open; }
   clearFocusableElements(): void { this.focusableElements = []; }
+
+  setCategoryCallback(cb: (cat: string) => void): void { this.categoryChangeCallback = cb; }
+  setSettingsCallback(cb: (key: string, val: any) => void): void { this.settingsChangeCallback = cb; }
+  setRebuildIndexCallback(cb: () => void): void { this.rebuildIndexCallback = cb; }
+  setToggleInspectorCallback(cb: (active: boolean) => void): void { this.toggleInspectorCallback = cb; }
 
   renderUI(
     placeholder: string,
@@ -89,6 +102,7 @@ export class UIRenderer {
           overflow: hidden;
           transform: translateY(-8px) scale(0.98);
           transition: transform 0.14s ease;
+          position: relative;
         }
         :host(.open) .panel { transform: translateY(0) scale(1); }
 
@@ -126,6 +140,73 @@ export class UIRenderer {
           border: 1px solid rgba(255,255,255,0.15);
           border-radius: 10px;
           padding: 0.2rem 0.6rem;
+        }
+
+        .settings-toggle-btn {
+          background: transparent;
+          border: 0;
+          cursor: pointer;
+          color: var(--text-color, #edebe6);
+          opacity: 0.6;
+          display: flex;
+          align-items: center;
+          padding: 0.25rem;
+          border-radius: 6px;
+          transition: opacity 0.15s, background-color 0.15s;
+        }
+        .settings-toggle-btn:hover {
+          opacity: 1;
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .tabs-row {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.6rem 1rem;
+          border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .tabs-row::-webkit-scrollbar {
+          display: none;
+        }
+        .tab-chip {
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 9999px;
+          padding: 0.3rem 0.75rem;
+          font-size: 0.75rem;
+          color: var(--text-color, #edebe6);
+          opacity: 0.8;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.15s ease;
+        }
+        .tab-chip:hover {
+          background: rgba(255, 255, 255, 0.08);
+          opacity: 1;
+        }
+        .tab-chip.active {
+          background: var(--primary-color, #66d9c8);
+          color: #0c1412;
+          opacity: 1;
+          font-weight: 500;
+          border-color: var(--primary-color, #66d9c8);
+        }
+        .tab-chip.active .tab-badge {
+          background: rgba(0, 0, 0, 0.15);
+          color: inherit;
+        }
+        .tab-badge {
+          font-size: 0.65rem;
+          background: rgba(255, 255, 255, 0.1);
+          color: #a0a0a5;
+          padding: 0.05rem 0.35rem;
+          border-radius: 9999px;
         }
 
         .results {
@@ -229,6 +310,125 @@ export class UIRenderer {
           padding: 0.15rem 0.5rem;
           margin: 0 0.2rem;
         }
+
+        .is-hidden { display: none !important; }
+        
+        .settings-view {
+          padding: 1.25rem;
+          max-height: 380px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+        }
+
+        .settings-section {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .settings-section h4 {
+          margin: 0;
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--primary-color, #66d9c8);
+          font-family: ui-monospace, monospace;
+        }
+
+        .settings-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.75rem;
+        }
+
+        .settings-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+        }
+
+        .settings-item label {
+          font-size: 0.75rem;
+          color: #a0a0a5;
+        }
+
+        .settings-control {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 8px;
+          color: var(--text-color, #edebe6);
+          padding: 0.4rem 0.6rem;
+          font-size: 0.8rem;
+          font-family: inherit;
+          outline: none;
+          transition: border-color 0.15s ease;
+        }
+
+        .settings-control:focus {
+          border-color: var(--primary-color, #66d9c8);
+        }
+
+        .checkbox-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.8rem;
+          cursor: pointer;
+        }
+
+        .checkbox-item input {
+          cursor: pointer;
+          accent-color: var(--primary-color, #66d9c8);
+        }
+
+        .btn-action {
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: var(--text-color, #edebe6);
+          padding: 0.45rem 0.75rem;
+          border-radius: 8px;
+          font-size: 0.8rem;
+          cursor: pointer;
+          font-family: inherit;
+          transition: all 0.15s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.35rem;
+        }
+
+        .btn-action:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-primary-action {
+          background: var(--primary-color, #66d9c8);
+          border-color: var(--primary-color, #66d9c8);
+          color: #0c1412;
+          font-weight: 500;
+        }
+
+        .btn-primary-action:hover {
+          background: var(--primary-color, #66d9c8);
+          opacity: 0.9;
+        }
+
+        .diagnostic-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.75rem;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          padding-bottom: 0.35rem;
+        }
+
+        .diagnostic-value {
+          font-family: ui-monospace, monospace;
+          color: var(--primary-color, #66d9c8);
+        }
+
         @media (prefers-reduced-motion: reduce) {
           :host, .panel { transition: none; }
         }
@@ -238,27 +438,190 @@ export class UIRenderer {
           <svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <input class="input" type="text" placeholder="${placeholder}" autocomplete="off" />
           <span class="hint">ESC</span>
+          <button class="settings-toggle-btn" type="button" aria-label="Toggle settings">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </button>
         </div>
-        <div class="settings-row" style="padding:0.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08);font-size:0.75rem;color:#a0a0a5;">
-          <label for="modeSelect">Mode:</label>
-          <select id="modeSelect" style="margin-left:0.5rem;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#edebe6;font-family:ui-monospace,monospace;font-size:0.7rem;">
-            <option value="regular" ${currentMode === 'regular' ? 'selected' : ''}>Regular</option>
-            <option value="opaque" ${currentMode === 'opaque' ? 'selected' : ''}>Opaque</option>
-            <option value="high-contrast" ${currentMode === 'high-contrast' ? 'selected' : ''}>High Contrast</option>
-          </select>
+
+        <!-- MAIN VIEW (TABS + RESULTS + FOOTER) -->
+        <div class="main-content-view">
+          <div class="tabs-row">
+            <button class="tab-chip active" type="button" data-cat="all">All <span class="tab-badge" id="badge-all">0</span></button>
+            <button class="tab-chip" type="button" data-cat="pages">Pages <span class="tab-badge" id="badge-pages">0</span></button>
+            <button class="tab-chip" type="button" data-cat="actions">Actions <span class="tab-badge" id="badge-actions">0</span></button>
+            <button class="tab-chip" type="button" data-cat="files">Files <span class="tab-badge" id="badge-files">0</span></button>
+            <button class="tab-chip" type="button" data-cat="links">Links <span class="tab-badge" id="badge-links">0</span></button>
+          </div>
+          <div class="results" aria-live="polite"></div>
+          <div class="footer"><span><span class="k">↑↓</span> navigate <span class="k">↵</span> open</span><span id="count"></span></div>
         </div>
-        <div class="results" aria-live="polite"></div>
-        <div class="footer"><span><span class="k">↑↓</span> navigate <span class="k">↵</span> open</span><span id="count"></span></div>
+
+        <!-- SETTINGS VIEW (HIDDEN BY DEFAULT) -->
+        <div class="settings-view is-hidden">
+          <div class="settings-section">
+            <h4>User Preferences</h4>
+            <div class="settings-grid">
+              <div class="settings-item">
+                <label for="themeControl">Theme</label>
+                <select id="themeControl" class="settings-control">
+                  <option value="auto">Auto (System)</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </div>
+              <div class="settings-item">
+                <label for="modeControl">Search Mode</label>
+                <select id="modeControl" class="settings-control">
+                  <option value="regular">Regular</option>
+                  <option value="opaque">Opaque</option>
+                  <option value="high-contrast">High Contrast</option>
+                </select>
+              </div>
+              <div class="settings-item">
+                <label for="hotkeyControl">Keyboard Shortcut</label>
+                <select id="hotkeyControl" class="settings-control">
+                  <option value="ctrlk,cmdk">Cmd/Ctrl + K</option>
+                  <option value="altk">Alt + K</option>
+                  <option value="ctrlshiftk">Ctrl + Shift + K</option>
+                  <option value="f">Ctrl + F</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4>Developer & Agent Settings</h4>
+            <div style="display:flex;flex-direction:column;gap:0.5rem;">
+              <label class="checkbox-item">
+                <input type="checkbox" id="agentInspectorToggle" />
+                <span>Enable Visual AI Agent Inspector</span>
+              </label>
+              <div class="settings-grid" style="margin-top:0.25rem;">
+                <div class="settings-item">
+                  <label for="actionsModeControl">Action Mode</label>
+                  <select id="actionsModeControl" class="settings-control">
+                    <option value="execute">Execute (Interactive)</option>
+                    <option value="navigate-only">Navigate only (Safe)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4>Diagnostics & Actions</h4>
+            <div style="display:flex;flex-direction:column;gap:0.5rem;">
+              <div class="diagnostic-row">
+                <span>Pages Indexed:</span>
+                <span class="diagnostic-value" id="diagPagesCount">0</span>
+              </div>
+              <div class="diagnostic-row">
+                <span>Interactive Elements:</span>
+                <span class="diagnostic-value" id="diagInteractiveCount">0</span>
+              </div>
+              <div class="diagnostic-row">
+                <span>Files / Downloads:</span>
+                <span class="diagnostic-value" id="diagFilesCount">0</span>
+              </div>
+              <div style="display:flex;gap:0.5rem;margin-top:0.25rem;">
+                <button type="button" class="btn-action" id="btnCopyConfig">Copy Config JSON</button>
+                <button type="button" class="btn-action btn-primary-action" id="btnRebuildIndex">Rebuild Index</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     `;
 
     this.input = shadow.querySelector('input') as HTMLInputElement | null;
     this.resultsList = shadow.querySelector('.results') as HTMLElement | null;
 
-    const modeSelect = shadow.querySelector('#modeSelect') as HTMLSelectElement | null;
-    modeSelect?.addEventListener('change', (e) => {
-      const mode = (e.target as HTMLSelectElement).value as 'regular' | 'opaque' | 'high-contrast';
-      this.modeChangeCallback?.(mode);
+    // Toggle Settings View
+    const settingsToggle = shadow.querySelector('.settings-toggle-btn') as HTMLElement | null;
+    const mainView = shadow.querySelector('.main-content-view') as HTMLElement | null;
+    const settingsView = shadow.querySelector('.settings-view') as HTMLElement | null;
+
+    settingsToggle?.addEventListener('click', () => {
+      this.isSettingsOpen = !this.isSettingsOpen;
+      if (this.isSettingsOpen) {
+        mainView?.classList.add('is-hidden');
+        settingsView?.classList.remove('is-hidden');
+        settingsToggle.style.opacity = '1';
+        settingsToggle.style.stroke = 'var(--primary-color)';
+      } else {
+        settingsView?.classList.add('is-hidden');
+        mainView?.classList.remove('is-hidden');
+        settingsToggle.style.opacity = '';
+        settingsToggle.style.stroke = '';
+        this.input?.focus();
+      }
+    });
+
+    // Category Tabs Event Listeners
+    const tabs = shadow.querySelectorAll('.tab-chip');
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        this.activeCategory = tab.getAttribute('data-cat') || 'all';
+        this.categoryChangeCallback?.(this.activeCategory);
+      });
+    });
+
+    // Controls Event Handlers
+    const themeControl = shadow.querySelector('#themeControl') as HTMLSelectElement | null;
+    themeControl?.addEventListener('change', () => {
+      this.settingsChangeCallback?.('theme', themeControl.value);
+    });
+
+    const modeControl = shadow.querySelector('#modeControl') as HTMLSelectElement | null;
+    modeControl?.addEventListener('change', () => {
+      this.settingsChangeCallback?.('mode', modeControl.value);
+    });
+
+    const hotkeyControl = shadow.querySelector('#hotkeyControl') as HTMLSelectElement | null;
+    hotkeyControl?.addEventListener('change', () => {
+      this.settingsChangeCallback?.('hotkey', hotkeyControl.value);
+    });
+
+    const actionsModeControl = shadow.querySelector('#actionsModeControl') as HTMLSelectElement | null;
+    actionsModeControl?.addEventListener('change', () => {
+      this.settingsChangeCallback?.('actionsMode', actionsModeControl.value);
+    });
+
+    const agentInspectorToggle = shadow.querySelector('#agentInspectorToggle') as HTMLInputElement | null;
+    agentInspectorToggle?.addEventListener('change', () => {
+      this.toggleInspectorCallback?.(!!agentInspectorToggle.checked);
+    });
+
+    const btnRebuildIndex = shadow.querySelector('#btnRebuildIndex') as HTMLButtonElement | null;
+    btnRebuildIndex?.addEventListener('click', () => {
+      btnRebuildIndex.disabled = true;
+      const originalText = btnRebuildIndex.textContent;
+      btnRebuildIndex.textContent = 'Rebuilding...';
+      this.rebuildIndexCallback?.();
+      setTimeout(() => {
+        btnRebuildIndex.disabled = false;
+        btnRebuildIndex.textContent = originalText;
+      }, 1000);
+    });
+
+    const btnCopyConfig = shadow.querySelector('#btnCopyConfig') as HTMLButtonElement | null;
+    btnCopyConfig?.addEventListener('click', () => {
+      const config = {
+        theme: themeControl?.value || 'auto',
+        mode: modeControl?.value || 'regular',
+        hotkey: hotkeyControl?.value || 'ctrlk,cmdk',
+        actionsMode: actionsModeControl?.value || 'execute',
+      };
+      const json = JSON.stringify(config, null, 2);
+      navigator.clipboard.writeText(json).then(() => {
+        const originalText = btnCopyConfig.textContent;
+        btnCopyConfig.textContent = 'Copied!';
+        setTimeout(() => {
+          btnCopyConfig.textContent = originalText;
+        }, 1500);
+      });
     });
   }
 
@@ -447,5 +810,41 @@ export class UIRenderer {
         document.body.removeChild(toast);
       }, 300);
     }, 2000);
+  }
+
+  updateDiagnostics(data: { pages: number; interactive: number; files: number }): void {
+    if (!this.root) return;
+    const diagPages = this.root.querySelector('#diagPagesCount');
+    const diagInteractive = this.root.querySelector('#diagInteractiveCount');
+    const diagFiles = this.root.querySelector('#diagFilesCount');
+
+    if (diagPages) diagPages.textContent = String(data.pages);
+    if (diagInteractive) diagInteractive.textContent = String(data.interactive);
+    if (diagFiles) diagFiles.textContent = String(data.files);
+  }
+
+  updateCategoryBadges(counts: Record<string, number>): void {
+    if (!this.root) return;
+    for (const [cat, count] of Object.entries(counts)) {
+      const badge = this.root.querySelector(`#badge-${cat}`);
+      if (badge) {
+        badge.textContent = String(count);
+      }
+    }
+  }
+
+  updateSettingsValues(config: { theme: string; mode: string; hotkey: string; actionsMode: string; inspectorActive: boolean }): void {
+    if (!this.root) return;
+    const themeControl = this.root.querySelector('#themeControl') as HTMLSelectElement | null;
+    const modeControl = this.root.querySelector('#modeControl') as HTMLSelectElement | null;
+    const hotkeyControl = this.root.querySelector('#hotkeyControl') as HTMLSelectElement | null;
+    const actionsModeControl = this.root.querySelector('#actionsModeControl') as HTMLSelectElement | null;
+    const agentInspectorToggle = this.root.querySelector('#agentInspectorToggle') as HTMLInputElement | null;
+
+    if (themeControl) themeControl.value = config.theme || 'auto';
+    if (modeControl) modeControl.value = config.mode || 'regular';
+    if (hotkeyControl) hotkeyControl.value = config.hotkey || 'ctrlk,cmdk';
+    if (actionsModeControl) actionsModeControl.value = config.actionsMode || 'execute';
+    if (agentInspectorToggle) agentInspectorToggle.checked = config.inspectorActive;
   }
 }

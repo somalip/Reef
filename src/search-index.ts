@@ -938,4 +938,4 @@ export function getPopularQueries(index: SearchIndex, n: number = 5): string[] {
     .map(([q]) => q);
 }
 
-export { IndexRecord };
+export type { IndexRecord, TokenFilter };

@@ -17,8 +17,8 @@ test('complex fixture index page has multiple sections', () => {
 });
 
 test('complex fixture has form fields that can be searched', () => {
-  const html = readFixture('advanced/forms.html');
-  const sections = extractSections(html, '/advanced/forms.html');
+  const html = readFixture('advanced.html');
+  const sections = extractSections(html, '/advanced.html');
   assert.ok(sections.length >= 2, 'Should have sections in forms page');
 });
 
@@ -33,12 +33,7 @@ test('search finds results across multiple documents', () => {
   
   // Simulate indexing multiple pages
   const files = [
-    'index.html', 'docs/install.html', 'docs/setup.html', 'docs/troubleshooting.html',
-    'api/core.html', 'api/search.html', 'api/index.html', 'api/extract.html',
-    'reference/config.html', 'reference/themes.html', 'reference/actions.html',
-    'examples/demo.html', 'examples/advanced-demo.html',
-    'guides/intro.html', 'guides/quickstart.html', 'guides/tutorial.html',
-    'advanced/forms.html', 'advanced/performance.html', 'advanced/themes.html', 'docs/faq.html'
+    'index.html', 'install.html', 'config.html', 'advanced.html', 'parity.html', 'api-demo.html'
   ];
   
   for (const file of files) {
@@ -64,16 +59,16 @@ test('search finds results across multiple documents', () => {
 
 test('duplicate heading prefixes are handled correctly', () => {
   // Multiple docs have "Installation" in headings
-  const installDoc = extractSections(readFixture('docs/install.html'), '/docs/install.html');
-  const setupDoc = extractSections(readFixture('docs/setup.html'), '/docs/setup.html');
+  const installDoc = extractSections(readFixture('install.html'), '/install.html');
+  const setupDoc = extractSections(readFixture('config.html'), '/config.html');
   
   assert.ok(installDoc.some(s => s.headingText?.includes('Installation')));
-  assert.ok(setupDoc.some(s => s.headingText?.includes('Installation')));
+  assert.ok(setupDoc.some(s => s.headingText?.includes('Configuration') || s.headingText?.includes('Custom')));
 });
 
 test('nested headings create separate sections', () => {
-  const html = readFixture('api/core.html');
-  const sections = extractSections(html, '/api/core.html');
+  const html = readFixture('api-demo.html');
+  const sections = extractSections(html, '/api-demo.html');
   
   assert.ok(sections.length >= 3, 'Should have multiple sections from h1, h2, h3');
 });

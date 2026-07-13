@@ -3,7 +3,7 @@
  * Parses data attributes and builds configuration objects for the search.
  */
 
-import type { ReefConfig, TokenFilter } from '../types.js';
+import type { IndexRecord, ReefConfig, TokenFilter } from '../types.js';
 
 export class ConfigReader {
   static readConfig(): ReefConfig {
@@ -83,7 +83,7 @@ export class ConfigReader {
 }
 
 export class ConfigApplier {
-  applyConfigToUI(host: HTMLDivElement, config: ReefConfig & { mode?: string }): void {
+  static applyConfigToUI(host: HTMLDivElement, config: ReefConfig & { mode?: string }): void {
     const cfg = config;
     host.style.setProperty('--primary-color', cfg.primaryColor ?? '#66d9c8');
     host.style.setProperty('--secondary-color', cfg.secondaryColor ?? '#ff8562');

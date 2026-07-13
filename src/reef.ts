@@ -1,10 +1,5 @@
-/**
- * @file Main ReefSearch class implementation.
- * Provides modal search UI, content indexing, and navigation functionality.
- */
-
 import { searchSections, addToIndex, createSearchIndex, getAllSections, findClosestWord, suggest, facets, trackQuery, getPopularQueries, type IndexRecord, type ScoredRecord, type SearchOptions } from './search.js';
-import { UIRenderer } from './ui/index.js';
+import { UIRenderer, VisualInspector } from './ui/index.js';
 import { Indexer } from './indexing/index.js';
 import { ActionExecutor } from './actions/index.js';
 import { ConfigReader, ConfigApplier } from './config/config-reader.js';
@@ -16,6 +11,7 @@ class ReefSearch {
   private ui: UIRenderer;
   private indexer: Indexer;
   private executor: ActionExecutor;
+  private inspector = new VisualInspector();
   private selectCallback: ((result: IndexRecord) => void) | null = null;
   private hotkeyHandler: ((event: KeyboardEvent) => void) | null = null;
   private currentQuery = '';
@@ -28,6 +24,35 @@ class ReefSearch {
     this.ui = new UIRenderer();
     this.executor = new ActionExecutor();
     
+    // Set up category tab callback
+    this.ui.setCategoryCallback(() => {
+      this.selectedIndex = 0;
+      this.renderResults();
+    });
+
+    // Set up settings callbacks
+    this.ui.setSettingsCallback((key, val) => {
+      if (key === 'theme') {
+        this.setTheme(val as 'light' | 'dark' | 'auto');
+      } else if (key === 'mode') {
+        this.setMode(val as 'regular' | 'opaque' | 'high-contrast');
+      } else if (key === 'hotkey') {
+        this.setHotkey(val as string);
+      } else if (key === 'actionsMode') {
+        this.config.actionsMode = val as 'execute' | 'navigate-only';
+      }
+    });
+
+    this.ui.setRebuildIndexCallback(() => {
+      void this.rebuildIndex().then(() => {
+        this.updateDiagnosticsAndBadges();
+      });
+    });
+
+    this.ui.setToggleInspectorCallback((active) => {
+      this.toggleInspector(active);
+    });
+
     if (!this.config.headless) {
       this.renderUI();
       this.registerHotkey();
@@ -79,6 +104,21 @@ class ReefSearch {
       } else if (event.key === 'Escape') {
         event.preventDefault();
         this.close();
+      } else if (event.key === 'Tab') {
+        event.preventDefault();
+        const categories = ['all', 'pages', 'actions', 'files', 'links'];
+        const currentCat = this.ui.getActiveCategory();
+        const idx = categories.indexOf(currentCat);
+        const nextIdx = event.shiftKey
+          ? (idx - 1 + categories.length) % categories.length
+          : (idx + 1) % categories.length;
+        const nextCat = categories[nextIdx];
+        
+        // Update active tab chip
+        const tabEl = this.ui.getRoot()?.querySelector(`.tab-chip[data-cat="${nextCat}"]`) as HTMLElement | null;
+        if (tabEl) {
+          tabEl.click();
+        }
       }
     });
 
@@ -106,6 +146,8 @@ class ReefSearch {
   private async boot() {
     await this.indexer.boot(() => this.callOnReady());
     this.index = this.indexer.getIndex();
+    this.inspector.setRecords(this.index.allSections);
+    this.updateDiagnosticsAndBadges();
   }
 
   private callOnReady(): void {
@@ -118,8 +160,44 @@ class ReefSearch {
     }
   }
 
+  private updateDiagnosticsAndBadges() {
+    const all = this.index.allSections;
+    const pages = all.filter(r => r.type === 'section' || r.type === 'structured').length;
+    const interactive = all.filter(r => r.type === 'action' || r.type === 'field').length;
+    const files = all.filter(r => r.type === 'file').length;
+    const links = all.filter(r => r.type === 'link' || r.type === 'media').length;
+
+    this.ui.updateDiagnostics({
+      pages: all.filter(r => r.type === 'section').length,
+      interactive,
+      files
+    });
+
+    this.ui.updateCategoryBadges({
+      all: all.length,
+      pages,
+      actions: interactive,
+      files,
+      links
+    });
+  }
+
   private getVisibleResults(): IndexRecord[] {
-    return searchSections(this.currentQuery, this.index, 8) as IndexRecord[];
+    const rawResults = searchSections(this.currentQuery, this.index, 100) as IndexRecord[];
+    const category = this.ui.getActiveCategory();
+
+    let filtered = rawResults;
+    if (category === 'pages') {
+      filtered = rawResults.filter(r => r.type === 'section' || r.type === 'structured');
+    } else if (category === 'actions') {
+      filtered = rawResults.filter(r => r.type === 'action' || r.type === 'field');
+    } else if (category === 'files') {
+      filtered = rawResults.filter(r => r.type === 'file');
+    } else if (category === 'links') {
+      filtered = rawResults.filter(r => r.type === 'link' || r.type === 'media');
+    }
+
+    return filtered.slice(0, 8);
   }
 
   private renderResults() {
@@ -201,6 +279,14 @@ class ReefSearch {
     this.ui.getHost()?.classList.remove('is-hidden');
     this.ui.getHost()?.classList.add('open');
     this.applyConfigToUI();
+    this.ui.updateSettingsValues({
+      theme: this.config.theme || 'auto',
+      mode: this.config.mode || 'regular',
+      hotkey: this.config.hotkey || 'ctrlk,cmdk',
+      actionsMode: this.config.actionsMode || 'execute',
+      inspectorActive: this.inspector.isActive()
+    });
+    this.updateDiagnosticsAndBadges();
     this.ui.getInput()?.focus();
     this.ui.applyAriaHidden();
     this.renderResults();
@@ -487,7 +573,31 @@ class ReefSearch {
       }
     });
   }
+
+  public getInteractiveRecords(): IndexRecord[] {
+    return this.index.allSections.filter(r => r.type === 'action' || r.type === 'field');
+  }
+
+  public getAgentTools(): Array<{ name: string; description: string; type: string; selector?: string; id: string }> {
+    return this.getInteractiveRecords().map(r => ({
+      name: r.headingText || r.label || r.id,
+      description: r.bodyText || '',
+      type: r.type,
+      selector: r.selector,
+      id: r.id
+    }));
+  }
+
+  public toggleInspector(force?: boolean): void {
+    const shouldActive = typeof force === 'boolean' ? force : !this.inspector.isActive();
+    if (shouldActive) {
+      this.inspector.activate();
+    } else {
+      this.inspector.deactivate();
+    }
+  }
 }
+
 
 export { ReefSearch };
 export default ReefSearch;
