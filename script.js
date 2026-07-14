@@ -424,3 +424,51 @@ var order = ['Reef', 'Fuse.js', 'MiniSearch', 'uFuzzy', 'FlexSearch', 'Lunr.js',
   renderChips();
   renderMatrix();
 })();
+
+/* HOW.html modal - fetch and render HTML */
+(function() {
+  var howModal = document.getElementById('howModal');
+  var howContent = document.getElementById('howContent');
+  var howClose = document.querySelector('.how-close');
+  var howPageLink = document.getElementById('howPageLink');
+  
+  if (!howModal || !howContent) return;
+  
+  function openHowPage() {
+    howModal.classList.add('open');
+    howModal.classList.remove('is-hidden');
+    document.body.style.overflow = 'hidden';
+    howContent.innerHTML = '<div class="how-loading">Loading...</div>';
+    fetch('HOW.html')
+      .then(function(r) { return r.text(); })
+      .then(function(html) { howContent.innerHTML = html; })
+      .catch(function(e) { howContent.innerHTML = '<p class="how-error">Failed to load HOW.html: ' + e.message + '</p>'; });
+  }
+  
+  function closeHowPage() {
+    howModal.classList.remove('open');
+    howModal.classList.add('is-hidden');
+    document.body.style.overflow = '';
+  }
+  
+  if (howClose) {
+    howClose.addEventListener('click', closeHowPage);
+  }
+  
+  howModal.addEventListener('click', function(e) {
+    if (e.target === howModal) closeHowPage();
+  });
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && howModal.classList.contains('open')) {
+      closeHowPage();
+    }
+  });
+  
+  if (howPageLink) {
+    howPageLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      openHowPage();
+    });
+  }
+})();
