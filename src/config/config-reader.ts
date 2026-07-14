@@ -6,10 +6,75 @@
 import type { IndexRecord, ReefConfig, TokenFilter } from '../types.js';
 
 export class ConfigReader {
-  static readConfig(): ReefConfig {
-    const script = document.currentScript as HTMLScriptElement | null;
-    const dataset = script?.dataset ?? {};
+  private static pendingConfig: Partial<ReefConfig> | null = null;
 
+  static setConfig(config: Partial<ReefConfig>): void {
+    this.pendingConfig = config;
+  }
+
+  static readConfig(): ReefConfig {
+    if (this.pendingConfig) {
+      const config = this.pendingConfig;
+      this.pendingConfig = null;
+      return this.mergeWithDefaults(config);
+    }
+
+    if (typeof document === 'undefined') {
+      return this.getDefaultConfig();
+    }
+
+    const script = document.currentScript as HTMLScriptElement | null;
+    const dataset = script?.dataset;
+
+    if (!dataset) {
+      return this.getDefaultConfig();
+    }
+
+    const datasetRecord: Record<string, string> = {};
+    for (const key in dataset) {
+      const value = dataset[key];
+      if (value !== undefined) {
+        datasetRecord[key] = value;
+      }
+    }
+
+    return this.parseDataset(datasetRecord);
+  }
+
+  private static getDefaultConfig(): ReefConfig {
+    return {
+      sitemap: '/sitemap.xml',
+      maxPages: 500,
+      scope: undefined,
+      indexActions: true,
+      indexMedia: true,
+      indexStructuredData: true,
+      indexHidden: true,
+      fileExtensions: undefined,
+      excludeAction: undefined,
+      actionsMode: 'execute',
+      primaryColor: undefined,
+      secondaryColor: undefined,
+      backgroundColor: undefined,
+      textColor: undefined,
+      borderColor: undefined,
+      radius: 24,
+      theme: undefined,
+      fontFamily: undefined,
+      mode: 'opaque',
+      hotkey: undefined,
+      placeholder: undefined,
+      headless: false,
+      onReady: undefined,
+      tokenizePipeline: undefined,
+      synonyms: undefined,
+      prebuiltIndexUrl: undefined,
+      useWorkerIndexing: false,
+      ttl: undefined,
+    };
+  }
+
+  private static parseDataset(dataset: Record<string, string>): ReefConfig {
     let tokenizePipeline: TokenFilter[] | undefined = undefined;
     if (dataset.stemming === 'true' || dataset.stopwords === 'true' || dataset.diacritics === 'true') {
       const pipeline: TokenFilter[] = [];
@@ -78,6 +143,39 @@ export class ConfigReader {
       prebuiltIndexUrl: dataset.prebuiltIndexUrl,
       useWorkerIndexing: dataset.useWorkerIndexing === 'true',
       ttl: dataset.ttl ? Number(dataset.ttl) : undefined,
+    };
+  }
+
+  private static mergeWithDefaults(overrides: Partial<ReefConfig>): ReefConfig {
+    return {
+      sitemap: overrides.sitemap ?? '/sitemap.xml',
+      maxPages: overrides.maxPages ?? 500,
+      scope: overrides.scope,
+      indexActions: overrides.indexActions ?? true,
+      indexMedia: overrides.indexMedia ?? true,
+      indexStructuredData: overrides.indexStructuredData ?? true,
+      indexHidden: overrides.indexHidden ?? true,
+      fileExtensions: overrides.fileExtensions,
+      excludeAction: overrides.excludeAction,
+      actionsMode: overrides.actionsMode ?? 'execute',
+      primaryColor: overrides.primaryColor,
+      secondaryColor: overrides.secondaryColor,
+      backgroundColor: overrides.backgroundColor,
+      textColor: overrides.textColor,
+      borderColor: overrides.borderColor,
+      radius: overrides.radius ?? 24,
+      theme: overrides.theme,
+      fontFamily: overrides.fontFamily,
+      mode: overrides.mode ?? 'opaque',
+      hotkey: overrides.hotkey,
+      placeholder: overrides.placeholder,
+      headless: overrides.headless ?? false,
+      onReady: overrides.onReady,
+      tokenizePipeline: overrides.tokenizePipeline,
+      synonyms: overrides.synonyms,
+      prebuiltIndexUrl: overrides.prebuiltIndexUrl,
+      useWorkerIndexing: overrides.useWorkerIndexing ?? false,
+      ttl: overrides.ttl,
     };
   }
 }
