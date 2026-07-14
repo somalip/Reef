@@ -665,7 +665,7 @@ export class UIRenderer {
 
   private isElementInModal(element: HTMLElement): boolean {
     if (!this.host) return false;
-    return element.closest('.reef-host') === this.host;
+    return this.host.contains(element) || (this.host.shadowRoot?.contains(element) ?? false);
   }
 
   applyAriaHidden(): void {
@@ -691,17 +691,18 @@ export class UIRenderer {
     ) as HTMLElement | null;
     if (!selected) return;
 
-    const results = this.resultsList.querySelectorAll('.result');
-    if (!results.length) return;
+    const allResults = this.resultsList.querySelectorAll('.result');
+    if (!allResults.length) return;
 
-    const isFirst = selectedIndex === 0;
-    const isLast = selectedIndex === results.length - 1;
+    // For the first item, immediately scroll to top to avoid getting stuck
+    if (selectedIndex === 0) {
+      this.resultsList.scrollTop = 0;
+      return;
+    }
 
-    let block: ScrollLogicalPosition = 'center';
-    if (isFirst) block = 'start';
-    else if (isLast) block = 'end';
-
-    selected.scrollIntoView({ block, inline: 'nearest', behavior: 'smooth' });
+    const isLast = selectedIndex === allResults.length - 1;
+    const block = isLast ? 'center' : 'nearest';
+    selected.scrollIntoView({ block, inline: 'nearest' });
   }
 
   renderResults(
@@ -714,6 +715,7 @@ export class UIRenderer {
     const countEl = this.root?.querySelector('#count');
 
     if (!this.resultsList) return;
+    this.clearFocusableElements();
 
     if (!results.length) {
       this.resultsList.innerHTML = `<div class="empty">No sections match "${escapeHtml(query)}"</div>`;

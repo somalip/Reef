@@ -82,15 +82,25 @@ class ReefSearch {
     });
 
     input?.addEventListener('keydown', (event) => {
+      // Cancel any pending debounce render to avoid race conditions
+      if (this.searchDebounce) {
+        cancelAnimationFrame(this.searchDebounce);
+        this.searchDebounce = 0;
+      }
+      
       const results = this.getVisibleResults();
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        if (results.length) this.selectedIndex = (this.selectedIndex + 1) % results.length;
+        if (results.length) {
+          this.selectedIndex = (this.selectedIndex + 1) % results.length;
+        }
         this.renderResults();
         this.ui.scrollSelectedIntoView(this.selectedIndex);
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
-        if (results.length) this.selectedIndex = (this.selectedIndex - 1 + results.length) % results.length;
+        if (results.length) {
+          this.selectedIndex = (this.selectedIndex - 1 + results.length) % results.length;
+        }
         this.renderResults();
         this.ui.scrollSelectedIntoView(this.selectedIndex);
       } else if (event.key === 'Enter') {
@@ -203,6 +213,11 @@ class ReefSearch {
   private renderResults() {
     const query = this.currentQuery;
     const results = this.getVisibleResults();
+    
+    // Ensure selectedIndex is within valid bounds
+    if (this.selectedIndex >= results.length) {
+      this.selectedIndex = Math.max(0, results.length - 1);
+    }
 
     if (!this.ui.getResultsList()) return;
 
