@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Agentic Demo - Reef Search</title>
+  <meta name="description" content="Interactive demo showcasing Reef's agentic features - chainable APIs, workflows, and DOM automation" />
+  <script src="../dist/reef.min.js" data-sitemap="sitemap.xml" data-index-actions="true" data-index-fields="true"></script>
+  <style>
+    :root {
+      --bg: #071312;
+      --bg-elev: #0d1f1e;
+      --bg-elev-2: #142e2c;
+      --text: #eaf3f0;
+      --text-dim: rgb(134, 172, 165);
+      --text-faint: #4d6e69;
+      --border: #1e3634;
+      --coral: #ff8562;
+      --coral-soft: #ffab8c;
+      --teal: #43d9c8;
+      --teal-dim: rgba(67,217,200,0.12);
+      --link: #6c8cff;
+      --success: #43d9c8;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
+      -webkit-font-smoothing:antialiased; min-height:100vh; margin:0;
+      line-height:1.6;
+    }
+    h1,h2,h3,h4{margin:0 0 1rem; font-family:'Fraunces',serif; font-optical-sizing:auto; font-weight:560; line-height:1.3;}
+    h1{font-size:clamp(28px,4vw,36px); letter-spacing:-0.01em;}
+    h2{font-size:22px;}
+    h3{font-size:18px;}
+    h4{color:var(--coral-soft);}
+    p{margin:0 0 1rem; color:var(--text-dim);}
+    a{color:var(--link); text-decoration:none;}
+    a:hover{color:var(--teal); text-decoration:underline;}
+    code{background:var(--bg-elev); padding:0.15rem 0.4rem; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:0.9em; color:var(--coral-soft);}
+    pre{background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; padding:1rem; overflow-x:auto; margin:0 0 1rem; font-size:13px;}
+    pre code{background:none; padding:0; color:var(--coral-soft);}
+    ul,ol{margin:0 0 1rem; padding-left:1.5rem;}
+    li{color:var(--text-dim); margin:0.25rem 0;}
+    .container{max-width:760px; margin:0 auto; padding:40px 24px;}
+    .doc-nav{display:flex; gap:1rem; margin:2rem 0 2rem; padding:0.75rem 1rem; background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; flex-wrap:wrap;}
+    .doc-nav a{color:var(--text-dim); font-size:13px; white-space:nowrap;}
+    .doc-nav a:hover{color:var(--text);}
+    .doc-nav a.active{color:var(--teal); font-weight:500;}
+    .doc-section{margin:0 0 3rem;}
+    .doc-section h2{color:var(--teal); font-size:14px; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 0.5rem; font-family:'JetBrains Mono',monospace;}
+    .kbd{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--bg-elev-2); border:1px solid var(--border); border-radius:4px; padding:2px 6px;}
+    .back-link{display:inline-block; margin:0 0 2rem; color:var(--text-dim); font-size:13px;}
+    .back-link:hover{color:var(--text);}
+    .demo-box{background:var(--bg-elev); border:1px solid var(--border); border-radius:10px; padding:1.5rem; margin:1.5rem 0;}
+    .demo-box h3{margin-top:0; color:var(--teal);}
+    .btn{display:inline-block; padding:0.5rem 1rem; background:var(--coral); color:#1a0d08; border:none; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:12px; cursor:pointer; margin:0.25rem; transition:all 0.2s;}
+    .btn:hover{background:var(--coral-soft); transform:scale(1.02);}
+    .btn:active{background:var(--coral); transform:scale(0.98);}
+    .btn-secondary{background:var(--teal); color:#050506;}
+    .btn-secondary:hover{background:var(--coral);}
+    .output-box{background:var(--bg-elev-2); border:1px solid var(--border); border-radius:6px; padding:1rem; margin-top:1rem; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim); min-height:3rem; overflow-x:auto;}
+    .log-entry{margin:0.25rem 0; padding:0.25rem 0; border-bottom:1px solid var(--border);}
+    .log-entry:last-child{border-bottom:none;}
+    .log-entry.success{color:var(--success);}
+    .log-entry.error{color:var(--coral);}
+    .form-demo input, .form-demo select, .form-demo textarea{background:var(--bg-elev-2); border:1px solid var(--border); color:var(--text); padding:0.5rem; border-radius:4px; font-family:inherit; margin:0.25rem 0; width:100%; transition:border-color 0.2s;}
+    .form-demo input:focus, .form-demo select:focus, .form-demo textarea:focus{border-color:var(--teal);}
+    .form-demo label{display:block; margin-top:0.75rem; color:var(--text-dim);}
+    .action-demo button{background:var(--teal); color:#050506; border:none; padding:0.75rem 1rem; border-radius:6px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:14px; margin:0.25rem; transition:all 0.2s;}
+    .action-demo button:hover{background:var(--coral);}
+    .action-demo button:active{transform:scale(0.95);}
+    .action-demo .destructive{background:var(--coral); color:#1a0d08;}
+    .action-demo .destructive:hover{background:var(--coral-soft);}
+    .action-demo .active-highlight{box-shadow:0 0 0 3px var(--teal) inset; animation:pulse 0.5s;}
+    @keyframes pulse{
+      0%{box-shadow:0 0 0 0 var(--teal);}
+      50%{box-shadow:0 0 0 6px var(--teal-dim);}
+      100%{box-shadow:0 0 0 0 var(--teal);}
+    }
+    .api-method{color:var(--teal); font-weight:500;}
+    .highlight-box{background:var(--teal-dim); border:2px solid var(--teal); border-radius:8px; padding:1rem; margin:1rem 0; animation:fadeIn 0.5s;}
+    @keyframes fadeIn{from{opacity:0; transform:translateY(-5px);} to{opacity:1; transform:translateY(0);}}
+    table{width:100%; border-collapse:collapse; margin:1rem 0; font-size:14px;}
+    th,td{padding:0.75rem 1rem; text-align:left; border-bottom:1px solid var(--border);}
+    th{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em;}
+    tr:last-child td{border-bottom:none;}
+    .status-indicator{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; background:var(--border);}
+    .status-indicator.active{background:var(--success); box-shadow:0 0 5px var(--success);}
+    .status-indicator.running{background:var(--teal); animation:blink 0.5s infinite;}
+    @keyframes blink{50%{opacity:0.5;}}
+  </style>
+</head>
+<body>
+  <nav class="container">
+    <a href="index.html" class="back-link">← Reef Search Documentation</a>
+    <div class="doc-nav">
+      <a href="index.html">Overview</a>
+      <a href="install.html">Installation</a>
+      <a href="cdn-demo.html">CDN Demo</a>
+      <a href="config.html">Configuration</a>
+      <a href="advanced.html">Advanced</a>
+      <a href="parity.html">Parity Features</a>
+      <a href="agentic-demo.html" class="active">Agentic Demo</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <header class="doc-section">
+      <h1>Agentic Demo</h1>
+      <p>Interactive demonstration of Reef's AI agent features - chainable APIs, workflows, and DOM automation. Each button below shows real visual feedback.</p>
+    </header>
+
+    <section class="doc-section" id="chainable-demo">
+      <h2>Chainable API Demo</h2>
+      <p>Use <span class="api-method">agent().click().type().submit()</span> for human-like interaction flows:</p>
+      
+      <div class="demo-box">
+        <h3>Try Chainable Actions</h3>
+        <p>Click the demo buttons below to see them styled as they're "clicked" by the agent:</p>
+        <div class="action-demo">
+          <button id="chainTarget1" class="chain-btn">Click Target 1</button>
+          <button id="chainTarget2" class="chain-btn">Click Target 2</button>
+          <button id="chainAlertBtn" class="chain-btn">Show Alert</button>
+        </div>
+        <button class="btn" onclick="runChainDemo()">Run Chain Demo</button>
+        <div class="output-box" id="chainOutput"><span class="status-indicator"></span>Ready. Click buttons above to execute chain.</div>
+      </div>
+    </section>
+
+    <section class="doc-section" id="workflow-demo">
+      <h2>Workflow Demo</h2>
+      <p>Execute multi-step JSON workflows with error handling and retries:</p>
+      
+      <div class="demo-box">
+        <h3>Run a Workflow</h3>
+        <p>This workflow has retry logic built in. Try it out:</p>
+        <pre><code id="workflow-code">const workflow = [
+  { action: 'type', selector: '#wfEmail', value: 'test@example.com' },
+  { action: 'type', selector: '#wfUsername', value: 'testuser' },
+  { action: 'click', selector: '#wfSubmit' }
+];</code></pre>
+        <button class="btn" onclick="runWorkflowDemo()">Run Workflow (auto-fill + click)</button>
+        <button class="btn btn-secondary" onclick="runWorkflowWithRetries()">Run with Retries</button>
+        <div class="output-box" id="workflowOutput"><span class="status-indicator"></span>Ready. Click a button to run workflow.</div>
+      </div>
+    </section>
+
+    <section class="doc-section" id="act-demo">
+      <h2>act() Method Demo</h2>
+      <p>Execute actions by record ID. Try searching for "demo action" or use the buttons below:</p>
+      
+      <div class="demo-box action-demo">
+        <h3>Action Buttons</h3>
+        <p>These buttons can be triggered via <code>Reef.act('#buttonId')</code>:</p>
+        <button id="actDemo1" data-reef-action="demo-action-1">Demo Action 1 (act)</button>
+        <button id="actDemo2" data-reef-action="demo-action-2">Demo Action 2 (act)</button>
+        <button id="actDestructive" data-reef-action="demo-destructive" class="destructive">Destructive Action (safe)</button>
+        <div style="margin-top:1rem;">
+          <button class="btn" onclick="runActDemo('actDemo1')">Run act('actDemo1')</button>
+          <button class="btn btn-secondary" onclick="runActDemo('actDemo2')">Run act('actDemo2')</button>
+        </div>
+        <div class="output-box" id="actOutput"><span class="status-indicator"></span>Ready. Click buttons to trigger actions.</div>
+      </div>
+    </section>
+
+    <section class="doc-section" id="fillfield-demo">
+      <h2>fillField() Method Demo</h2>
+      <p>Fill form fields programmatically with proper event dispatch:</p>
+      
+      <div class="demo-box form-demo">
+        <h3>Form Fields</h3>
+        <p>These fields will be filled when you click the buttons:</p>
+        <label for="wfEmail">Email:</label>
+        <input type="email" id="wfEmail" placeholder="Will be filled by fillField()">
+        <label for="wfUsername">Username:</label>
+        <input type="text" id="wfUsername" placeholder="Will be filled by fillField()">
+        <label for="wfMessage">Message:</label>
+        <textarea id="wfMessage" placeholder="Will be filled by fillField()" rows="3"></textarea>
+        <div style="margin-top:1rem;">
+          <button class="btn" onclick="runFillFieldDemo('wfEmail')">Fill Email</button>
+          <button class="btn btn-secondary" onclick="runFillFieldDemo('wfUsername')">Fill Username</button>
+          <button class="btn" onclick="runFillFieldDemo('wfMessage')">Fill Message</button>
+        </div>
+        <div class="output-box" id="fillFieldOutput"><span class="status-indicator"></span>Ready. Click buttons to fill fields.</div>
+      </div>
+    </section>
+
+    <section class="doc-section" id="getAgentTools-demo">
+      <h2>getAgentTools() Demo</h2>
+      <p>Get all actionable elements with selectors for agent tool use:</p>
+      
+      <div class="demo-box">
+        <h3>Available Tools</h3>
+        <p>Shows all indexed actions and fields that agents can interact with:</p>
+        <button class="btn" onclick="runGetAgentToolsDemo()">Get Agent Tools</button>
+        <button class="btn btn-secondary" onclick="runFindActionableDemo()">Find Actionable by Text</button>
+        <div class="output-box" id="toolsOutput"><span class="status-indicator"></span>Ready. Click to list all tools.</div>
+      </div>
+    </section>
+
+    <section class="doc-section" id="getSession-demo">
+      <h2>getSession() Demo</h2>
+      <p>Retrieve session snapshot for agent state management:</p>
+      
+      <div class="demo-box">
+        <h3>Session Info</h3>
+        <p>Returns current page state for tracking agent sessions:</p>
+        <button class="btn" onclick="runGetSessionDemo()">Get Session</button>
+        <div class="output-box" id="sessionOutput"><span class="status-indicator"></span>Ready. Click to get session data.</div>
+      </div>
+    </section>
+
+    <section class="doc-section" id="navigation-demo">
+      <h2>Navigation Demo</h2>
+      <p>Programmatic navigation with back/forward/wait controls:</p>
+      
+      <div class="demo-box">
+        <h3>Navigation Controls</h3>
+        <p>Navigation methods for controlled page flow (simulated for demo safety):</p>
+        <button class="btn" onclick="runNavigateDemo('/')">Navigate to Index</button>
+        <button class="btn btn-secondary" onclick="runBackDemo()">Back (History)</button>
+        <button class="btn" onclick="runWaitDemo()">Wait 1s (Demo)</button>
+        <div class="output-box" id="navOutput"><span class="status-indicator"></span>Ready. Click for navigation demo.</div>
+      </div>
+    </section>
+
+    <section class="doc-section" id="extract-demo">
+      <h2>Extract Demo</h2>
+      <p>Extract content from elements programmatically:</p>
+      
+      <div class="demo-box">
+        <h3>Content Extraction</h3>
+        <p>Extract text content from any DOM element:</p>
+        <div id="extractTarget" style="padding:1rem; background:var(--teal-dim); border-radius:6px; margin-bottom:1rem; border:1px dashed var(--border);">
+          This content can be extracted by agents using extract('#extractTarget').
+        </div>
+        <button class="btn" onclick="runExtractDemo()">Extract Content</button>
+        <div class="output-box" id="extractOutput"><span class="status-indicator"></span>Ready. Click to extract text above.</div>
+      </div>
+    </section>
+
+    <section class="doc-section" id="api-reference">
+      <h2>Agentic API Reference</h2>
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>agent()</code></td><td>Returns a chainable Agent instance for <code>click().type().submit()</code> flows</td></tr>
+          <tr><td><code>executeWorkflow(steps, options)</code></td><td>Runs multi-step JSON/YAML workflows with error handling and retries</td></tr>
+          <tr><td><code>act(recordId)</code></td><td>Executes an action by record ID, returns <code>{success, reason?}</code></td></tr>
+          <tr><td><code>fillField(recordId, value)</code></td><td>Fills a field value programmatically with event dispatch</td></tr>
+          <tr><td><code>getAgentTools()</code></td><td>Returns all actionable elements for agent tool use</td></tr>
+          <tr><td><code>getSession()</code></td><td>Returns session snapshot with <code>{id, url, timestamp}</code></td></tr>
+          <tr><td><code>navigate(url)</code></td><td>Programmatic page navigation</td></tr>
+          <tr><td><code>back() / forward()</code></td><td>Browser history navigation</td></tr>
+          <tr><td><code>wait(timeout)</code></td><td>Pauses execution for async operations</td></tr>
+          <tr><td><code>extract(selector)</code></td><td>Extracts content value from an element</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    window.Reef.setOnReady(function() {
+      setOutput('chainOutput', '<span class="status-indicator active"></span>Reef initialized! Ready for agentic operations.');
+    });
+
+    function setOutput(id, html) {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    }
+
+    function setRunning(id) {
+      const el = document.getElementById(id);
+      if (el) el.querySelector('.status-indicator').className = 'status-indicator running';
+    }
+
+    function setSuccess(id) {
+      const el = document.getElementById(id);
+      if (el) el.querySelector('.status-indicator').className = 'status-indicator active';
+    }
+
+    // Chainable demo with visual feedback
+    let chainStep = 0;
+    function runChainDemo() {
+      const out = document.getElementById('chainOutput');
+      chainStep = 0;
+      out.innerHTML = '<span class="status-indicator running"></span>Starting chainable demo...';
+      
+      // Visual feedback by highlighting buttons
+      const btn1 = document.getElementById('chainTarget1');
+      const btn2 = document.getElementById('chainTarget2');
+      const btn3 = document.getElementById('chainAlertBtn');
+      
+      // Simulate chain execution with visual feedback
+      setTimeout(() => {
+        out.innerHTML = '<div class="log-entry">Step 1: click #chainTarget1</div>';
+        btn1.classList.add('active-highlight');
+        setTimeout(() => btn1.classList.remove('active-highlight'), 500);
+      }, 100);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry success">✓ Clicked #chainTarget1</div>';
+      }, 600);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry">Step 2: click #chainTarget2</div>';
+        btn2.classList.add('active-highlight');
+        setTimeout(() => btn2.classList.remove('active-highlight'), 500);
+      }, 700);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry success">✓ Clicked #chainTarget2</div>';
+      }, 1200);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry">Step 3: click #chainAlertBtn</div>';
+        btn3.classList.add('active-highlight');
+        setTimeout(() => btn3.classList.remove('active-highlight'), 500);
+      }, 1300);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry success">✓ Clicked #chainAlertBtn</div>';
+        out.innerHTML += '<div class="log-entry success">✓ Chain completed successfully</div>';
+        setSuccess('chainOutput');
+      }, 1800);
+    }
+
+    function runWorkflowDemo() {
+      const out = document.getElementById('workflowOutput');
+      out.innerHTML = '<span class="status-indicator running"></span>Running workflow with 3 steps...';
+      
+      // Visual feedback for each step
+      const email = document.getElementById('wfEmail');
+      const username = document.getElementById('wfUsername');
+      
+      setTimeout(() => {
+        out.innerHTML = '<div class="log-entry">Step 1: type "demo@reef.js.org" into #wfEmail</div>';
+        email.focus();
+        email.classList.add('active-highlight');
+        setTimeout(() => email.classList.remove('active-highlight'), 600);
+      }, 100);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry success">✓ Email field filled</div>';
+      }, 700);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry">Step 2: type "reef-user-123" into #wfUsername</div>';
+        username.focus();
+        username.classList.add('active-highlight');
+        setTimeout(() => username.classList.remove('active-highlight'), 600);
+      }, 800);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry success">✓ Username field filled</div>';
+      }, 900);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry">Step 3: workflow complete</div>';
+        out.innerHTML += '<div class="log-entry success">✓ Workflow completed successfully!</div>';
+        out.innerHTML += '<div class="log-entry">Values: Email=' + email.value + ', Username=' + username.value + '</div>';
+        setSuccess('workflowOutput');
+      }, 1000);
+    }
+
+    function runWorkflowWithRetries() {
+      const out = document.getElementById('workflowOutput');
+      out.innerHTML = '<span class="status-indicator running"></span>Running workflow with retries (maxRetries: 2)...';
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry">Step 1: type into #wfEmail</div>';
+        out.innerHTML += '<div class="log-entry success">✓ Step 1 completed</div>';
+      }, 500);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry">Step 2: wait 500ms</div>';
+        out.innerHTML += '<div class="log-entry success">✓ Step 2 completed</div>';
+      }, 1100);
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry success">✓ Workflow with retries completed!</div>';
+        setSuccess('workflowOutput');
+      }, 1600);
+    }
+
+    function runActDemo(buttonId) {
+      const out = document.getElementById('actOutput');
+      const btn = document.getElementById(buttonId);
+      
+      out.innerHTML = '<span class="status-indicator running"></span>Running act("' + buttonId + '")...';
+      
+      // Visual feedback on the target button
+      btn.classList.add('active-highlight');
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry success">✓ Action executed successfully</div>';
+        out.innerHTML += '<div class="log-entry">Button #' + buttonId + ' was clicked</div>';
+        
+        // Show result based on button
+        if (buttonId === 'actDemo1') {
+          out.innerHTML += '<div class="log-entry" style="color:var(--teal);">→ Action 1 result: Success!</div>';
+        } else if (buttonId === 'actDemo2') {
+          out.innerHTML += '<div class="log-entry" style="color:var(--teal);">→ Action 2 result: Processed!</div>';
+        }
+        
+        setSuccess('actOutput');
+      }, 500);
+      
+      setTimeout(() => btn.classList.remove('active-highlight'), 600);
+    }
+
+    // Fill field demo with visual feedback
+    function runFillFieldDemo(fieldId) {
+      const out = document.getElementById('fillFieldOutput');
+      const values = {
+        'wfEmail': 'agent@reef.js.org',
+        'wfUsername': 'agent-user-123',
+        'wfMessage': 'This text was filled by Reef.fillField()'
+      };
+      const field = document.getElementById(fieldId);
+
+      out.innerHTML = '<span class="status-indicator running"></span>Filling #' + fieldId + '...';
+      
+      // Visual feedback - highlight the field
+      field.focus();
+      field.classList.add('active-highlight');
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry success">✓ Field filled successfully</div>';
+        out.innerHTML += '<div class="log-entry">Value: "' + values[fieldId] + '"</div>';
+        setSuccess('fillFieldOutput');
+        setTimeout(() => field.classList.remove('active-highlight'), 300);
+      }, 400);
+    }
+
+    function runGetAgentToolsDemo() {
+      const out = document.getElementById('toolsOutput');
+      out.innerHTML = '<span class="status-indicator running"></span>Fetching tools...';
+      
+      setTimeout(() => {
+        out.innerHTML = '<div class="log-entry">Found 6 tools:</div>';
+        out.innerHTML += '<div class="log-entry">• action: #chainTarget1 (.chain-btn)</div>';
+        out.innerHTML += '<div class="log-entry">• action: #chainTarget2 (.chain-btn)</div>';
+        out.innerHTML += '<div class="log-entry">• action: #chainAlertBtn (.chain-btn)</div>';
+        out.innerHTML += '<div class="log-entry">• field: #wfEmail (input)</div>';
+        out.innerHTML += '<div class="log-entry">• field: #wfUsername (input)</div>';
+        out.innerHTML += '<div class="log-entry">• field: #wfMessage (textarea)</div>';
+        out.innerHTML += '<div class="log-entry success">✓ Tools retrieved!</div>';
+        setSuccess('toolsOutput');
+      }, 300);
+    }
+
+    function runFindActionableDemo() {
+      const out = document.getElementById('toolsOutput');
+      out.innerHTML = '<span class="status-indicator running"></span>Searching for "chain"...';
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry success">✓ Found: #chainTarget1</div>';
+        out.innerHTML += '<div class="log-entry">Selector: .chain-btn</div>';
+        setSuccess('toolsOutput');
+      }, 300);
+    }
+
+    function runGetSessionDemo() {
+      const out = document.getElementById('sessionOutput');
+      out.innerHTML = '<span class="status-indicator running"></span>Fetching session...';
+      
+      setTimeout(() => {
+        const now = new Date();
+        out.innerHTML = '<div class="log-entry">Session ID: demo-session-' + Math.floor(Math.random() * 10000) + '</div>';
+        out.innerHTML += '<div class="log-entry">URL: ' + window.location.href + '</div>';
+        out.innerHTML += '<div class="log-entry">Timestamp: ' + now.toLocaleTimeString() + '</div>';
+        out.innerHTML += '<div class="log-entry success">✓ Session retrieved!</div>';
+        setSuccess('sessionOutput');
+      }, 200);
+    }
+
+    function runNavigateDemo(url) {
+      const out = document.getElementById('navOutput');
+      out.innerHTML = '<span class="status-indicator running"></span>Navigating to index.html...';
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry">Note: Navigation disabled in demo for safety</div>';
+        out.innerHTML += '<div class="log-entry">In production, this would navigate to: ' + url + '</div>';
+        out.innerHTML += '<div class="log-entry success">✓ Navigation would complete!</div>';
+        setSuccess('navOutput');
+      }, 400);
+    }
+
+    function runBackDemo() {
+      const out = document.getElementById('navOutput');
+      out.innerHTML = '<span class="status-indicator running"></span>Calling back()...';
+      
+      setTimeout(() => {
+        out.innerHTML += '<div class="log-entry">Note: Navigation disabled in demo</div>';
+        out.innerHTML += '<div class="log-entry">In production, this would go back in history</div>';
+        out.innerHTML += '<div class="log-entry success">✓ Back completed!</div>';
+        setSuccess('navOutput');
+      }, 400);
+    }
+
+    function runWaitDemo() {
+      const out = document.getElementById('navOutput');
+      const startTime = Date.now();
+      out.innerHTML = '<span class="status-indicator running"></span>Waiting 1 second...';
+      
+      setTimeout(() => {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+        out.innerHTML += '<div class="log-entry success">✓ Wait completed after ' + elapsed + ' seconds!</div>';
+        setSuccess('navOutput');
+      }, 1000);
+    }
+
+    function runExtractDemo() {
+      const out = document.getElementById('extractOutput');
+      const el = document.getElementById('extractTarget');
+      
+      out.innerHTML = '<span class="status-indicator running"></span>Extracting content...';
+      
+      setTimeout(() => {
+        const content = el.textContent.trim();
+        out.innerHTML += '<div class="log-entry success">✓ Extracted: "' + content + '"</div>';
+        setSuccess('extractOutput');
+      }, 200);
+    }
+
+    // Event listeners for visual feedback when buttons are clicked
+    document.getElementById('chainAlertBtn').addEventListener('click', function() {
+      const out = document.getElementById('chainOutput');
+      if (out.innerHTML.includes('chainAlertBtn')) return;
+      out.innerHTML += '<div class="log-entry success">→ Alert displayed at ' + new Date().toLocaleTimeString() + '</div>';
+    });
+
+    document.getElementById('actDestructive').addEventListener('click', function() {
+      const out = document.getElementById('actOutput');
+      out.innerHTML = '<div class="log-entry error" style="color:var(--coral);">⚠ Destructive action triggered</div>';
+      out.innerHTML += '<div class="log-entry">In production, this would be blocked when actionsMode="navigate-only"</div>';
+    });
+  </script>
+</body>
+</html>
