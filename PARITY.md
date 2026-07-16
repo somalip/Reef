@@ -165,4 +165,4 @@ These are organized by theme and roughly prioritized within each (earliest = hig
 
 ### Suggested sequencing
 
-If picking one thread to pull first: **8.1.2 → 8.4.1/8.4.2** (ship action manifest/MCP export, then safety gating) now that 8.1.1 and 8.3.1 are complete. **8.3.2 (prebuilt-index CLI)** and **8.3.3 (SPA support)** are the two most likely to be blocking real adoption today, independent of the agent story, and can be worked on in parallel by a second contributor.
+If picking one thread to pull first: **8.1.2 (action manifest)** → **8.1.5 (intent matching)** → **8.4.1/8.4.2** (safety gating) now that 8.1.1, 8.1.3, and 8.3.1 are complete. **8.3.2 (prebuilt-index CLI)** and **8.3.3 (SPA support)** are the two most likely to be blocking real adoption today, independent of the agent story, and can be worked on in parallel by a second contributor.

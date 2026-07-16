@@ -34,6 +34,8 @@ It crawls your sitemap, extracts page content in the browser, and can optionally
   - **Files** — downloadable links (PDF, Office docs, spreadsheets, archives, CSV).
   - **Media** — images with alt text/captions, and video/audio with a title or caption track.
   - **Structured data** — `application/ld+json` FAQ pages and other typed metadata, shown as inline answers.
+- **Web Worker support** — set `data-use-worker-indexing="true"` to offload HTML parsing to a worker, reducing main-thread jank on large sites.
+- **IndexedDB persistence** — the index is cached locally for faster repeat visits (configurable TTL via `data-ttl`).
 - **Accessible, themeable modal** — rendered in a Shadow DOM root so host-page styles never leak in or out.
 - **Typo-tolerant search** — falls back to a Levenshtein-based "did you mean" suggestion when there are no direct matches.
 - **Developer API** — customize hotkeys, register selection callbacks, and control the modal programmatically.
@@ -68,6 +70,9 @@ Set these as attributes on the script tag (or `data-*` equivalents where noted).
 | `data-index-actions` | `true` | Enable indexing of buttons/toggles (also gates field indexing) |
 | `data-index-media` | `true` | Enable indexing of images, video, and audio |
 | `data-index-structured-data` | `true` | Enable indexing of JSON-LD structured data |
+| `data-index-hidden` | `true` | Include collapsed content such as `<details>` elements |
+| `data-file-extensions` | `pdf,doc,docx,xls,xlsx,ppt,pptx,zip,csv` | File-link classification |
+| `data-exclude-action` | — | CSS selectors excluded from executable results |
 | `data-actions-mode` | `execute` | `execute` or `navigate-only` — see [Safety](#safety-and-execution-model) |
 | `data-hotkey` | `ctrlk,cmdk` | Custom keyboard shortcut(s) |
 | `data-placeholder` | `Search this site` | Custom input placeholder text |
@@ -78,6 +83,8 @@ Set these as attributes on the script tag (or `data-*` equivalents where noted).
 | `data-radius` | `16` | Border radius in pixels |
 | `data-mode` | `regular` | `regular`, `opaque`, or `high-contrast` |
 | `data-headless` | `false` | When `true`, builds index without rendering the modal |
+| `data-use-worker-indexing` | `false` | Offload HTML parsing to a Web Worker for large sites |
+| `data-ttl` | `604800` | Cache TTL in seconds (IndexedDB persistence) |
 | `data-on-ready` | — | (Runtime API use) Callback fired when index is ready |
 
 ## Result types
@@ -100,6 +107,32 @@ Set these as attributes on the script tag (or `data-*` equivalents where noted).
 When in headless mode, use `window.Reef.search(query)` and `window.Reef.getIndex()` to query and access indexed data.
 
 ## Developer API
+
+### Agentic APIs
+
+Reef provides programmatic APIs for AI agents to interact with web pages:
+
+```js
+// Get all interactive records (actions and fields) for agent tool use
+const tools = window.Reef.getAgentTools();
+// Returns: [{ name, description, type, selector, id }]
+
+// Execute an action by record ID (respects actionsMode for destructive actions)
+window.Reef.act('page.html#action-0').then(result => {
+  console.log('Success:', result.success);
+  if (!result.success) console.log('Reason:', result.reason);
+});
+
+// Fill a field value programmatically (with proper event dispatch)
+window.Reef.fillField('page.html#field-2', 'user@example.com').then(result => {
+  console.log('Field filled:', result.success);
+});
+
+// List all interactive elements on the current page
+const interactive = window.Reef.getInteractiveRecords();
+```
+
+The `act()` method returns a promise with `{ success: boolean, reason?: string }`. Destructive actions are blocked when `actionsMode !== 'execute'`.
 
 ### Headless Mode
 
@@ -439,16 +472,12 @@ Because selecting a search result can trigger behavior on the page, execution is
 
 ## Current limitations
 
-- **No persistent cache yet.** The index is rebuilt from the sitemap on every full page load; there is no IndexedDB (or other) persistence across sessions or navigations yet.
-- **No worker offload yet.** Indexing and search both run on the main thread.
 - **No same-origin crawl fallback.** If no sitemap resolves, Reef indexes only the current page rather than crawling outward from it.
 - **No OCR** for images, and no indexing of client-rendered content that only appears after hydration on other pages (fetched HTML doesn't execute scripts).
 - Several `data-*` attributes described above are accepted but not yet wired up (see [Configuration](#configuration)).
 
 ## Roadmap
 
-- Web Worker offload for indexing and querying.
-- IndexedDB-backed persistent cache with version/TTL invalidation.
 - Same-origin breadth-first fallback crawl when no sitemap is present.
 - Wiring up `data-index-hidden`, `data-file-extensions`, and `data-exclude-action`.
 - Deciding whether `answer`-type results should outrank `section` matches on exact queries.

@@ -30,6 +30,7 @@
     <div class="logo"><span class="logo-dot"></span>reef.min.js</div>
     <div class="nav-links">
       <a href="#how">How</a>
+      <a href="#agentic">API</a>
       <a href="#compare">Compare</a>
       <a href="fixture/index.html">Docs</a>
       <a href="fixture/extras/HOW.html" id="howPageLink">Engineering</a>
@@ -38,11 +39,11 @@
   </nav>
 
   <header class="hero wrap">
-    <div class="hero-eyebrow">client-side search · zero backend</div>
+    <div class="hero-eyebrow">client-side search · zero backend · agentic actions</div>
     <h1>Search that ships in<br>one <span class="tag-chip">&lt;script&gt;</span> tag</h1>
     <p class="sub">Fuzzy, keyboard-first search for static sites. No backend, no build step, no account — drop in one
-      script and it works on this page. But the real game changer is the DOM extraction layer Reef doesn't just search
-      for things, it can act on them. A revolutionary yet simple tool for AI agents to act on websites, and more.</p>
+      script and it works on this page. Reef can also execute actions on buttons, focus form fields, and download
+      files — making it a powerful primitive for AI agents acting on websites.</p>
     <p class="sub">NPM and jsdelivr build coming soon!</p>
     <div class="trigger" id="trigger" role="button" tabindex="0" aria-haspopup="dialog">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -122,6 +123,32 @@
         <p><span class="mod-k">⌘K</span> opens instantly. Fuzzy matching ranks results as the visitor types.</p>
       </div>
     </div>
+  </section>
+
+  <section class="agentic wrap" id="agentic">
+    <div class="section-head">
+      <div class="code-label">Agentic API</div>
+      <h2>Programmatic control for AI agents</h2>
+    </div>
+    <p class="compare-intro">Reef exposes APIs for agents to discover and interact with page elements:</p>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-index">act()</div>
+        <h3>Execute actions</h3>
+        <p>Run `Reef.act(recordId)` to click buttons, toggle controls, or trigger actions. Returns success/failure status.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-index">fillField()</div>
+        <h3>Fill inputs</h3>
+        <p>Use `Reef.fillField(recordId, value)` to programmatically set field values with proper event dispatch.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-index">getAgentTools()</div>
+        <h3>Discover tools</h3>
+        <p>Call `Reef.getAgentTools()` to get all actionable elements with their selectors for agent tool use.</p>
+      </div>
+    </div>
+    <p class="compare-intro" style="margin-top: 8px;">Destructive actions (delete, pay, checkout) are gated by <code>actionsMode</code> for safety.</p>
   </section>
 
   <section class="compare wrap" id="compare">
