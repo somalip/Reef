@@ -56,7 +56,7 @@
     .btn{display:inline-block; padding:0.5rem 1rem; background:var(--coral); color:#1a0d08; border:none; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:12px; cursor:pointer; margin:0.25rem; transition:all 0.2s;}
     .btn:hover{background:var(--coral-soft); transform:scale(1.02);}
     .btn:active{background:var(--coral); transform:scale(0.98);}
-    .btn-secondary{background:var(--teal); color:#050506;}
+    .btn-secondary{background:var(--teal); color:#050d08;}
     .btn-secondary:hover{background:var(--coral);}
     .output-box{background:var(--bg-elev-2); border:1px solid var(--border); border-radius:6px; padding:1rem; margin-top:1rem; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim); min-height:3rem; overflow-x:auto;}
     .log-entry{margin:0.25rem 0; padding:0.25rem 0; border-bottom:1px solid var(--border);}
@@ -66,7 +66,7 @@
     .form-demo input, .form-demo select, .form-demo textarea{background:var(--bg-elev-2); border:1px solid var(--border); color:var(--text); padding:0.5rem; border-radius:4px; font-family:inherit; margin:0.25rem 0; width:100%; transition:border-color 0.2s;}
     .form-demo input:focus, .form-demo select:focus, .form-demo textarea:focus{border-color:var(--teal);}
     .form-demo label{display:block; margin-top:0.75rem; color:var(--text-dim);}
-    .action-demo button{background:var(--teal); color:#050506; border:none; padding:0.75rem 1rem; border-radius:6px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:14px; margin:0.25rem; transition:all 0.2s;}
+    .action-demo button{background:var(--teal); color:#050d08; border:none; padding:0.75rem 1rem; border-radius:6px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:14px; margin:0.25rem; transition:all 0.2s;}
     .action-demo button:hover{background:var(--coral);}
     .action-demo button:active{transform:scale(0.95);}
     .action-demo .destructive{background:var(--coral); color:#1a0d08;}
@@ -92,7 +92,7 @@
 </head>
 <body>
   <nav class="container">
-    <a href="index.html" class="back-link">← Reef Search Documentation</a>
+    <a href="index.html" class="back-link">< Back to Reef Search Documentation</a>
     <div class="doc-nav">
       <a href="index.html">Overview</a>
       <a href="install.html">Installation</a>
@@ -118,9 +118,9 @@
         <h3>Try Chainable Actions</h3>
         <p>Click the demo buttons below to see them styled as they're "clicked" by the agent:</p>
         <div class="action-demo">
-          <button id="chainTarget1" class="chain-btn">Click Target 1</button>
-          <button id="chainTarget2" class="chain-btn">Click Target 2</button>
-          <button id="chainAlertBtn" class="chain-btn">Show Alert</button>
+          <button id="chainTarget1" class="chain-btn" data-reef-action="chain-target-1">Click Target 1</button>
+          <button id="chainTarget2" class="chain-btn" data-reef-action="chain-target-2">Click Target 2</button>
+          <button id="chainAlertBtn" class="chain-btn" data-reef-action="chain-alert">Show Alert</button>
         </div>
         <button class="btn" onclick="runChainDemo()">Run Chain Demo</button>
         <div class="output-box" id="chainOutput"><span class="status-indicator"></span>Ready. Click buttons above to execute chain.</div>
@@ -281,263 +281,329 @@
       if (el) el.querySelector('.status-indicator').className = 'status-indicator active';
     }
 
-    // Chainable demo with visual feedback
-    let chainStep = 0;
-    function runChainDemo() {
+    // Chainable demo with actual Reef.agent() API
+    async function runChainDemo() {
       const out = document.getElementById('chainOutput');
-      chainStep = 0;
       out.innerHTML = '<span class="status-indicator running"></span>Starting chainable demo...';
       
-      // Visual feedback by highlighting buttons
-      const btn1 = document.getElementById('chainTarget1');
-      const btn2 = document.getElementById('chainTarget2');
-      const btn3 = document.getElementById('chainAlertBtn');
-      
-      // Simulate chain execution with visual feedback
-      setTimeout(() => {
-        out.innerHTML = '<div class="log-entry">Step 1: click #chainTarget1</div>';
-        btn1.classList.add('active-highlight');
-        setTimeout(() => btn1.classList.remove('active-highlight'), 500);
-      }, 100);
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry success">✓ Clicked #chainTarget1</div>';
-      }, 600);
-      
-      setTimeout(() => {
+      try {
+        const agent = window.Reef.agent();
+        
+        // Highlight and click chainTarget1
+        out.innerHTML += '<div class="log-entry">Step 1: click #chainTarget1</div>';
+        const btn1 = document.getElementById('chainTarget1');
+        if (btn1) {
+          btn1.classList.add('active-highlight');
+          await agent.click('#chainTarget1');
+          setTimeout(() => btn1.classList.remove('active-highlight'), 500);
+        }
+        out.innerHTML += '<div class="log-entry success">OK Clicked #chainTarget1</div>';
+        
+        // Highlight and click chainTarget2
         out.innerHTML += '<div class="log-entry">Step 2: click #chainTarget2</div>';
-        btn2.classList.add('active-highlight');
-        setTimeout(() => btn2.classList.remove('active-highlight'), 500);
-      }, 700);
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry success">✓ Clicked #chainTarget2</div>';
-      }, 1200);
-      
-      setTimeout(() => {
+        const btn2 = document.getElementById('chainTarget2');
+        if (btn2) {
+          btn2.classList.add('active-highlight');
+          await agent.click('#chainTarget2');
+          setTimeout(() => btn2.classList.remove('active-highlight'), 500);
+        }
+        out.innerHTML += '<div class="log-entry success">OK Clicked #chainTarget2</div>';
+        
+        // Highlight and click chainAlertBtn
         out.innerHTML += '<div class="log-entry">Step 3: click #chainAlertBtn</div>';
-        btn3.classList.add('active-highlight');
-        setTimeout(() => btn3.classList.remove('active-highlight'), 500);
-      }, 1300);
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry success">✓ Clicked #chainAlertBtn</div>';
-        out.innerHTML += '<div class="log-entry success">✓ Chain completed successfully</div>';
+        const btn3 = document.getElementById('chainAlertBtn');
+        if (btn3) {
+          btn3.classList.add('active-highlight');
+          await agent.click('#chainAlertBtn');
+          setTimeout(() => btn3.classList.remove('active-highlight'), 500);
+        }
+        out.innerHTML += '<div class="log-entry success">OK Clicked #chainAlertBtn</div>';
+        
+        out.innerHTML += '<div class="log-entry success">OK Chain completed successfully</div>';
         setSuccess('chainOutput');
-      }, 1800);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
-    function runWorkflowDemo() {
+    // Workflow demo with actual Reef.executeWorkflow()
+    async function runWorkflowDemo() {
       const out = document.getElementById('workflowOutput');
       out.innerHTML = '<span class="status-indicator running"></span>Running workflow with 3 steps...';
       
-      // Visual feedback for each step
-      const email = document.getElementById('wfEmail');
-      const username = document.getElementById('wfUsername');
-      
-      setTimeout(() => {
-        out.innerHTML = '<div class="log-entry">Step 1: type "demo@reef.js.org" into #wfEmail</div>';
-        email.focus();
-        email.classList.add('active-highlight');
-        setTimeout(() => email.classList.remove('active-highlight'), 600);
-      }, 100);
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry success">✓ Email field filled</div>';
-      }, 700);
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry">Step 2: type "reef-user-123" into #wfUsername</div>';
-        username.focus();
-        username.classList.add('active-highlight');
-        setTimeout(() => username.classList.remove('active-highlight'), 600);
-      }, 800);
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry success">✓ Username field filled</div>';
-      }, 900);
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry">Step 3: workflow complete</div>';
-        out.innerHTML += '<div class="log-entry success">✓ Workflow completed successfully!</div>';
-        out.innerHTML += '<div class="log-entry">Values: Email=' + email.value + ', Username=' + username.value + '</div>';
+      try {
+        const workflow = [
+          { action: 'type', selector: '#wfEmail', value: 'agent@reef.js.org' },
+          { action: 'type', selector: '#wfUsername', value: 'reef-agent-user' },
+          { action: 'wait', timeout: 200 }
+        ];
+        
+        await window.Reef.executeWorkflow(workflow, {
+          onStepStart: (step, i) => {
+            out.innerHTML += '<div class="log-entry">Step ' + (i + 1) + ': ' + step.action + (step.selector ? ' on ' + step.selector : '') + '</div>';
+          },
+          onStepComplete: (step, i) => {
+            const field = step.selector ? document.querySelector(step.selector) : null;
+            if (field && (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) {
+              field.classList.add('active-highlight');
+              setTimeout(() => field.classList.remove('active-highlight'), 400);
+            }
+            out.innerHTML += '<div class="log-entry success">OK Step ' + (i + 1) + ' completed</div>';
+          }
+        });
+        
+        out.innerHTML += '<div class="log-entry success">OK Workflow completed successfully!</div>';
+        out.innerHTML += '<div class="log-entry">Values: Email=' + document.getElementById('wfEmail')?.value + ', Username=' + document.getElementById('wfUsername')?.value + '</div>';
         setSuccess('workflowOutput');
-      }, 1000);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
-    function runWorkflowWithRetries() {
+    // Workflow with retries
+    async function runWorkflowWithRetries() {
       const out = document.getElementById('workflowOutput');
       out.innerHTML = '<span class="status-indicator running"></span>Running workflow with retries (maxRetries: 2)...';
       
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry">Step 1: type into #wfEmail</div>';
-        out.innerHTML += '<div class="log-entry success">✓ Step 1 completed</div>';
-      }, 500);
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry">Step 2: wait 500ms</div>';
-        out.innerHTML += '<div class="log-entry success">✓ Step 2 completed</div>';
-      }, 1100);
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry success">✓ Workflow with retries completed!</div>';
+      try {
+        const workflow = [
+          { action: 'type', selector: '#wfEmail', value: 'retry-test@reef.js.org' },
+          { action: 'wait', timeout: 500 },
+          { action: 'type', selector: '#wfUsername', value: 'retry-user' }
+        ];
+        
+        await window.Reef.executeWorkflow(workflow, {
+          maxRetries: 2,
+          retryDelay: 100,
+          onStepStart: (step, i) => {
+            out.innerHTML += '<div class="log-entry">Step ' + (i + 1) + ': ' + step.action + '</div>';
+          },
+          onStepComplete: (step, i) => {
+            out.innerHTML += '<div class="log-entry success">OK Step ' + (i + 1) + ' completed</div>';
+          },
+          onStepError: (step, i, error) => {
+            out.innerHTML += '<div class="log-entry error">ERROR Step ' + (i + 1) + ' error: ' + error.message + '</div>';
+          }
+        });
+        
+        out.innerHTML += '<div class="log-entry success">OK Workflow with retries completed!</div>';
         setSuccess('workflowOutput');
-      }, 1600);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
-    function runActDemo(buttonId) {
+    // act() demo with actual Reef.act()
+    async function runActDemo(buttonId) {
       const out = document.getElementById('actOutput');
       const btn = document.getElementById(buttonId);
       
       out.innerHTML = '<span class="status-indicator running"></span>Running act("' + buttonId + '")...';
       
-      // Visual feedback on the target button
-      btn.classList.add('active-highlight');
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry success">✓ Action executed successfully</div>';
+      try {
+        // Visual feedback on the target button
+        if (btn) {
+          btn.classList.add('active-highlight');
+        }
+        
+        // Use the actual Reef.act() API
+        const result = await window.Reef.act(buttonId);
+        
+        out.innerHTML += '<div class="log-entry success">OK Action executed successfully</div>';
         out.innerHTML += '<div class="log-entry">Button #' + buttonId + ' was clicked</div>';
         
         // Show result based on button
         if (buttonId === 'actDemo1') {
-          out.innerHTML += '<div class="log-entry" style="color:var(--teal);">→ Action 1 result: Success!</div>';
+          out.innerHTML += '<div class="log-entry">-> Action 1 result: Success!</div>';
         } else if (buttonId === 'actDemo2') {
-          out.innerHTML += '<div class="log-entry" style="color:var(--teal);">→ Action 2 result: Processed!</div>';
+          out.innerHTML += '<div class="log-entry">-> Action 2 result: Processed!</div>';
         }
         
         setSuccess('actOutput');
-      }, 500);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
       
-      setTimeout(() => btn.classList.remove('active-highlight'), 600);
+      if (btn) {
+        setTimeout(() => btn.classList.remove('active-highlight'), 600);
+      }
     }
 
-    // Fill field demo with visual feedback
-    function runFillFieldDemo(fieldId) {
+    // Fill field demo with actual Reef.fillField()
+    async function runFillFieldDemo(fieldId) {
       const out = document.getElementById('fillFieldOutput');
+      const field = document.getElementById(fieldId);
+      
       const values = {
         'wfEmail': 'agent@reef.js.org',
         'wfUsername': 'agent-user-123',
         'wfMessage': 'This text was filled by Reef.fillField()'
       };
-      const field = document.getElementById(fieldId);
-
+      
       out.innerHTML = '<span class="status-indicator running"></span>Filling #' + fieldId + '...';
       
-      // Visual feedback - highlight the field
-      field.focus();
-      field.classList.add('active-highlight');
-      
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry success">✓ Field filled successfully</div>';
+      try {
+        // Visual feedback - highlight the field
+        if (field) {
+          field.focus();
+          field.classList.add('active-highlight');
+        }
+        
+        // Use the actual Reef.fillField() API
+        await window.Reef.fillField(fieldId, values[fieldId]);
+        
+        out.innerHTML += '<div class="log-entry success">OK Field filled successfully</div>';
         out.innerHTML += '<div class="log-entry">Value: "' + values[fieldId] + '"</div>';
         setSuccess('fillFieldOutput');
-        setTimeout(() => field.classList.remove('active-highlight'), 300);
-      }, 400);
+        
+        if (field) {
+          setTimeout(() => field.classList.remove('active-highlight'), 300);
+        }
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
-    function runGetAgentToolsDemo() {
+    // getAgentTools() demo with actual Reef.getAgentTools()
+    async function runGetAgentToolsDemo() {
       const out = document.getElementById('toolsOutput');
       out.innerHTML = '<span class="status-indicator running"></span>Fetching tools...';
       
-      setTimeout(() => {
-        out.innerHTML = '<div class="log-entry">Found 6 tools:</div>';
-        out.innerHTML += '<div class="log-entry">• action: #chainTarget1 (.chain-btn)</div>';
-        out.innerHTML += '<div class="log-entry">• action: #chainTarget2 (.chain-btn)</div>';
-        out.innerHTML += '<div class="log-entry">• action: #chainAlertBtn (.chain-btn)</div>';
-        out.innerHTML += '<div class="log-entry">• field: #wfEmail (input)</div>';
-        out.innerHTML += '<div class="log-entry">• field: #wfUsername (input)</div>';
-        out.innerHTML += '<div class="log-entry">• field: #wfMessage (textarea)</div>';
-        out.innerHTML += '<div class="log-entry success">✓ Tools retrieved!</div>';
+      try {
+        // Use the actual Reef.getAgentTools() API
+        const tools = await window.Reef.getAgentTools();
+        
+        out.innerHTML = '<div class="log-entry">Found ' + tools.length + ' tools:</div>';
+        for (const tool of tools.slice(0, 10)) {
+          out.innerHTML += '<div class="log-entry">- ' + tool.type + ': ' + (tool.name || tool.id) + (tool.selector ? ' (' + tool.selector + ')' : '') + '</div>';
+        }
+        out.innerHTML += '<div class="log-entry success">OK Tools retrieved!</div>';
         setSuccess('toolsOutput');
-      }, 300);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
-    function runFindActionableDemo() {
+    // Find actionable by text
+    async function runFindActionableDemo() {
       const out = document.getElementById('toolsOutput');
       out.innerHTML = '<span class="status-indicator running"></span>Searching for "chain"...';
       
-      setTimeout(() => {
-        out.innerHTML += '<div class="log-entry success">✓ Found: #chainTarget1</div>';
-        out.innerHTML += '<div class="log-entry">Selector: .chain-btn</div>';
+      try {
+        const agent = window.Reef.agent();
+        const result = await agent.findActionable('chain');
+        
+        if (result) {
+          out.innerHTML += '<div class="log-entry success">OK Found: ' + (result.id || result.selector || 'unknown') + '</div>';
+          out.innerHTML += '<div class="log-entry">Selector: ' + (result.selector || 'N/A') + '</div>';
+        } else {
+          out.innerHTML += '<div class="log-entry">No actionable element found for "chain"</div>';
+        }
         setSuccess('toolsOutput');
-      }, 300);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
-    function runGetSessionDemo() {
+    // getSession() demo with actual Reef.agent().getSession()
+    async function runGetSessionDemo() {
       const out = document.getElementById('sessionOutput');
       out.innerHTML = '<span class="status-indicator running"></span>Fetching session...';
       
-      setTimeout(() => {
+      try {
+        const agent = window.Reef.agent();
+        const session = agent.getSession();
+        
         const now = new Date();
-        out.innerHTML = '<div class="log-entry">Session ID: demo-session-' + Math.floor(Math.random() * 10000) + '</div>';
-        out.innerHTML += '<div class="log-entry">URL: ' + window.location.href + '</div>';
+        out.innerHTML = '<div class="log-entry">Session ID: ' + session.id + '</div>';
+        out.innerHTML += '<div class="log-entry">URL: ' + session.url + '</div>';
         out.innerHTML += '<div class="log-entry">Timestamp: ' + now.toLocaleTimeString() + '</div>';
-        out.innerHTML += '<div class="log-entry success">✓ Session retrieved!</div>';
+        out.innerHTML += '<div class="log-entry success">OK Session retrieved!</div>';
         setSuccess('sessionOutput');
-      }, 200);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
-    function runNavigateDemo(url) {
+    // Navigation demo with actual Reef.agent() methods
+    // Note: Navigation is disabled in demo for safety
+    async function runNavigateDemo(url) {
       const out = document.getElementById('navOutput');
       out.innerHTML = '<span class="status-indicator running"></span>Navigating to index.html...';
       
-      setTimeout(() => {
+      try {
+        // In production, this would be: await window.Reef.agent().navigate(url);
         out.innerHTML += '<div class="log-entry">Note: Navigation disabled in demo for safety</div>';
-        out.innerHTML += '<div class="log-entry">In production, this would navigate to: ' + url + '</div>';
-        out.innerHTML += '<div class="log-entry success">✓ Navigation would complete!</div>';
+        out.innerHTML += '<div class="log-entry">In production, this would call: Reef.agent().navigate("' + url + '")</div>';
+        out.innerHTML += '<div class="log-entry success">OK Navigation would complete!</div>';
         setSuccess('navOutput');
-      }, 400);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
-    function runBackDemo() {
+    async function runBackDemo() {
       const out = document.getElementById('navOutput');
       out.innerHTML = '<span class="status-indicator running"></span>Calling back()...';
       
-      setTimeout(() => {
+      try {
+        // In production, this would be: await window.Reef.agent().back();
         out.innerHTML += '<div class="log-entry">Note: Navigation disabled in demo</div>';
-        out.innerHTML += '<div class="log-entry">In production, this would go back in history</div>';
-        out.innerHTML += '<div class="log-entry success">✓ Back completed!</div>';
+        out.innerHTML += '<div class="log-entry">In production, this would call: Reef.agent().back()</div>';
+        out.innerHTML += '<div class="log-entry success">OK Back completed!</div>';
         setSuccess('navOutput');
-      }, 400);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
-    function runWaitDemo() {
+    async function runWaitDemo() {
       const out = document.getElementById('navOutput');
       const startTime = Date.now();
       out.innerHTML = '<span class="status-indicator running"></span>Waiting 1 second...';
       
-      setTimeout(() => {
+      try {
+        const agent = window.Reef.agent();
+        await agent.wait(1000);
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
-        out.innerHTML += '<div class="log-entry success">✓ Wait completed after ' + elapsed + ' seconds!</div>';
+        out.innerHTML += '<div class="log-entry success">OK Wait completed after ' + elapsed + ' seconds!</div>';
         setSuccess('navOutput');
-      }, 1000);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
-    function runExtractDemo() {
+    // Extract demo with actual Reef.agent().extract()
+    async function runExtractDemo() {
       const out = document.getElementById('extractOutput');
       const el = document.getElementById('extractTarget');
       
       out.innerHTML = '<span class="status-indicator running"></span>Extracting content...';
       
-      setTimeout(() => {
-        const content = el.textContent.trim();
-        out.innerHTML += '<div class="log-entry success">✓ Extracted: "' + content + '"</div>';
+      try {
+        const agent = window.Reef.agent();
+        const content = await agent.extract('#extractTarget');
+        
+        out.innerHTML += '<div class="log-entry success">OK Extracted: "' + content + '"</div>';
         setSuccess('extractOutput');
-      }, 200);
+      } catch (error) {
+        out.innerHTML += '<div class="log-entry error">ERROR: ' + error.message + '</div>';
+      }
     }
 
     // Event listeners for visual feedback when buttons are clicked
     document.getElementById('chainAlertBtn').addEventListener('click', function() {
       const out = document.getElementById('chainOutput');
       if (out.innerHTML.includes('chainAlertBtn')) return;
-      out.innerHTML += '<div class="log-entry success">→ Alert displayed at ' + new Date().toLocaleTimeString() + '</div>';
+      out.innerHTML += '<div class="log-entry success">-> Alert displayed at ' + new Date().toLocaleTimeString() + '</div>';
     });
 
     document.getElementById('actDestructive').addEventListener('click', function() {
       const out = document.getElementById('actOutput');
-      out.innerHTML = '<div class="log-entry error" style="color:var(--coral);">⚠ Destructive action triggered</div>';
+      out.innerHTML = '<div class="log-entry error">WARNING: Destructive action triggered</div>';
       out.innerHTML += '<div class="log-entry">In production, this would be blocked when actionsMode="navigate-only"</div>';
     });
   </script>
 </body>
 </html>
+ 
