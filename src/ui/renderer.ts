@@ -38,7 +38,7 @@ export class UIRenderer {
   setRebuildIndexCallback(cb: () => void): void { this.rebuildIndexCallback = cb; }
   setToggleInspectorCallback(cb: (active: boolean) => void): void { this.toggleInspectorCallback = cb; }
 
-  renderUI(
+renderUI(
     placeholder: string,
     currentMode: 'regular' | 'opaque' | 'high-contrast',
     onModeChange: (mode: string) => void
@@ -46,7 +46,17 @@ export class UIRenderer {
     this.modeChangeCallback = onModeChange;
     const host = document.createElement('div');
     host.className = 'reef-host is-hidden';
-    document.body.appendChild(host);
+    // Defer to DOM ready if called from head before body exists
+    if (document.body) {
+      document.body.appendChild(host);
+    } else {
+      const appendHost = () => {
+        if (document.body) {
+          document.body.appendChild(host);
+        }
+      };
+      document.addEventListener('DOMContentLoaded', appendHost);
+    }
     this.host = host;
     this.root = host.attachShadow({ mode: 'open' });
     const shadow = this.root;

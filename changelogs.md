@@ -2,20 +2,44 @@
 
 ## [Unreleased]
 
-### Fixed
-- Fixed `addToIndex` bug where label indexing only fired for labels of length exactly 2 (changed `labelLower.length >= 2 && labelLower.length < 3` to `labelLower.length >= 2`).
-- Fixed `searchSections` body-word lookup that used confusing fallback logic `index.bodyIndex.get(word) ?? index.bodyIndex.get(q.toLowerCase().split(/\s+/).find(w => w.includes(word)) ?? '')`. Now uses clean `index.bodyIndex.get(word)`.
-
 ### Added
-- **Web Worker support for indexing** (`useWorkerIndexing` config option). When enabled, page fetching happens on the main thread but HTML parsing and content extraction is offloaded to a Web Worker, reducing main-thread jank during large site crawls. The worker returns the serialized index which is then deserialized on the main thread.
+- **Agentic API - Chainable Methods** (`agent()`)
+  - `agent().click(selector)` - Dispatch click events on elements with visual feedback
+  - `agent().type(selector, value)` - Fill input/textarea/select values with proper event dispatch (React/Vue compatible)
+  - `agent().submit(selector?)` - Submit forms or click submit buttons
+  - `agent().navigate(url)` - Programmatic page navigation
+  - `agent().back()` / `agent().forward()` - Browser history navigation  
+  - `agent().wait(timeout)` - Pause execution for async operations
+  - `agent().extract(selector)` - Extract text content or form values from elements
 
-- **Programmatic action execution API** (`reef.act(recordId)`). Returns `Promise<{ success: boolean; reason?: string }>` allowing external agents to execute actions without the modal being open. Respects `actionsMode` gating for destructive actions.
+- **Workflow System** (`executeWorkflow(steps, options)`)
+  - Multi-step JSON/YAML workflow execution with error handling
+  - Retry logic via `maxRetries` and `retryDelay` options
+  - Lifecycle callbacks: `onStepStart`, `onStepComplete`, `onStepError`
+  - Supported step actions: `click`, `type`, `navigate`, `extract`, `submit`, `back`, `forward`, `wait`
 
-- **Field value filling API** (`reef.fillField(recordId, value)`). Sets input field values programmatically using native property setters with proper `input`/`change` event dispatch for React/Vue compatibility.
+- **Programmatic Action Execution** (`act(recordId)`)
+  - Execute actions by record ID without modal open
+  - Returns `{ success: boolean; reason?: string }`
+  - Respects `actionsMode` gating for destructive actions
+
+- **Field Value Filling** (`fillField(recordId, value)`)
+  - Programmatically fill form fields using native property setters
+  - Proper `input`/`change` event dispatch for React/Vue compatibility
+  - Returns `{ success: boolean; reason?: string }`
+
+- **Agent Tools & Session Management**
+  - `getAgentTools()` - Return all actionable elements as tool descriptors for LLM agent consumption
+  - `agent().getSession()` - Retrieve session snapshot with `{ id, url, timestamp, cookies?, localStorage? }`
 
 ### Changed
-- Updated `PARITY.md` to reflect completed features:
-  - Marked Web Worker wiring as complete
-  - Marked programmatic action execution (`act()`) as complete
-  - Marked field value filling (`fillField()`) as complete
-  - Updated suggested sequencing to prioritize remaining high-value features
+- New `actionsMode: 'execute' | 'navigate-only'` configuration option in `ReefConfig`
+- `data-index-actions="true"` and `data-index-fields="true"` script attributes to enable action/field indexing
+
+### Fixed
+- Fixed `addToIndex` bug where label indexing only fired for labels of length exactly 2 (changed to `labelLower.length >= 2`)
+- Fixed `searchSections` body-word lookup that used confusing fallback logic
+
+### Demo
+- Updated `agentic-demo.html` to use actual Reef API instead of simulated DOM manipulation
+- Added interactive demonstrations for all agentic methods
