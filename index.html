@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Reef</title>
-  <meta name="description" content="Zero-build, Cmd+K search overlay for static sites" />
+  <meta name="description" content="Zero-build, Cmd+K search overlay with AI agent workflows for static sites" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -39,11 +39,11 @@
   </nav>
 
   <header class="hero wrap">
-    <div class="hero-eyebrow">client-side search · zero backend · agentic actions</div>
+    <div class="hero-eyebrow">client-side search · agentic workflows · zero backend</div>
     <h1>Search that ships in<br>one <span class="tag-chip">&lt;script&gt;</span> tag</h1>
     <p class="sub">Fuzzy, keyboard-first search for static sites. No backend, no build step, no account — drop in one
-      script and it works on this page. Reef can also execute actions on buttons, focus form fields, and download
-      files — making it a powerful primitive for AI agents acting on websites.</p>
+      script and it works on this page. Reef also enables AI agents to act on pages through chainable APIs,
+      low-code workflows, and safe DOM automation.</p>
     <p class="sub">NPM and jsdelivr build coming soon!</p>
     <div class="trigger" id="trigger" role="button" tabindex="0" aria-haspopup="dialog">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -130,23 +130,54 @@
       <div class="code-label">Agentic API</div>
       <h2>Programmatic control for AI agents</h2>
     </div>
-    <p class="compare-intro">Reef exposes APIs for agents to discover and interact with page elements:</p>
-    <div class="how-steps">
-      <div class="how-step">
-        <div class="how-index">act()</div>
-        <h3>Execute actions</h3>
-        <p>Run `Reef.act(recordId)` to click buttons, toggle controls, or trigger actions. Returns success/failure status.</p>
-      </div>
-      <div class="how-step">
-        <div class="how-index">fillField()</div>
-        <h3>Fill inputs</h3>
-        <p>Use `Reef.fillField(recordId, value)` to programmatically set field values with proper event dispatch.</p>
-      </div>
-      <div class="how-step">
-        <div class="how-index">getAgentTools()</div>
-        <h3>Discover tools</h3>
-        <p>Call `Reef.getAgentTools()` to get all actionable elements with their selectors for agent tool use.</p>
-      </div>
+    <p class="compare-intro">Reef exposes chainable APIs and low-code workflows for agents to discover and interact with page elements:</p>
+    <div class="agentic-table">
+      <table class="agentic-matrix">
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>agent()</code></td>
+            <td>Chain actions: <code>click(selector).type(selector, value).submit()</code> for human-like flows</td>
+          </tr>
+          <tr>
+            <td><code>executeWorkflow(workflow, options)</code></td>
+            <td>Run multi-step JSON/YAML workflows with error handling, retries, and callbacks</td>
+          </tr>
+          <tr>
+            <td><code>act(recordId)</code></td>
+            <td>Execute actions by record ID — click buttons, toggle controls, trigger actions. Returns <code>{success, reason?}</code></td>
+          </tr>
+          <tr>
+            <td><code>fillField(recordId, value)</code></td>
+            <td>Fill input fields programmatically with proper event dispatch</td>
+          </tr>
+          <tr>
+            <td><code>getAgentTools()</code></td>
+            <td>Get all actionable elements with selectors for agent tool use</td>
+          </tr>
+          <tr>
+            <td><code>getSession()</code></td>
+            <td>Retrieve session snapshot with <code>{id, url, timestamp}</code> for state management</td>
+          </tr>
+          <tr>
+            <td><code>navigate(url)</code></td>
+            <td>Programmatic navigation with pending action resolution</td>
+          </tr>
+          <tr>
+            <td><code>back() / forward()</code></td>
+            <td>Browser history control for agents</td>
+          </tr>
+          <tr>
+            <td><code>wait(timeout)</code></td>
+            <td>Pause execution for async operations</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
     <p class="compare-intro" style="margin-top: 8px;">Destructive actions (delete, pay, checkout) are gated by <code>actionsMode</code> for safety.</p>
   </section>

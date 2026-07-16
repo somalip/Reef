@@ -3,7 +3,8 @@ import { UIRenderer, VisualInspector } from './ui/index.js';
 import { Indexer } from './indexing/index.js';
 import { ActionExecutor } from './actions/index.js';
 import { ConfigReader, ConfigApplier } from './config/config-reader.js';
-import type { ReefConfig } from './types.js';
+import { Agent } from './agent.js';
+import type { ReefConfig, WorkflowStep, WorkflowOptions } from './types.js';
 
 class ReefSearch {
   private config: ReefConfig;
@@ -601,6 +602,16 @@ class ReefSearch {
       selector: r.selector,
       id: r.id
     }));
+  }
+
+  public agent(): Agent {
+    return new Agent(this.index, this.inspector, this.config.actionsMode || 'execute');
+  }
+
+  public async executeWorkflow(definition: WorkflowStep[] | { steps: WorkflowStep[]; options?: WorkflowOptions }, options?: WorkflowOptions): Promise<void> {
+    const agent = this.agent();
+    const steps = Array.isArray(definition) ? definition : definition.steps;
+    await agent.executeWorkflow(steps, options ?? (Array.isArray(definition) ? undefined : definition.options));
   }
 
   public toggleInspector(force?: boolean): void {

@@ -1,4 +1,4 @@
-export type { ReefConfig, IndexRecord, SectionDocument, SearchOptions, ScoredRecord, MatchSpan, TokenFilter } from './src/types.js';
+export type { ReefConfig, IndexRecord, SectionDocument, SearchOptions, ScoredRecord, MatchSpan, TokenFilter, WorkflowStep, WorkflowOptions, AgentSession, ActionResult } from './src/types.js';
 
 export {
   extractSections,
@@ -26,6 +26,9 @@ export {
   getPopularQueries,
   type QueryNode,
 } from './src/search.js';
+
+export { Agent } from './src/agent.js';
+export { executeWorkflow, parseYAML, validateWorkflow, type WorkflowDefinition } from './src/workflow.js';
 
 import { ReefSearch } from './src/reef.js';
 import { ConfigReader } from './src/config/config-reader.js';

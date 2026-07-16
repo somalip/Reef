@@ -104,6 +104,15 @@ h1{ font-family:'Fraunces',serif; font-optical-sizing:auto; font-weight:560; fon
 .how-step h3{ font-family:'Fraunces',serif; font-weight:500; font-size:17px; margin:0 0 8px; }
 .how-step p{ font-size:13px; color:var(--text-dim); line-height:1.55; margin:0; }
 
+/* agentic api table */
+.agentic-table{ overflow-x:auto; border:1px solid var(--border); border-radius:12px; -webkit-overflow-scrolling:touch; margin-bottom:20px; }
+.agentic-matrix{ border-collapse:separate; border-spacing:0; width:100%; font-size:12.5px; min-width:480px; }
+.agentic-matrix th, .agentic-matrix td{ padding:11px 14px; text-align:left; border-bottom:1px solid var(--border); }
+.agentic-matrix thead th{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint); font-weight:500; background:var(--bg-elev); }
+.agentic-matrix tbody tr:last-child td{ border-bottom:none; }
+.agentic-matrix td code{ color:var(--teal); font-family:'JetBrains Mono',monospace; }
+.agentic{ margin-bottom:64px; }
+
 /* compare matrix */
 .compare{ margin-bottom:64px; }
 .compare-intro{ font-size:14px; color:var(--text-dim); line-height:1.6; max-width:620px; margin:0 0 22px; }
@@ -176,7 +185,8 @@ footer{ padding:20px 0 48px; text-align:center; font-size:12px; color:var(--text
   .compare-matrix .dim{ font-size:11px; max-width:120px; }
   .compare-toolbar{ flex-direction:column; align-items:stretch; }
   .compare-actions{ justify-content:flex-end; }
-  .agentic .how-steps{ grid-template-columns:1fr; }
+  .agentic-table{ border-radius:10px; }
+  .agentic-matrix{ font-size:11.5px; min-width:420px; }
 }
 
 :focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }

@@ -1,8 +1,14 @@
 ![reef_transparent](https://github.com/user-attachments/assets/a7c9f074-a61a-4f96-8bf4-f595df18f2f8)
 
-# Reef Search
+# Reef: AI Agents for the Live Web
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)]
+[![Agent-Ready](https://img.shields.io/badge/Agent-Ready-green.svg)]
+[![DOM Actions](https://img.shields.io/badge/DOM-Actions-orange.svg)]
 
 > **Notice:** This project is under active development. Expect new versions **daily**, and expect breaking changes between them.
+
+Reef is a **client-side library** that lets AI agents **search, extract, and act** on live DOM content. No servers, no APIs—just pure browser power.
 
 Reef Search is a zero-build, single-script-tag search overlay for static sites. Paste in one `<script>` tag and visitors get a fast, keyboard-first search modal (**Cmd/Ctrl+K**) backed by an in-browser index — no server, no build step, no account.
 
@@ -12,33 +18,22 @@ It crawls your sitemap, extracts page content in the browser, and can optionally
 
 - [Features](#features)
 - [How it works](#how-it-works)
+- [Architecture](#architecture)
 - [Install](#install)
 - [Configuration](#configuration)
-- [Result types](#Result-types)
-- [Runtime API](#runtime-api)
-- [Developer API](#developer-api)
-- [Keyboard shortcuts](#keyboard-shortcuts)
-- [Safety and execution model](#safety-and-execution-model)
-- [Current limitations](#current-limitations)
+- [Agentic Workflows](#agentic-workflows)
+- [Use Cases](#use-cases)
 - [Roadmap](#roadmap)
 - [Development](#development)
 
 ## Features
 
-- **Single script-tag install** — no build step, no backend, no framework assumptions.
-- **In-browser indexing** — pages are fetched, parsed with `DOMParser`, and indexed entirely client-side; nothing runs from fetched HTML.
-- **Universal indexing model** — beyond page sections, the indexer can also surface:
-  - **Actions** — buttons, `[role="button"]` elements, and `<summary>` toggles.
-  - **Fields** — form inputs, textareas, and selects (indexed for focus, never auto-filled).
-  - **Links** — external links, tracked as their own result type.
-  - **Files** — downloadable links (PDF, Office docs, spreadsheets, archives, CSV).
-  - **Media** — images with alt text/captions, and video/audio with a title or caption track.
-  - **Structured data** — `application/ld+json` FAQ pages and other typed metadata, shown as inline answers.
-- **Web Worker support** — set `data-use-worker-indexing="true"` to offload HTML parsing to a worker, reducing main-thread jank on large sites.
-- **IndexedDB persistence** — the index is cached locally for faster repeat visits (configurable TTL via `data-ttl`).
-- **Accessible, themeable modal** — rendered in a Shadow DOM root so host-page styles never leak in or out.
-- **Typo-tolerant search** — falls back to a Levenshtein-based "did you mean" suggestion when there are no direct matches.
-- **Developer API** — customize hotkeys, register selection callbacks, and control the modal programmatically.
+- **Live DOM Indexing**: Index headings, buttons, forms, media, and structured data in real-time.
+- **Agentic Actions**: Click, type, submit, and navigate—just like a human.
+- **Low-Code Workflows**: Define workflows in JSON/YAML for non-developers.
+- **Programmatic API**: Chainable methods for developers (e.g., `agent.click().type().submit()`).
+- **Privacy-First**: 100% client-side. Your data stays local.
+- **Plug-and-Play**: Zero-config, works with any static or dynamic site.
 
 ## How it works
 
@@ -56,7 +51,69 @@ It crawls your sitemap, extracts page content in the browser, and can optionally
 <script src="reef.min.js"></script>
 ```
 
-Press **Cmd/Ctrl+K** on the page to open the overlay.
+Press **Cmd/Ctrl+K** on the page to open the overlay, or use the programmatic API.
+
+## Architecture
+
+```mermaid
+graph TD
+  A[DOM] -->|Indexed by| B(indexer.ts)
+  B --> C[Inverted Index]
+  C --> D[search.ts]
+  C --> E[agent.ts]
+  E --> F[action-executor.ts]
+  E --> G[browser.ts]
+  F --> H[Web Worker]
+  G --> H
+```
+
+## Agentic Workflows
+
+### Programmatic API
+
+```js
+const agent = window.Reef.agent();
+await agent
+  .click("#login-button")
+  .type("#email", "user@example.com")
+  .submit();
+```
+
+### Low-Code Workflows
+
+Define multi-step automation in JSON:
+
+```js
+const workflow = [
+  { action: "click", selector: "#login-button" },
+  { action: "type", selector: "#email", value: "user@example.com" },
+  { action: "type", selector: "#password", value: "secret123" },
+  { action: "submit" }
+];
+await window.Reef.executeWorkflow(workflow);
+```
+
+### Workflow with Error Handling
+
+```js
+await window.Reef.executeWorkflow([
+  { action: "navigate", url: "/dashboard" },
+  { action: "click", selector: "#refresh" },
+  { action: "extract", selector: "#data-table" }
+], {
+  maxRetries: 3,
+  retryDelay: 500,
+  onStepError: (step, index, error) => {
+    console.error(`Step ${index} failed:`, error);
+  }
+});
+```
+
+## Use Cases
+
+- **Web Automation**: Automate repetitive tasks (e.g., form filling, data entry).
+- **Dynamic Scraping**: Extract real-time data from dashboards.
+- **AI Assistants**: Build agents that interact with web apps (e.g., customer support bots).
 
 ## Configuration
 
@@ -478,9 +535,11 @@ Because selecting a search result can trigger behavior on the page, execution is
 
 ## Roadmap
 
-- Same-origin breadth-first fallback crawl when no sitemap is present.
-- Wiring up `data-index-hidden`, `data-file-extensions`, and `data-exclude-action`.
-- Deciding whether `answer`-type results should outrank `section` matches on exact queries.
+- [x] Live DOM indexing
+- [x] Typo tolerance & faceted filtering
+- [ ] Multi-step workflows (Q3 2026)
+- [ ] Real-time DOM change detection (Q3 2026)
+- [ ] Session persistence (Q4 2026)
 
 ## Development
 
