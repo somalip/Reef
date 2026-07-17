@@ -6,7 +6,7 @@
   <title>Developer API Demo - Reef Search</title>
   <meta name="description" content="Developer API demo showcasing custom hotkeys, callbacks, and advanced features" />
   <script src="../dist/reef.min.js" data-sitemap="sitemap.xml" data-hotkey="altk,f" data-placeholder="Search documentation..."></script>
-  <link rel="stylesheet" href="./api-demo/style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <nav class="container">
@@ -182,7 +182,7 @@ window.Reef.setOnReady(() => modal.style.display = 'block');
 
 input.addEventListener('input', (e) => {
   const results = window.Reef.search(e.target.value, 10);
-  resultsDiv.innerHTML = results.map(r =&gt; `
+  resultsDiv.innerHTML = results.map(r => `
     &lt;div class="custom-result" data-url="${r.url}"&gt;
       &lt;span class="result-type"&gt;${r.type}&lt;/span&gt;
       &lt;span class="result-title"&gt;${r.headingText}&lt;/span&gt;
@@ -301,7 +301,7 @@ createDropdownSearch();</code></pre>
       </div>
     </section>
 
-    <script src="./api-demo/script.js"></script>
+    <script src="script.js"></script>
   </main>
 </body>
 </html>

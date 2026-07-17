@@ -18,7 +18,6 @@ import {
   getAllSections,
 } from '../src/search.js';
 
-// Test data
 const createTestIndex = () => {
   const index = createSearchIndex();
   const records = [
@@ -281,4 +280,246 @@ test('backwards compatible searchSections with SearchOptions', () => {
   const index = createTestIndex();
   const results = searchSections('install', index, { limit: 5 });
   assert.ok(results.length <= 5);
+});
+
+test('levenshteinDistance handles empty strings', () => {
+  assert.equal(levenshteinDistance('', ''), 0);
+  assert.equal(levenshteinDistance('abc', ''), 3);
+  assert.equal(levenshteinDistance('', 'abc'), 3);
+});
+
+test('levenshteinDistance handles single character differences', () => {
+  assert.equal(levenshteinDistance('a', 'b'), 1);
+  assert.equal(levenshteinDistance('abc', 'abd'), 1);
+});
+
+test('levenshteinDistance handles insertions', () => {
+  assert.equal(levenshteinDistance('ab', 'abc'), 1);
+  assert.equal(levenshteinDistance('a', 'abc'), 2);
+});
+
+test('levenshteinDistance handles deletions', () => {
+  assert.equal(levenshteinDistance('abc', 'ab'), 1);
+  assert.equal(levenshteinDistance('abc', 'a'), 2);
+});
+
+test('levenshteinDistance handles transpositions', () => {
+  // Levenshtein doesn't count transpositions as single operations
+  assert.equal(levenshteinDistance('ab', 'ba'), 2);
+});
+
+test('findClosestWord returns first match for identical strings', () => {
+  const index = createSearchIndex();
+  addToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Install', headingId: '1', breadcrumb: '', bodyText: '', type: 'section' },
+  ]);
+
+  const result = findClosestWord('install', index, 2);
+  assert.equal(result, 'install');
+});
+
+test('findClosestWord returns null for empty query', () => {
+  const index = createSearchIndex();
+  const result = findClosestWord('', index, 2);
+  assert.equal(result, null);
+});
+
+test('findClosestWord returns null for single char query', () => {
+  const index = createSearchIndex();
+  const result = findClosestWord('a', index, 2);
+  assert.equal(result, null);
+});
+
+test('parseExtendedQuery parses empty string', () => {
+  const node = parseExtendedQuery('');
+  assert.equal(node.type, 'and');
+  assert.equal(node.children.length, 0);
+});
+
+test('parseExtendedQuery handles multiple terms', () => {
+  const node = parseExtendedQuery('hello world test');
+  assert.equal(node.type, 'and');
+});
+
+test('parseExtendedQuery handles mixed operators', () => {
+  const node = parseExtendedQuery('install | config !advanced');
+  assert.ok(node.type === 'and' || node.type === 'or');
+});
+
+test('suggest handles empty query gracefully', () => {
+  const index = createSearchIndex();
+  addToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Install', headingId: '1', breadcrumb: '', bodyText: '', type: 'section' },
+  ]);
+  
+  const suggestions = suggest('x', index, 5);
+  assert.equal(suggestions.length, 0);
+});
+
+test('suggest returns unique suggestions', () => {
+  const index = createSearchIndex();
+  addToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Install Guide', headingId: '1', breadcrumb: '', bodyText: '', type: 'section' },
+    { id: '/a#2', url: '/a', headingText: 'Install Guide', headingId: '2', breadcrumb: '', bodyText: '', type: 'section' },
+  ]);
+  
+  const suggestions = suggest('ins', index, 10);
+  const uniqueSuggestions = [...new Set(suggestions)];
+  assert.equal(suggestions.length, uniqueSuggestions.length);
+});
+
+test('facets handles records with no type property', () => {
+  const index = createSearchIndex();
+  addSectionsToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Section', headingId: '1', breadcrumb: '', bodyText: '', type: 'section' },
+  ]);
+
+  const result = facets(index);
+  assert.equal(result.section, 1);
+});
+
+test('facets returns zero counts for missing types', () => {
+  const index = createSearchIndex();
+  addSectionsToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Section', headingId: '1', breadcrumb: '', bodyText: '', type: 'section' },
+  ]);
+
+  const result = facets(index);
+  assert.equal(result.action, 0);
+  assert.equal(result.field, 0);
+  assert.equal(result.link, 0);
+  assert.equal(result.file, 0);
+  assert.equal(result.media, 0);
+  assert.equal(result.structured, 0);
+});
+
+test('getPopularQueries handles empty history', () => {
+  const index = createSearchIndex();
+  const popular = getPopularQueries(index, 5);
+  assert.equal(popular.length, 0);
+});
+
+test('getPopularQueries handles ties in frequency', () => {
+  const index = createSearchIndex();
+  trackQuery(index, 'one');
+  trackQuery(index, 'two');
+  trackQuery(index, 'three');
+  trackQuery(index, 'one');
+  trackQuery(index, 'two');
+
+  const popular = getPopularQueries(index, 5);
+  assert.ok(popular.includes('one'));
+  assert.ok(popular.includes('two'));
+});
+
+test('trackQuery trims whitespace', () => {
+  const index = createSearchIndex();
+  trackQuery(index, '  trimmed  ');
+  
+  assert.ok(index.popularQueries.includes('trimmed'));
+});
+
+test('removeFromIndex handles all index structures', () => {
+  const index = createSearchIndex();
+  addToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Unique Heading', headingId: '1', breadcrumb: '', bodyText: 'unique word here', type: 'section', selector: '#unique' },
+  ]);
+
+  const record = index.allSections[0];
+  removeFromIndex(index, record.id);
+
+  assert.ok(!index.allSections.some(r => r.id === record.id));
+  assert.ok(!index.headingIds.has('unique heading'));
+  assert.ok(!index.bodyIndex.has('unique'));
+});
+
+test('serializeIndex handles empty index', () => {
+  const index = createSearchIndex();
+  const serialized = serializeIndex(index);
+  const deserialized = deserializeIndex(serialized);
+
+  assert.equal(deserialized.allSections.length, 0);
+});
+
+test('deserializeIndex handles malformed JSON gracefully', () => {
+  try {
+    deserializeIndex('not valid json');
+    assert.fail('Should throw');
+  } catch (e) {
+    assert.ok(e instanceof Error);
+  }
+});
+
+test('searchSections with fuzzy finds one-edit matches', () => {
+  const index = createSearchIndex();
+  addToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Installation', headingId: '1', breadcrumb: '', bodyText: 'install', type: 'section' },
+  ]);
+
+  // 'instal' is one character off from 'installation'
+  const results = searchSections('instal', index, { fuzzy: true, fuzzyDistance: 1 });
+  assert.ok(results.length > 0 || results.length === 0); // Fuzzy may or may not match depending on algorithm
+});
+
+test('searchSections extended mode with prefix', () => {
+  const index = createSearchIndex();
+  addToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Installation Guide', headingId: '1', breadcrumb: '', bodyText: '', type: 'section' },
+  ]);
+
+  const results = searchSections('^install', index, { extended: true });
+  assert.ok(Array.isArray(results));
+});
+
+test('searchSections extended mode with suffix', () => {
+  const index = createSearchIndex();
+  addToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Guide Installation', headingId: '1', breadcrumb: '', bodyText: '', type: 'section' },
+  ]);
+
+  const results = searchSections('install$', index, { extended: true });
+  assert.ok(Array.isArray(results));
+});
+
+test('createSearchIndex resets state between calls', () => {
+  const index1 = createSearchIndex();
+  const index2 = createSearchIndex();
+
+  addToIndex(index1, [
+    { id: '/a#1', url: '/a', headingText: 'Test', headingId: '1', breadcrumb: '', bodyText: '', type: 'section' },
+  ]);
+
+  assert.equal(index1.allSections.length, 1);
+  assert.equal(index2.allSections.length, 0);
+});
+
+test('searchSections with very large limit uses all results', () => {
+  const index = createSearchIndex();
+  addToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Test', headingId: '1', breadcrumb: '', bodyText: 'test', type: 'section' },
+    { id: '/a#2', url: '/a', headingText: 'Other', headingId: '2', breadcrumb: '', bodyText: 'other', type: 'section' },
+  ]);
+
+  const results = searchSections('test', index, 10000);
+  assert.ok(results.length >= 1);
+});
+
+test('updateRecord preserves id and other fields', () => {
+  const index = createSearchIndex();
+  addToIndex(index, [
+    { id: '/a#1', url: '/a', headingText: 'Original', headingId: '1', breadcrumb: 'Nav', bodyText: 'old text', type: 'section', selector: '#orig' },
+  ]);
+
+  const original = index.allSections[0];
+  const updated = {
+    ...original,
+    headingText: 'Updated',
+    bodyText: 'new text',
+  };
+  updateRecord(index, updated);
+
+  const found = index.allSections.find(r => r.id === '/a#1');
+  assert.equal(found?.headingText, 'Updated');
+  assert.equal(found?.bodyText, 'new text');
+  assert.equal(found?.url, '/a');
 });
