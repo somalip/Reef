@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indexing Module - Documentation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+  </symbol>
+  <symbol id="icon-document" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+  </symbol>
+  <symbol id="icon-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+  </symbol>
+  <symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
+  </symbol>
+  <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65 16.65"></line>
+  </symbol>
+  <symbol id="icon-file-cabinet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="3" width="16" height="18" rx="2" ry="2"></rect>
+    <line x1="8" y1="3" x2="8" y2="21"></line>
+    <line x1="16" y1="3" x2="16" y2="21"></line>
+    <line x1="4" y1="9" x2="20" y2="9"></line>
+    <line x1="4" y1="15" x2="20" y2="15"></line>
+  </symbol>
+  <symbol id="icon-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+  </symbol>
+  <symbol id="icon-arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <polyline points="19 12 12 19 5 12"></polyline>
+  </symbol>
+  <symbol id="icon-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+    <polyline points="12 5 19 12 12 19"></polyline>
+  </symbol>
+  <symbol id="icon-arrow-up-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="7" y1="17" x2="17" y2="7"></line>
+    <polyline points="10 7 17 7 17 14"></polyline>
+  </symbol>
+  <symbol id="icon-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  </symbol>
+  <symbol id="icon-flash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="13 2 3 14 12 14 8 22 18 10 9 10 13 2"></polygon>
+  </symbol>
+  <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="10" width="18" height="11" rx="2" ry="2"></rect>
+    <circle cx="9" cy="5" r="3"></circle>
+    <circle cx="15" cy="5" r="3"></circle>
+    <path d="M9 14a3 3 0 0 1-3 3v2h3"></path>
+    <path d="M15 14a3 3 0 0 0 3 3v2h-3"></path>
+  </symbol>
+  <symbol id="icon-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+  </symbol>
+  <symbol id="icon-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+    <circle cx="12" cy="13" r="4"></circle>
+  </symbol>
+  <symbol id="icon-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10"></line>
+    <line x1="12" y1="20" x2="12" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="14"></line>
+    <line x1="2" y1="20" x2="22" y2="20"></line>
+  </symbol>
+  <symbol id="icon-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"></path>
+  </symbol>
+  <symbol id="icon-desktop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+    <line x1="2" y1="21" x2="22" y2="21"></line>
+    <line x1="12" y1="17" x2="12" y2="21"></line>
+  </symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </symbol>
+  <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+  </symbol>
+  <symbol id="icon-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <line x1="10" y1="9" x2="8" y2="9"></line>
+  </symbol>
+</svg>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <svg class="icon-svg"><use href="#icon-home"></use></svg>
+                <h1>Indexing Module Documentation</h1>
+            </div>
+            <p class="subtitle">Sitemap Crawling, Page Indexing & Content Extraction</p>
+        </div>
+    </header>
+
+    <nav class="sidebar">
+        <div class="nav-section">
+            <h2>Indexing</h2>
+            <a href="#overview" class="nav-link active">Overview</a>
+            <a href="#indexer-class" class="nav-link">Indexer Class</a>
+            <a href="#boot-process" class="nav-link">Boot Process</a>
+            <a href="#sitemap-crawling" class="nav-link">Sitemap Crawling</a>
+            <a href="#content-extraction" class="nav-link">Content Extraction</a>
+            <a href="#worker-indexing" class="nav-link">Worker Indexing</a>
+            <a href="#cache-integration" class="nav-link">Cache Integration</a>
+            <a href="#examples" class="nav-link">Examples</a>
+        </div>
+
+        <div class="nav-section">
+            <h2>Related Modules</h2>
+            <a href="index.html" class="nav-link">Main Documentation</a>
+            <a href="reef.html" class="nav-link">ReefSearch</a>
+            <a href="search.html" class="nav-link">Search</a>
+            <a href="extraction.html" class="nav-link">Extraction</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section id="overview" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-document"></use></svg>
+                Overview
+            </h2>
+            <p class="lead">
+                The <strong>indexing</strong> module handles sitemap fetching, page crawling, and content extraction. 
+                The <code>Indexer</code> class is the main component that orchestrates the indexing process.
+            </p>
+
+            <div class="code-block">
+                <pre><code class="language-typescript">/**
+ * @file Indexing and crawling functionality for the search index.
+ * Handles sitemap fetching, page crawling, and worker-based indexing.
+ */
+
+import {
+  extractSections,
+  extractActions,
+  extractFields,
+  extractLinks,
+  extractFiles,
+  extractMedia,
+  extractStructuredData,
+  extractHiddenContent,
+} from '../extraction.js';
+import {
+  createSearchIndex,
+  addToIndex,
+  type SearchIndex,
+  type IndexRecord,
+  type TokenFilter,
+} from '../search-index.js';
+import type { ReefConfig } from '../types.js';
+
+export class Indexer {
+  private index: SearchIndex = createSearchIndex();
+  private config: ReefConfig;
+
+  constructor(config: ReefConfig) {
+    this.config = config;
+  }
+  
+  // ... methods
+}
+
+// Re-export from index.ts
+export { Indexer } from './indexer.js';
+
+// Usage
+import { Indexer } from './src/indexing/index.js';
+import type { ReefConfig } from './src/types.js';
+
+const config: ReefConfig = { sitemap: '/sitemap.xml', maxPages: 100 };
+const indexer = new Indexer(config);</pre></code>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+
+            <div class="architecture-diagram">
+                <h3>Indexing Architecture</h3>
+                <div class="arch-row">
+                    <div class="arch-box main">
+                        <strong>Indexer</strong><br>
+                        <small>Main Class</small>
+                    </div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-down"></use></svg></div>
+                </div>
+                <div class="arch-row multi">
+                    <div class="arch-box">
+                        <strong>Prebuilt Index</strong><br>
+                        <small>From URL</small>
+                    </div>
+                    <div class="arch-box">
+                        <strong>IndexedDB Cache</strong><br>
+                        <small>Cached Index</small>
+                    </div>
+                    <div class="arch-box">
+                        <strong>Sitemap Fetch</strong><br>
+                        <small>XML Parsing</small>
+                    </div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-down"></use></svg></div>
+                </div>
+                <div class="arch-row multi">
+                    <div class="arch-box">
+                        <strong>Page Fetching</strong><br>
+                        <small>Parallel Requests</small>
+                    </div>
+                    <div class="arch-box">
+                        <strong>Worker Indexing</strong><br>
+                        <small>Web Worker</small>
+                    </div>
+                    <div class="arch-box">
+                        <strong>Same-Origin Crawl</strong><br>
+                        <small>Fallback</small>
+                    </div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-down"></use></svg></div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-box">
+                        <strong>extractAllContent()</strong><br>
+                        <small>HTML Parsing</small>
+                    </div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-down"></use></svg></div>
+                </div>
+                <div class="arch-row multi">
+                    <div class="arch-box dom">
+                        <strong>Sections</strong><br>
+                        <small>Headings</small>
+                    </div>
+                    <div class="arch-box dom">
+                        <strong>Actions</strong><br>
+                        <small>Buttons</small>
+                    </div>
+                    <div class="arch-box dom">
+                        <strong>Fields</strong><br>
+                        <small>Inputs</small>
+                    </div>
+                    <div class="arch-box dom">
+                        <strong>Links</strong><br>
+                        <small>Anchors</small>
+                    </div>
+                    <div class="arch-box dom">
+                        <strong>Files</strong><br>
+                        <small>Downloads</small>
+                    </div>
+                    <div class="arch-box dom">
+                        <strong>Media</strong><br>
+                        <small>Images, Video</small>
+                    </div>
+                </div>
+            </div>
+
+            <p>
+                The Indexer class:
+                <ul>
+                    <li>Fetches and parses sitemap.xml files</li>
+                    <li>Fetches HTML pages in parallel (with configurable concurrency)</li>
+                    <li>Extracts content using the extraction module</li>
+                    <li>Builds and maintains the search index</li>
+                    <li>Handles caching via IndexedDB</li>
+                    <li>Supports Web Worker offloading for large sites</li>
+                </ul>
+            </p>
+        </section>
+
+        <section id="indexer-class" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-gear"></use></svg>
+                Indexer Class
+            </h2>
+
+            <div class="api-method">
+                <h3>Constructor</h3>
+                <div class="code-block">
+                    <pre><code class="language-typescript">constructor(config: ReefConfig)
+
+// Create an Indexer instance
+import { Indexer } from './src/indexing/index.js';
+import type { ReefConfig } from './src/types.js';
+
+const config: ReefConfig = {
+  sitemap: '/custom-sitemap.xml',
+  maxPages: 100,
+  indexActions: true,
+  indexMedia: true,
+  indexStructuredData: true,
+  indexHidden: true,
+  excludeAction: '.no-index',
+  fileExtensions: 'pdf,doc,docx,xls,xlsx,ppt,pptx,zip,csv'
+};
+
+const indexer = new Indexer(config);</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>Properties</h3>
+                <div class="properties-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>config</code></td>
+                                <td><code>ReefConfig</code></td>
+                                <td>Current configuration. Private property.</td>
+                            </tr>
+                            <tr>
+                                <td><code>index</code></td>
+                                <td><code>SearchIndex</code></td>
+                                <td>The main search index. Private property.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>Methods</h3>
+                <div class="properties-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Returns</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>getIndex(): SearchIndex</code></td>
+                                <td><code>SearchIndex</code></td>
+                                <td>Get the current search index</td>
+                            </tr>
+                            <tr>
+                                <td><code>setIndex(index: SearchIndex): void</code></td>
+                                <td><code>void</code></td>
+                                <td>Set a new search index</td>
+                            </tr>
+                            <tr>
+                                <td><code>boot(onReady: () => void, showToast?: (msg: string) => void): Promise&lt;void&gt;</code></td>
+                                <td><code>Promise&lt;void&gt;</code></td>
+                                <td>Initialize indexing and call onReady when complete</td>
+                            </tr>
+                            <tr>
+                                <td><code>fetchSitemapUrls(): Promise&lt;string[]&gt;</code></td>
+                                <td><code>Promise&lt;string[]&gt;</code></td>
+                                <td>Get all URLs from the sitemap without building the index</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="boot-process" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-book"></use></svg>
+                Boot Process
+            </h2>
+
+            <p>
+                The <code>boot()</code> method is the main entry point for indexing. It follows this sequence:
+            </p>
+
+            <div class="code-block">
+                <pre><code class="language-javascript">async boot(onReady: () => void, showToast?: (msg: string) => void): Promise&lt;void&gt; {
+  // 1. Try prebuilt index first if configured
+  if (this.config.prebuiltIndexUrl) {
+    try {
+      const response = await fetch(this.config.prebuiltIndexUrl);
+      if (response.ok) {
+        const json = await response.text();
+        this.index = deserializeIndex(json);
+        console.info(`[reef] loaded prebuilt index with ${this.index.allSections.length} sections`);
+        onReady();
+        return;
+      }
+    } catch (error) {
+      console.warn('[reef] prebuilt index fetch failed, falling back to crawling', error);
+    }
+  }
+
+  // 2. Try IndexedDB cache first
+  try {
+    const { loadIndex } = await import('../cache.js');
+    const ttl = this.config.ttl;
+    const cached = await loadIndex(ttl);
+    if (cached?.index && cached.index.allSections.length > 0) {
+      this.index = cached.index;
+      console.info(`[reef] loaded cached index with ${this.index.allSections.length} sections`);
+      onReady();
+      return;
+    }
+  } catch (error) {
+    console.warn('[reef] cache load failed, continuing with fresh index', error);
+  }
+
+  // 3. Fetch and parse sitemap
+  const candidates = this.getSitemapCandidates();
+  
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate);
+      if (!response.ok) continue;
+      const xml = await response.text();
+      const urls: string[] = [];
+      const locRegex = /&lt;loc&gt;(.*?)&lt;\/loc&gt;/g;
+      let match: RegExpExecArray | null;
+      while ((match = locRegex.exec(xml)) !== null) {
+        urls.push(match[1].trim());
+      }
+
+      const maxPages = this.config.maxPages ?? 500;
+      if (this.config.useWorkerIndexing) {
+        await this.fetchPagesWithWorker(urls.slice(0, maxPages), candidate, onReady);
+      } else {
+        const fetchedSections = await this.fetchPagesParallel(urls.slice(0, maxPages), candidate);
+        if (fetchedSections.length) {
+          addToIndex(this.index, fetchedSections, this.config.tokenizePipeline);
+          console.info(`[reef] indexed ${fetchedSections.length} sections`);
+        }
+        
+        // 4. Save to cache
+        try {
+          const { saveIndex } = await import('../cache.js');
+          const versionHash = this.computeVersionHash(urls);
+          const metadata = {
+            versionHash,
+            buildTime: Date.now(),
+            pageMetadata: urls.reduce((acc, url) => ({ ...acc, [url]: versionHash }), {} as Record&lt;string, string&gt;)
+          };
+          await saveIndex(this.index, metadata);
+        } catch (e) {
+          console.warn('[reef] cache save failed', e);
+        }
+        
+        onReady();
+        return;
+      }
+    } catch (error) {
+      console.warn('[reef] sitemap fetch failed', candidate, error);
+    }
+  }
+
+  // 5. Fallback to same-origin crawl
+  this.crawlSameOrigin(onReady);
+}</pre></code>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+
+            <div class="callout">
+                <p><strong>Priority Order:</strong></p>
+                <ol>
+                    <li><strong>Prebuilt Index</strong> - If <code>prebuiltIndexUrl</code> is configured, try to load prebuilt index first</li>
+                    <li><strong>Cached Index</strong> - Try to load from IndexedDB cache if available and not expired</li>
+                    <li><strong>Sitemap Crawling</strong> - Fetch and parse sitemap.xml, then crawl all pages</li>
+                    <li><strong>Same-Origin Crawl</strong> - Fallback to crawling same-origin pages starting from current URL</li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="sitemap-crawling" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-database"></use></svg>
+                Sitemap Crawling
+            </h2>
+
+            <div class="api-method">
+                <h3>getSitemapCandidates()</h3>
+                <p>Get candidate sitemap URLs to try.</p>
+                <div class="code-block">
+                    <pre><code class="language-javascript">getSitemapCandidates(): string[] {
+  const base = window.location.href;
+  const configured = this.config.sitemap ?? 'sitemap.xml';
+  const candidates = [this.resolveUrl(configured, base)];
+
+  if (!configured.startsWith('/')) {
+    candidates.push(this.resolveUrl('./sitemap.xml', base));
+  } else if (configured === '/sitemap.xml') {
+    candidates.push(this.resolveUrl('sitemap.xml', base));
+  }
+
+  return [...new Set(candidates)];
+}
+
+// Returns: ['https://example.com/custom-sitemap.xml', 'https://example.com/sitemap.xml']
+// or: ['https://example.com/sitemap.xml', 'https://example.com/sitemap.xml'] (deduped)</n
+// The first candidate is the configured sitemap path
+// The second is the default sitemap.xml in the same directory as the configured path
+// This allows for flexible sitemap location configuration</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>fetchPagesParallel()</h3>
+                <p>Fetch multiple pages in parallel with configurable concurrency.</p>
+                <div class="code-block">
+                    <pre><code class="language-javascript">private async fetchPagesParallel(urls: string[], sitemapUrl: string): Promise&lt;IndexRecord[]&gt; {
+  const concurrency = 6; // Concurrent requests
+  const sections: IndexRecord[] = [];
+  const results: (IndexRecord[] | null)[] = new Array(urls.length);
+
+  let idx = 0;
+  const fetchBatch = async () => {
+    while (idx &lt; urls.length) {
+      const i = idx++;
+      const pageUrl = this.resolveUrl(urls[i], sitemapUrl);
+      try {
+        const pageResponse = await fetch(pageUrl);
+        if (pageResponse.ok) {
+          const html = await pageResponse.text();
+          const pageSections = this.extractAllContent(html, pageUrl);
+          results[i] = pageSections;
+        }
+      } catch {
+        results[i] = null;
+      }
+    }
+  };
+
+  // Run 6 concurrent fetchers
+  await Promise.all([...Array(concurrency)].map(() => fetchBatch()));
+
+  for (let i = 0; i &lt; results.length; i++) {
+    if (results[i]) {
+      sections.push(...(results[i] ?? []));
+    }
+  }
+
+  return sections;
+}
+
+// Fetches up to 6 pages concurrently
+// Each page is processed: HTML fetched -> content extracted -> records created
+// Results are collected in order and returned as a flat array</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>fetchSitemapUrls()</h3>
+                <p>Get all URLs from the sitemap without building the index.</p>
+                <div class="code-block">
+                    <pre><code class="language-javascript">async fetchSitemapUrls(): Promise&lt;string[]&gt; {
+  const candidates = this.getSitemapCandidates();
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate);
+      if (!response.ok) continue;
+      const xml = await response.text();
+      const urls: string[] = [];
+      const locRegex = /&lt;loc&gt;(.*?)&lt;\/loc&gt;/g;
+      let match: RegExpExecArray | null;
+      while ((match = locRegex.exec(xml)) !== null) {
+        urls.push(match[1].trim());
+      }
+      if (urls.length) return urls;
+    } catch {
+      continue;
+    }
+  }
+  return [];
+}
+
+// Usage
+window.Reef.getSitemapUrls().then(urls => {
+  console.log('Found URLs:', urls);
+  // ['/', '/about', '/contact', '/blog/post-1', ...]
+});</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="content-extraction" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-chart"></use></svg>
+                Content Extraction
+            </h2>
+
+            <div class="api-method">
+                <h3>extractAllContent()</h3>
+                <p>Extract all content types from HTML.</p>
+                <div class="code-block">
+                    <pre><code class="language-javascript">private extractAllContent(html: string, url: string): IndexRecord[] {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  if (this.config.indexHidden) {
+    extractHiddenContent(doc);
+  }
+
+  let rootElement: Element | Document = doc;
+  if (this.config.scope) {
+    const scopeElement = doc.querySelector(this.config.scope);
+    if (scopeElement) {
+      rootElement = scopeElement;
+    }
+  }
+
+  const htmlToProcess = new XMLSerializer().serializeToString(rootElement as Element);
+
+  const sections = extractSections(htmlToProcess, url);
+  const actions = this.config.indexActions ? extractActions(htmlToProcess, url, this.config.excludeAction) : [];
+  const fields = this.config.indexActions ? extractFields(htmlToProcess, url) : [];
+  const links = extractLinks(htmlToProcess, url);
+  const files = extractFiles(htmlToProcess, url, this.config.fileExtensions);
+  const media = this.config.indexMedia ? extractMedia(htmlToProcess, url) : [];
+  const structured = this.config.indexStructuredData ? extractStructuredData(htmlToProcess, url) : [];
+
+  const combined: IndexRecord[] = [];
+  combined.push(...sections, ...actions, ...fields, ...links, ...files, ...media, ...structured);
+  return combined;
+}
+
+// This method:
+// 1. Parses HTML into a DOM document
+// 2. Optionally extracts hidden content (details, etc.)
+// 3. Applies scope limitation if configured
+// 4. Serializes back to HTML (to work with extraction functions)
+// 5. Extracts all content types based on configuration
+// 6. Combines all results into a single array</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+
+                <div class="callout">
+                    <p><strong>Configuration Options Affect Extraction:</strong></p>
+                    <ul>
+                        <li><code>indexActions</code> - Controls whether actions and fields are extracted</li>
+                        <li><code>indexMedia</code> - Controls whether media elements are extracted</li>
+                        <li><code>indexStructuredData</code> - Controls whether JSON-LD structured data is extracted</li>
+                        <li><code>indexHidden</code> - Controls whether hidden content (details, etc.) is extracted</li>
+                        <li><code>excludeAction</code> - CSS selector for elements to exclude from action extraction</li>
+                        <li><code>fileExtensions</code> - File extensions to recognize for file link classification</li>
+                        <li><code>scope</code> - CSS selector to limit extraction to a specific part of the page</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="worker-indexing" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-gear"></use></svg>
+                Worker Indexing
+            </h2>
+
+            <p>
+                For large sites with many pages, Reef can offload HTML parsing to a Web Worker to prevent 
+                blocking the main thread.
+            </p>
+
+            <div class="api-method">
+                <h3>fetchPagesWithWorker()</h3>
+                <p>Fetch and index pages using a Web Worker.</p>
+                <div class="code-block">
+                    <pre><code class="language-javascript">private async fetchPagesWithWorker(
+  urls: string[], 
+  sitemapUrl: string, 
+  onReady: () => void
+): Promise&lt;IndexRecord[]&gt; {
+  const workerUrl = new URL('../worker.js', import.meta.url).href;
+  const worker = new Worker(workerUrl);
+
+  return new Promise&lt;IndexRecord[]&gt;((resolve, reject) => {
+    const messageHandler = async (e: MessageEvent) => {
+      const { result, error, json } = e.data as { 
+        result: string; 
+        error: string; 
+        json: string 
+      };
+      if (error) {
+        console.error('[reef] worker error:', error);
+        reject(new Error(error));
+        return;
+      }
+      if (result === 'ok' && json) {
+        worker.removeEventListener('message', messageHandler);
+        worker.terminate();
+        this.index = deserializeIndex(json);
+        onReady();
+        resolve([]);
+      }
+    };
+
+    const errorHandler = (e: ErrorEvent) => {
+      console.error('[reef] worker error:', e.error);
+      reject(e.error);
+    };
+
+    worker.addEventListener('message', messageHandler);
+    worker.addEventListener('error', errorHandler);
+
+    // Fetch all HTML first
+    const htmlMap: Record&lt;string, string&gt; = {};
+    const fetchPromises = urls.map(async (pageUrl) => {
+      try {
+        const resolvedUrl = this.resolveUrl(pageUrl, sitemapUrl);
+        const response = await fetch(resolvedUrl);
+        if (response.ok) {
+          htmlMap[resolvedUrl] = await response.text();
+        }
+      } catch (e) {
+        console.warn('[reef] failed to fetch page for worker:', pageUrl);
+      }
+    });
+
+    void Promise.all(fetchPromises).then(() => {
+      const config = {
+        scope: this.config.scope,
+        indexActions: this.config.indexActions,
+        indexMedia: this.config.indexMedia,
+        indexStructuredData: this.config.indexStructuredData,
+        indexHidden: this.config.indexHidden,
+        excludeAction: this.config.excludeAction,
+        fileExtensions: this.config.fileExtensions,
+      };
+
+      const id = Date.now();
+      worker.postMessage({
+        id,
+        action: 'indexPages',
+        payload: {
+          pages: Object.entries(htmlMap),
+          config,
+        },
+      });
+    });
+  });
+}
+
+// Usage: Enable via configuration
+const config = {
+  useWorkerIndexing: true,  // Enable Web Worker indexing
+  maxPages: 500
+};
+
+const indexer = new Indexer(config);</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="callout">
+                <p><strong>How Worker Indexing Works:</strong></p>
+                <ol>
+                    <li>Main thread fetches all HTML content in parallel</li>
+                    <li>HTML content is passed to the Web Worker</li>
+                    <li>Worker parses HTML and extracts content using the same extraction functions</li>
+                    <li>Worker builds the search index</li>
+                    <li>Worker serializes the index to JSON and sends it back to the main thread</li>
+                    <li>Main thread deserializes the index and sets it as the current index</li>
+                </ol>
+                <p><strong>Benefits:</strong></p>
+                <ul>
+                    <li>Prevents UI freezing during indexing of large sites</li>
+                    <li>Allows main thread to remain responsive</li>
+                    <li>Better performance for sites with hundreds of pages</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="cache-integration" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-gear"></use></svg>
+                Cache Integration
+            </h2>
+
+            <p>
+                The Indexer automatically integrates with Reef's caching system to persist indexes 
+                between page loads.
+            </p>
+
+            <div class="api-method">
+                <h3>Cache Loading</h3>
+                <div class="code-block">
+                    <pre><code class="language-javascript">// In boot() method, after trying prebuilt index
+try {
+  const { loadIndex } = await import('../cache.js');
+  const ttl = this.config.ttl; // Cache TTL in seconds
+  const cached = await loadIndex(ttl);
+  if (cached?.index && cached.index.allSections.length > 0) {
+    this.index = cached.index;
+    console.info(`[reef] loaded cached index with ${this.index.allSections.length} sections`);
+    onReady();
+    return;
+  }
+} catch (error) {
+  console.warn('[reef] cache load failed, continuing with fresh index', error);
+}
+
+// Usage in ReefSearch
+window.Reef.rebuildIndex().then(() => {
+  // Index is loaded from cache or freshly built
+  const records = window.Reef.getIndex();
+  console.log('Records:', records.length);
+});</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>Cache Saving</h3>
+                <div class="code-block">
+                    <pre><code class="language-javascript">// In boot() method, after building fresh index
+try {
+  const { saveIndex } = await import('../cache.js');
+  const versionHash = this.computeVersionHash(urls);
+  const metadata = {
+    versionHash,
+    buildTime: Date.now(),
+    pageMetadata: urls.reduce((acc, url) => ({ ...acc, [url]: versionHash }), {} as Record&lt;string, string&gt;)
+  };
+  await saveIndex(this.index, metadata);
+} catch (e) {
+  console.warn('[reef] cache save failed', e);
+}
+
+// Version hash is computed from all URLs
+// This ensures cache invalidation when pages change
+// pageMetadata stores a hash for each page for fine-grained invalidation</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>Cache Configuration</h3>
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Cache is controlled by these configuration options:
+const config: ReefConfig = {
+  // Cache TTL in seconds (default: 604800 = 7 days)
+  ttl: 86400, // 1 day
+  
+  // Use Web Worker for indexing (helps with cache serialization performance)
+  useWorkerIndexing: true,
+  
+  // Prebuilt index URL (alternative to cache)
+  prebuiltIndexUrl: 'https://cdn.example.com/search-index.json'
+};
+
+// Force cache rebuild
+window.Reef.clearCustomRecords();
+window.Reef.rebuildIndex();
+
+// Check cache status
+const cached = await window.Reef.getSitemapUrls();
+if (cached.length > 0) {
+  // Cache likely has data
+}</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="examples" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-file-text"></use></svg>
+                Examples
+            </h2>
+
+            <div class="examples-grid">
+                <div class="example-card">
+                    <h3>Custom Indexer</h3>
+                    <p>Create a custom Indexer with specific configuration.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">import { Indexer } from './src/indexing/index.js';
+
+const config = {
+  sitemap: '/api/sitemap.xml',
+  maxPages: 200,
+  indexActions: true,
+  indexMedia: false, // Skip media for performance
+  indexStructuredData: true,
+  indexHidden: false, // Skip hidden content
+  excludeAction: '.admin-only, .internal',
+  fileExtensions: 'pdf,docx,xlsx',
+  useWorkerIndexing: true
+};
+
+const indexer = new Indexer(config);
+
+// Start indexing
+indexer.boot(() => {
+  console.log('Indexing complete!');
+  const index = indexer.getIndex();
+  console.log('Total records:', index.allSections.length);
+});</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Get Sitemap URLs</h3>
+                    <p>Retrieve all URLs from the sitemap for custom processing.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">// Get sitemap URLs without building full index
+window.Reef.getSitemapUrls().then(urls => {
+  console.log('Sitemap contains:', urls.length, 'URLs');
+  
+  // Filter URLs
+  const blogUrls = urls.filter(url => url.includes('/blog/'));
+  const productUrls = urls.filter(url => url.includes('/products/'));
+  
+  // Process URLs
+  urls.forEach(url => {
+    console.log('URL:', url);
+  });
+});</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Same-Origin Crawl</h3>
+                    <p>Crawl pages on the same origin without a sitemap.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">// If no sitemap is found, Reef falls back to same-origin crawling
+// This starts from the current page and follows same-origin links
+
+// Enable same-origin crawl
+const config = {
+  sitemap: '/nonexistent-sitemap.xml', // Will fail
+  maxPages: 50
+};
+
+const indexer = new Indexer(config);
+
+indexer.boot(() => {
+  // Indexer will automatically fall back to same-origin crawl
+  const index = indexer.getIndex();
+  console.log('Crawled:', index.allSections.length, 'pages');
+});
+
+// The same-origin crawl:
+// 1. Starts from window.location.href
+// 2. Uses BFS to visit all same-origin links
+// 3. Respects maxPages limit
+// 4. Extracts content from each page
+// 5. Indexes all found content</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Prebuilt Index</h3>
+                    <p>Load a prebuilt index instead of crawling.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">// Use a prebuilt index
+const config = {
+  prebuiltIndexUrl: 'https://cdn.example.com/search-index-v1.json'
+};
+
+const indexer = new Indexer(config);
+
+indexer.boot(() => {
+  console.log('Prebuilt index loaded!');
+  const index = indexer.getIndex();
+  
+  // Search the prebuilt index
+  const results = window.Reef.search('installation');
+  console.log('Results:', results);
+});
+
+// Build a prebuilt index (in your build process)
+import { createSearchIndex, addToIndex, serializeIndex } from './src/search.js';
+import { extractSections } from './src/extraction.js';
+import fs from 'fs';
+
+const index = createSearchIndex();
+
+// Add all your site's pages
+const pages = getAllPages(); // Your function to get all HTML
+pages.forEach(page => {
+  const sections = extractSections(page.html, page.url);
+  addToIndex(index, sections);
+});
+
+// Save to file
+const json = serializeIndex(index);
+fs.writeFileSync('./dist/search-index.json', json);
+console.log('Prebuilt index saved!');</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Scoped Indexing</h3>
+                    <p>Limit indexing to a specific part of each page.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">// Only index content within #main-content
+const config = {
+  scope: '#main-content',
+  sitemap: '/sitemap.xml',
+  maxPages: 100
+};
+
+const indexer = new Indexer(config);
+
+indexer.boot(() => {
+  const index = indexer.getIndex();
+  
+  // All records will have content extracted from #main-content only
+  // Navigation, headers, footers, etc. will be excluded
+  console.log('Scoped index:', index.allSections.length, 'records');
+});
+
+// HTML example:
+// &lt;html&gt;
+//   &lt;header&gt;...&lt;/header&gt;  <- Not indexed
+//   &lt;nav&gt;...&lt;/nav&gt;      <- Not indexed
+//   &lt;main id="main-content"&gt;
+//     &lt;h1&gt;Page Title&lt;/h1&gt;   <- Indexed
+//     &lt;p&gt;Content...&lt;/p&gt;      <- Indexed
+//   &lt;/main&gt;
+//   &lt;footer&gt;...&lt;/footer&gt;  <- Not indexed
+// &lt;/html&gt;</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Custom Content Extraction</h3>
+                    <p>Customize what content is extracted and how.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">// Configure what to index
+const config = {
+  sitemap: '/sitemap.xml',
+  
+  // Only index sections and links (skip actions, fields, media, files)
+  indexActions: false,
+  indexMedia: false,
+  indexStructuredData: false,
+  
+  // Only index PDF files (skip other file types)
+  fileExtensions: 'pdf',
+  
+  // Exclude certain actions
+  excludeAction: '.no-index, .internal, .admin',
+  
+  // Don't index hidden content
+  indexHidden: false
+};
+
+const indexer = new Indexer(config);
+
+indexer.boot(() => {
+  const index = indexer.getIndex();
+  
+  // Index will only contain sections and links
+  const sections = index.allSections.filter(r => r.type === 'section');
+  const links = index.allSections.filter(r => r.type === 'link');
+  const files = index.allSections.filter(r => r.type === 'file');
+  
+  console.log('Sections:', sections.length);
+  console.log('Links:', links.length);
+  console.log('Files:', files.length);
+});</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Reef. MIT License.</p>
+            <p>Indexing Module - Sitemap Crawling & Content Extraction Documentation</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

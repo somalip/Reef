@@ -17,6 +17,7 @@ export class UIRenderer {
         this.settingsChangeCallback = null;
         this.rebuildIndexCallback = null;
         this.toggleInspectorCallback = null;
+        this.onOpenCallback = null;
         this.isSettingsOpen = false;
     }
     getHost() { return this.host; }
@@ -26,17 +27,30 @@ export class UIRenderer {
     getIsOpen() { return this.isOpen; }
     getFocusableElements() { return this.focusableElements; }
     getActiveCategory() { return this.activeCategory; }
+    getOnOpenCallback() { return this.onOpenCallback; }
     setIsOpen(open) { this.isOpen = open; }
     clearFocusableElements() { this.focusableElements = []; }
     setCategoryCallback(cb) { this.categoryChangeCallback = cb; }
     setSettingsCallback(cb) { this.settingsChangeCallback = cb; }
     setRebuildIndexCallback(cb) { this.rebuildIndexCallback = cb; }
     setToggleInspectorCallback(cb) { this.toggleInspectorCallback = cb; }
+    setOnOpenCallback(cb) { this.onOpenCallback = cb; }
     renderUI(placeholder, currentMode, onModeChange) {
         this.modeChangeCallback = onModeChange;
         const host = document.createElement('div');
         host.className = 'reef-host is-hidden';
-        document.body.appendChild(host);
+        // Defer to DOM ready if called from head before body exists
+        if (document.body) {
+            document.body.appendChild(host);
+        }
+        else {
+            const appendHost = () => {
+                if (document.body) {
+                    document.body.appendChild(host);
+                }
+            };
+            document.addEventListener('DOMContentLoaded', appendHost);
+        }
         this.host = host;
         this.root = host.attachShadow({ mode: 'open' });
         const shadow = this.root;

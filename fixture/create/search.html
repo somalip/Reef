@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Module - Documentation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+  </symbol>
+  <symbol id="icon-document" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+  </symbol>
+  <symbol id="icon-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+  </symbol>
+  <symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
+  </symbol>
+  <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65 16.65"></line>
+  </symbol>
+  <symbol id="icon-file-cabinet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="3" width="16" height="18" rx="2" ry="2"></rect>
+    <line x1="8" y1="3" x2="8" y2="21"></line>
+    <line x1="16" y1="3" x2="16" y2="21"></line>
+    <line x1="4" y1="9" x2="20" y2="9"></line>
+    <line x1="4" y1="15" x2="20" y2="15"></line>
+  </symbol>
+  <symbol id="icon-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+  </symbol>
+  <symbol id="icon-arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <polyline points="19 12 12 19 5 12"></polyline>
+  </symbol>
+  <symbol id="icon-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+    <polyline points="12 5 19 12 12 19"></polyline>
+  </symbol>
+  <symbol id="icon-arrow-up-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="7" y1="17" x2="17" y2="7"></line>
+    <polyline points="10 7 17 7 17 14"></polyline>
+  </symbol>
+  <symbol id="icon-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  </symbol>
+  <symbol id="icon-flash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="13 2 3 14 12 14 8 22 18 10 9 10 13 2"></polygon>
+  </symbol>
+  <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="10" width="18" height="11" rx="2" ry="2"></rect>
+    <circle cx="9" cy="5" r="3"></circle>
+    <circle cx="15" cy="5" r="3"></circle>
+    <path d="M9 14a3 3 0 0 1-3 3v2h3"></path>
+    <path d="M15 14a3 3 0 0 0 3 3v2h-3"></path>
+  </symbol>
+  <symbol id="icon-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+  </symbol>
+  <symbol id="icon-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+    <circle cx="12" cy="13" r="4"></circle>
+  </symbol>
+  <symbol id="icon-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10"></line>
+    <line x1="12" y1="20" x2="12" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="14"></line>
+    <line x1="2" y1="20" x2="22" y2="20"></line>
+  </symbol>
+  <symbol id="icon-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"></path>
+  </symbol>
+  <symbol id="icon-desktop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+    <line x1="2" y1="21" x2="22" y2="21"></line>
+    <line x1="12" y1="17" x2="12" y2="21"></line>
+  </symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </symbol>
+  <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+  </symbol>
+  <symbol id="icon-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <line x1="10" y1="9" x2="8" y2="9"></line>
+  </symbol>
+</svg>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <svg class="icon-svg"><use href="#icon-home"></use></svg>
+                <h1>Search Module Documentation</h1>
+            </div>
+            <p class="subtitle">Core Search Functionality and Index Management</p>
+        </div>
+    </header>
+
+    <nav class="sidebar">
+        <div class="nav-section">
+            <h2>Search Module</h2>
+            <a href="#overview" class="nav-link active">Overview</a>
+            <a href="#exports" class="nav-link">Exports</a>
+            <a href="#search-index" class="nav-link">Search Index</a>
+            <a href="#extraction" class="nav-link">Extraction</a>
+            <a href="#examples" class="nav-link">Examples</a>
+        </div>
+
+        <div class="nav-section">
+            <h2>Related Modules</h2>
+            <a href="index.html" class="nav-link">Main Documentation</a>
+            <a href="reef.html" class="nav-link">ReefSearch</a>
+            <a href="search-index.html" class="nav-link">Search Index</a>
+            <a href="types.html" class="nav-link">Types</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section id="overview" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-document"></use></svg>
+                Overview
+            </h2>
+            <p class="lead">
+                The <strong>search.ts</strong> module is the main export point for search-related functionality. 
+                It re-exports functions from both <code>search-index.ts</code> and <code>extraction.ts</code>.
+            </p>
+
+            <div class="code-block">
+                <pre><code class="language-typescript">/**
+ * @file Public API exports for search module.
+ * Re-exports functions from search-index.ts and extraction.ts for external use.
+ */
+
+export type { 
+  IndexRecord, 
+  SectionDocument, 
+  SearchOptions, 
+  ScoredRecord, 
+  MatchSpan, 
+  TokenFilter 
+} from './types.js';
+
+export {
+  createSearchIndex,
+  addToIndex,
+  addSectionsToIndex,
+  getAllSections,
+  levenshteinDistance,
+  findClosestWord,
+  searchSections,
+  removeFromIndex,
+  updateRecord,
+  serializeIndex,
+  deserializeIndex,
+  parseExtendedQuery,
+  suggest,
+  facets,
+  trackQuery,
+  getPopularQueries,
+  type QueryNode,
+} from './search-index.js';
+
+export {
+  stripTags,
+  generateSelector,
+  extractHeadingId,
+  hasExplicitId,
+  findParentSectionId,
+  extractSections,
+  extractActionName,
+  isDestructiveAction,
+  extractActions,
+  extractFields,
+  extractLinks,
+  extractFiles,
+  extractMedia,
+  extractStructuredData,
+  extractHiddenContent,
+  resolveUrl,
+} from './extraction.js';
+
+// Usage
+import { 
+  createSearchIndex, 
+  addToIndex, 
+  searchSections 
+} from './src/search.js';
+
+const index = createSearchIndex();
+addToIndex(index, records);
+const results = searchSections(query, index, options);</pre></code>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+
+            <div class="architecture-diagram">
+                <h3>Module Structure</h3>
+                <div class="arch-row">
+                    <div class="arch-box main">
+                        <strong>search.ts</strong><br>
+                        <small>Public API</small>
+                    </div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-right"></use></svg></div>
+                </div>
+                <div class="arch-row multi">
+                    <div class="arch-box">
+                        <strong>search-index.ts</strong><br>
+                        <small>Index & Query</small>
+                    </div>
+                    <div class="arch-box">
+                        <strong>extraction.ts</strong><br>
+                        <small>DOM Extraction</small>
+                    </div>
+                </div>
+            </div>
+
+            <p>
+                The search module provides:
+                <ul>
+                    <li><strong>Index Management:</strong> Create, update, serialize, and deserialize search indexes</li>
+                    <li><strong>Querying:</strong> Search, suggest, facet, and track queries</li>
+                    <li><strong>Extraction:</strong> Extract sections, actions, fields, links, files, and media from HTML</li>
+                    <li><strong>Text Processing:</strong> Tokenization, stemming, and text normalization</li>
+                </ul>
+            </p>
+        </section>
+
+        <section id="exports" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-chart"></use></svg>
+                Exports
+            </h2>
+
+            <h3>Type Exports</h3>
+            <div class="code-block">
+                <pre><code class="language-typescript">// Re-exported from types.ts
+export type { 
+  IndexRecord,           // The main index record type
+  SectionDocument,       // Base document interface
+  SearchOptions,        // Options for search operations
+  ScoredRecord,         // Search result with score
+  MatchSpan,            // Text match position
+  TokenFilter           // Function type for token processing
+} from './types.js';
+
+// Re-exported from search-index.ts
+export type { QueryNode } from './search-index.js';
+
+// Usage
+import type { IndexRecord, SearchOptions } from './src/search.js';
+
+const options: SearchOptions = {
+  limit: 10,
+  fuzzy: true,
+  includeScore: true
+};
+
+function processRecord(record: IndexRecord) {
+  console.log(record.headingText, record.type);
+}</pre></code>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+
+            <h3>Function Exports from search-index.ts</h3>
+            <div class="properties-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Function</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>createSearchIndex()</code></td>
+                            <td>Create a new empty search index</td>
+                        </tr>
+                        <tr>
+                            <td><code>addToIndex(index, records, pipeline?)</code></td>
+                            <td>Add records to the index with optional tokenization pipeline</td>
+                        </tr>
+                        <tr>
+                            <td><code>addSectionsToIndex(index, sections)</code></td>
+                            <td>Add section documents to the index</td>
+                        </tr>
+                        <tr>
+                            <td><code>getAllSections(index)</code></td>
+                            <td>Get all sections from the index</td>
+                        </tr>
+                        <tr>
+                            <td><code>searchSections(query, index, options?)</code></td>
+                            <td>Search the index with the given query and options</td>
+                        </tr>
+                        <tr>
+                            <td><code>removeFromIndex(index, recordId)</code></td>
+                            <td>Remove a specific record from the index</td>
+                        </tr>
+                        <tr>
+                            <td><code>updateRecord(index, record)</code></td>
+                            <td>Update an existing record in the index</td>
+                        </tr>
+                        <tr>
+                            <td><code>serializeIndex(index)</code></td>
+                            <td>Serialize the index to a string</td>
+                        </tr>
+                        <tr>
+                            <td><code>deserializeIndex(json)</code></td>
+                            <td>Deserialize an index from a string</td>
+                        </tr>
+                        <tr>
+                            <td><code>levenshteinDistance(a, b)</code></td>
+                            <td>Calculate Levenshtein distance between two strings</td>
+                        </tr>
+                        <tr>
+                            <td><code>findClosestWord(query, index)</code></td>
+                            <td>Find the closest word match for a query</td>
+                        </tr>
+                        <tr>
+                            <td><code>parseExtendedQuery(query)</code></td>
+                            <td>Parse extended query syntax</td>
+                        </tr>
+                        <tr>
+                            <td><code>suggest(query, index, limit?)</code></td>
+                            <td>Get query suggestions</td>
+                        </tr>
+                        <tr>
+                            <td><code>facets(index)</code></td>
+                            <td>Get facet counts from the index</td>
+                        </tr>
+                        <tr>
+                            <td><code>trackQuery(index, query)</code></td>
+                            <td>Track a query for popularity analytics</td>
+                        </tr>
+                        <tr>
+                            <td><code>getPopularQueries(index, n?)</code></td>
+                            <td>Get the most popular queries</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Function Exports from extraction.ts</h3>
+            <div class="properties-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Function</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>stripTags(html)</code></td>
+                            <td>Remove HTML tags from a string</td>
+                        </tr>
+                        <tr>
+                            <td><code>generateSelector(element)</code></td>
+                            <td>Generate a CSS selector for an element</td>
+                        </tr>
+                        <tr>
+                            <td><code>extractHeadingId(element)</code></td>
+                            <td>Extract the ID attribute from a heading element</td>
+                        </tr>
+                        <tr>
+                            <td><code>hasExplicitId(element)</code></td>
+                            <td>Check if an element has an explicit ID</td>
+                        </tr>
+                        <tr>
+                            <td><code>findParentSectionId(element)</code></td>
+                            <td>Find the parent section ID for an element</td>
+                        </tr>
+                        <tr>
+                            <td><code>extractSections(html, url)</code></td>
+                            <td>Extract all sections from HTML content</td>
+                        </tr>
+                        <tr>
+                            <td><code>extractActionName(element)</code></td>
+                            <td>Extract the action name from an element</td>
+                        </tr>
+                        <tr>
+                            <td><code>isDestructiveAction(name)</code></td>
+                            <td>Check if an action name indicates a destructive action</td>
+                        </tr>
+                        <tr>
+                            <td><code>extractActions(html, url, exclude?)</code></td>
+                            <td>Extract all actionable elements from HTML</td>
+                        </tr>
+                        <tr>
+                            <td><code>extractFields(html, url)</code></td>
+                            <td>Extract all form fields from HTML</td>
+                        </tr>
+                        <tr>
+                            <td><code>extractLinks(html, url)</code></td>
+                            <td>Extract all links from HTML</td>
+                        </tr>
+                        <tr>
+                            <td><code>extractFiles(html, url, extensions?)</code></td>
+                            <td>Extract all file links from HTML</td>
+                        </tr>
+                        <tr>
+                            <td><code>extractMedia(html, url)</code></td>
+                            <td>Extract all media elements from HTML</td>
+                        </tr>
+                        <tr>
+                            <td><code>extractStructuredData(html, url)</code></td>
+                            <td>Extract structured data (JSON-LD) from HTML</td>
+                        </tr>
+                        <tr>
+                            <td><code>extractHiddenContent(doc)</code></td>
+                            <td>Extract content from hidden elements (details, etc.)</td>
+                        </tr>
+                        <tr>
+                            <td><code>resolveUrl(value, base)</code></td>
+                            <td>Resolve a relative URL against a base URL</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="search-index" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-database"></use></svg>
+                Search Index
+            </h2>
+
+            <p>
+                The search-index module provides the core indexing and querying functionality. 
+                For detailed documentation, see the <a href="search-index.html">Search Index documentation</a>.
+            </p>
+
+            <div class="api-method">
+                <h3>Basic Usage</h3>
+                <div class="code-block">
+                    <pre><code class="language-javascript">import { 
+  createSearchIndex, 
+  addToIndex, 
+  searchSections 
+} from './src/search.js';
+
+// Create an index
+const index = createSearchIndex();
+
+// Add records
+const records = [
+  {
+    id: 'page1#section1',
+    url: '/page1',
+    headingText: 'Introduction',
+    headingId: 'section1',
+    breadcrumb: 'Getting Started',
+    bodyText: 'Welcome to our application...',
+    type: 'section'
+  },
+  {
+    id: 'page1#login-button',
+    url: '/page1',
+    headingText: 'Login',
+    headingId: 'login-button',
+    breadcrumb: 'Auth',
+    bodyText: 'Click to login',
+    type: 'action',
+    selector: '#login-button',
+    destructive: false
+  }
+];
+
+addToIndex(index, records);
+
+// Search the index
+const results = searchSections('login', index, 10);
+console.log('Results:', results);</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>Serialization</h3>
+                <div class="code-block">
+                    <pre><code class="language-javascript">import { 
+  createSearchIndex, 
+  addToIndex, 
+  serializeIndex, 
+  deserializeIndex 
+} from './src/search.js';
+
+// Create and populate index
+const index = createSearchIndex();
+addToIndex(index, records);
+
+// Serialize to JSON
+const json = serializeIndex(index);
+console.log('Serialized:', json.substring(0, 100) + '...');
+
+// Deserialize from JSON
+const restoredIndex = deserializeIndex(json);
+console.log('Restored records:', restoredIndex.allSections.length);
+
+// Save to localStorage
+localStorage.setItem('reef-index', serializeIndex(index));
+
+// Load from localStorage
+const saved = localStorage.getItem('reef-index');
+if (saved) {
+  const index = deserializeIndex(saved);
+}</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>Query Suggestions</h3>
+                <div class="code-block">
+                    <pre><code class="language-javascript">import { createSearchIndex, addToIndex, suggest } from './src/search.js';
+
+const index = createSearchIndex();
+addToIndex(index, records);
+
+// Get suggestions
+const suggestions = suggest('inst', index, 5);
+console.log('Suggestions:', suggestions);
+// Output: ['installation', 'instructions', 'instance', ...]
+
+// Get facets (term frequencies)
+import { facets } from './src/search.js';
+const termCounts = facets(index);
+console.log('Term counts:', termCounts);
+// Output: { 'welcome': 1, 'application': 1, 'login': 1, ... }
+
+// Track queries for popularity
+import { trackQuery, getPopularQueries } from './src/search.js';
+trackQuery(index, 'installation');
+trackQuery(index, 'getting started');
+trackQuery(index, 'installation'); // Duplicate
+
+const popular = getPopularQueries(index, 3);
+console.log('Popular queries:', popular);
+// Output: ['installation', 'getting started'] (sorted by frequency)</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="extraction" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-chart"></use></svg>
+                Extraction
+            </h2>
+
+            <p>
+                The extraction module provides functions for extracting various types of content from HTML. 
+                For detailed documentation, see the <a href="extraction.html">Extraction documentation</a>.
+            </p>
+
+            <div class="api-method">
+                <h3>Basic Extraction</h3>
+                <div class="code-block">
+                    <pre><code class="language-javascript">import { extractSections } from './src/search.js';
+
+const html = `
+&lt;html&gt;
+&lt;body&gt;
+  &lt;h1 id="intro"&gt;Introduction&lt;/h1&gt;
+  &lt;p&gt;Welcome to our application.&lt;/p&gt;
+  &lt;h2 id="features"&gt;Features&lt;/h2&gt;
+  &lt;p&gt;Our app has many features.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+`;
+
+const sections = extractSections(html, 'https://example.com');
+console.log('Sections:', sections);
+// Output: Array of IndexRecord objects for each section
+
+// Extract actions (buttons, links)
+import { extractActions } from './src/search.js';
+const actions = extractActions(html, 'https://example.com');
+console.log('Actions:', actions);
+
+// Extract fields (form inputs)
+import { extractFields } from './src/search.js';
+const fields = extractFields(html, 'https://example.com');
+console.log('Fields:', fields);
+
+// Extract links
+import { extractLinks } from './src/search.js';
+const links = extractLinks(html, 'https://example.com');
+console.log('Links:', links);
+
+// Extract files
+import { extractFiles } from './src/search.js';
+const files = extractFiles(html, 'https://example.com', 'pdf,doc,docx');
+console.log('Files:', files);
+
+// Extract media
+import { extractMedia } from './src/search.js';
+const media = extractMedia(html, 'https://example.com');
+console.log('Media:', media);
+
+// Extract structured data (JSON-LD)
+import { extractStructuredData } from './src/search.js';
+const structured = extractStructuredData(html, 'https://example.com');
+console.log('Structured data:', structured);</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>Utility Functions</h3>
+                <div class="code-block">
+                    <pre><code class="language-javascript">import { 
+  stripTags, 
+  generateSelector, 
+  extractHeadingId, 
+  resolveUrl 
+} from './src/search.js';
+
+// Strip HTML tags
+const cleanText = stripTags('&lt;p&gt;Hello &lt;strong&gt;World&lt;/strong&gt;&lt;/p&gt;');
+console.log(cleanText); // 'Hello World'
+
+// Generate CSS selector
+const element = document.querySelector('#main-content');
+const selector = generateSelector(element);
+console.log(selector); // '#main-content'
+
+// Extract heading ID
+const heading = document.querySelector('h1');
+const headingId = extractHeadingId(heading);
+console.log(headingId); // The ID of the h1 element
+
+// Resolve URL
+const absolute = resolveUrl('/page.html', 'https://example.com/base/');
+console.log(absolute); // 'https://example.com/base/page.html'
+
+const absolute2 = resolveUrl('page.html', 'https://example.com/base/');
+console.log(absolute2); // 'https://example.com/base/page.html'
+
+const absolute3 = resolveUrl('https://other.com', 'https://example.com/base/');
+console.log(absolute3); // 'https://other.com'</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="examples" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-file-text"></use></svg>
+                Examples
+            </h2>
+
+            <div class="examples-grid">
+                <div class="example-card">
+                    <h3>Build a Custom Search Index</h3>
+                    <p>Create and manage a custom search index.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">import { 
+  createSearchIndex, 
+  addToIndex, 
+  searchSections 
+} from './src/search.js';
+
+// Create index
+const index = createSearchIndex();
+
+// Add custom content
+const customRecords = [
+  {
+    id: 'faq-1',
+    url: '/faq#installation',
+    headingText: 'How to Install',
+    headingId: 'faq-1',
+    breadcrumb: 'FAQ',
+    bodyText: 'To install Reef, add the script tag...',
+    type: 'section'
+  },
+  {
+    id: 'faq-2',
+    url: '/faq#configuration',
+    headingText: 'Configuration Options',
+    headingId: 'faq-2',
+    breadcrumb: 'FAQ',
+    bodyText: 'Reef supports various configuration options...',
+    type: 'section'
+  }
+];
+
+addToIndex(index, customRecords);
+
+// Search
+const results = searchSections('install', index, 5);
+console.log('FAQ Results:', results);</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Extract from Multiple Pages</h3>
+                    <p>Extract content from multiple HTML pages.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">import { 
+  createSearchIndex, 
+  addToIndex, 
+  extractSections, 
+  extractActions, 
+  extractFields 
+} from './src/search.js';
+
+const index = createSearchIndex();
+
+// Array of pages to index
+const pages = [
+  { url: '/', html: '&lt;html&gt;...&lt;/html&gt;' },
+  { url: '/about', html: '&lt;html&gt;...&lt;/html&gt;' },
+  { url: '/contact', html: '&lt;html&gt;...&lt;/html&gt;' }
+];
+
+// Extract and index all pages
+pages.forEach(page => {
+  const sections = extractSections(page.html, page.url);
+  const actions = extractActions(page.html, page.url);
+  const fields = extractFields(page.html, page.url);
+  
+  addToIndex(index, [...sections, ...actions, ...fields]);
+});
+
+console.log('Total indexed:', index.allSections.length);</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Advanced Search with Options</h3>
+                    <p>Use advanced search options for better results.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">import { 
+  createSearchIndex, 
+  addToIndex, 
+  searchSections 
+} from './src/search.js';
+
+const index = createSearchIndex();
+addToIndex(index, records);
+
+// Search with fuzzy matching
+const results = searchSections('instalation', index, {
+  fuzzy: true,
+  fuzzyThreshold: 0.7,
+  limit: 10
+});
+
+// Search with custom weights
+const weightedResults = searchSections('search', index, {
+  weights: {
+    headingText: 3.0,
+    bodyText: 1.0,
+    label: 2.0
+  },
+  includeScore: true
+});
+
+// Search with filtering
+const filteredResults = searchSections('button', index, {
+  filter: record => record.type === 'action',
+  limit: 5
+});
+
+// Search with type weights
+const typedResults = searchSections('data', index, {
+  typeWeights: {
+    action: 2.0,
+    field: 1.5,
+    section: 1.0
+  }
+});</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Save and Load Index</h3>
+                    <p>Persist index to localStorage or IndexedDB.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">import { 
+  createSearchIndex, 
+  addToIndex, 
+  serializeIndex, 
+  deserializeIndex 
+} from './src/search.js';
+
+// Create and populate index
+const index = createSearchIndex();
+addToIndex(index, records);
+
+// Save to localStorage
+const json = serializeIndex(index);
+localStorage.setItem('reef-index-backup', json);
+
+// Later, load from localStorage
+const savedJson = localStorage.getItem('reef-index-backup');
+if (savedJson) {
+  const restoredIndex = deserializeIndex(savedJson);
+  console.log('Restored:', restoredIndex.allSections.length, 'records');
+}
+
+// For IndexedDB (using Reef's cache)
+import { saveIndex, loadIndex } from './src/cache.js';
+const cached = await loadIndex();
+if (cached) {
+  const index = cached.index;
+  console.log('Loaded from cache:', index.allSections.length);
+}
+
+// Save to cache
+await saveIndex(index, {
+  versionHash: 'v1',
+  buildTime: Date.now(),
+  pageMetadata: {}
+});</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Query Suggestions</h3>
+                    <p>Provide query suggestions to users.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">import { 
+  createSearchIndex, 
+  addToIndex, 
+  suggest, 
+  trackQuery, 
+  getPopularQueries 
+} from './src/search.js';
+
+const index = createSearchIndex();
+addToIndex(index, records);
+
+// Track user queries
+const userQueries = ['install', 'setup', 'getting', 'config'];
+userQueries.forEach(query => {
+  trackQuery(index, query);
+});
+
+// Get suggestions for partial query
+const input = 'inst';
+const suggestions = suggest(input, index, 5);
+console.log('Suggestions:', suggestions);
+
+// Get popular queries
+const popular = getPopularQueries(index, 3);
+console.log('Popular:', popular);
+
+// Autocomplete function
+function getAutocompleteSuggestions(input, limit = 5) {
+  return suggest(input, index, limit);
+}
+
+// Usage
+const autocomplete = getAutocompleteSuggestions('set');
+console.log('Autocomplete:', autocomplete);</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Extract Structured Data</h3>
+                    <p>Extract JSON-LD and other structured data.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">import { extractStructuredData } from './src/search.js';
+
+const htmlWithStructuredData = `
+&lt;html&gt;
+&lt;head&gt;
+  &lt;script type="application/ld+json"&gt;
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "John Doe",
+    "jobTitle": "Developer",
+    "worksFor": {
+      "@type": "Organization",
+      "name": "Example Inc"
+    }
+  }
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;John Doe&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+`;
+
+const structured = extractStructuredData(htmlWithStructuredData, 'https://example.com');
+console.log('Structured data:', structured);
+
+// structured will contain IndexRecord objects with structuredData property
+structured.forEach(record => {
+  if (record.structuredData) {
+    console.log('Found structured data:', record.structuredData);
+    // Output: The parsed JSON-LD object
+  }
+});</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Reef. MIT License.</p>
+            <p>Search Module - Core Search Functionality Documentation</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

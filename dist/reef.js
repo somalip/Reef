@@ -3,6 +3,7 @@ import { UIRenderer, VisualInspector } from './ui/index.js';
 import { Indexer } from './indexing/index.js';
 import { ActionExecutor } from './actions/index.js';
 import { ConfigReader, ConfigApplier } from './config/config-reader.js';
+import { Agent } from './agent.js';
 class ReefSearch {
     constructor() {
         this.index = createSearchIndex();
@@ -62,6 +63,7 @@ class ReefSearch {
     setupEventListeners() {
         const input = this.ui.getInput();
         const host = this.ui.getHost();
+        const root = this.ui.getRoot();
         input?.addEventListener('input', () => {
             this.currentQuery = input?.value ?? '';
             this.selectedIndex = 0;
@@ -69,36 +71,43 @@ class ReefSearch {
                 cancelAnimationFrame(this.searchDebounce);
             this.searchDebounce = requestAnimationFrame(() => this.renderResults());
         });
-        input?.addEventListener('keydown', (event) => {
-            // Cancel any pending debounce render to avoid race conditions
-            if (this.searchDebounce) {
-                cancelAnimationFrame(this.searchDebounce);
-                this.searchDebounce = 0;
+        // Keyboard navigation on the host (modal) element - works regardless of which element has focus
+        host?.addEventListener('keydown', (event) => {
+            // Don't interfere with input field typing
+            if (event.target === input && !['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab'].includes(event.key)) {
+                return;
             }
             const results = this.getVisibleResults();
             if (event.key === 'ArrowDown') {
                 event.preventDefault();
                 if (results.length) {
                     this.selectedIndex = (this.selectedIndex + 1) % results.length;
+                    this.renderResults();
+                    this.ui.scrollSelectedIntoView(this.selectedIndex);
+                    // Focus the input after navigation
+                    input?.focus();
                 }
-                this.renderResults();
-                this.ui.scrollSelectedIntoView(this.selectedIndex);
             }
             else if (event.key === 'ArrowUp') {
                 event.preventDefault();
                 if (results.length) {
                     this.selectedIndex = (this.selectedIndex - 1 + results.length) % results.length;
+                    this.renderResults();
+                    this.ui.scrollSelectedIntoView(this.selectedIndex);
+                    // Focus the input after navigation
+                    input?.focus();
                 }
-                this.renderResults();
-                this.ui.scrollSelectedIntoView(this.selectedIndex);
             }
             else if (event.key === 'Enter') {
                 event.preventDefault();
-                const match = this.getVisibleResults()[this.selectedIndex];
+                const match = results[this.selectedIndex];
                 if (match) {
                     this.runSelectCallback(match);
                     this.executeAction(match);
-                    this.close();
+                    const isNavType = ['section', 'link', 'file', 'media', 'structured'].includes(match.type);
+                    if (!isNavType) {
+                        this.close();
+                    }
                 }
             }
             else if (event.key === 'Escape') {
@@ -106,21 +115,25 @@ class ReefSearch {
                 this.close();
             }
             else if (event.key === 'Tab') {
-                event.preventDefault();
-                const categories = ['all', 'pages', 'actions', 'files', 'links'];
-                const currentCat = this.ui.getActiveCategory();
-                const idx = categories.indexOf(currentCat);
-                const nextIdx = event.shiftKey
-                    ? (idx - 1 + categories.length) % categories.length
-                    : (idx + 1) % categories.length;
-                const nextCat = categories[nextIdx];
-                // Update active tab chip
-                const tabEl = this.ui.getRoot()?.querySelector(`.tab-chip[data-cat="${nextCat}"]`);
-                if (tabEl) {
-                    tabEl.click();
+                // Only handle Tab if input has focus - otherwise let normal tab navigation work
+                if (document.activeElement === input) {
+                    event.preventDefault();
+                    const categories = ['all', 'pages', 'actions', 'files', 'links'];
+                    const currentCat = this.ui.getActiveCategory();
+                    const idx = categories.indexOf(currentCat);
+                    const nextIdx = event.shiftKey
+                        ? (idx - 1 + categories.length) % categories.length
+                        : (idx + 1) % categories.length;
+                    const nextCat = categories[nextIdx];
+                    // Update active tab chip
+                    const tabEl = root?.querySelector(`.tab-chip[data-cat="${nextCat}"]`);
+                    if (tabEl) {
+                        tabEl.click();
+                    }
                 }
             }
         });
+        // Also handle Escape key globally
         document.addEventListener('keydown', (event) => {
             if (this.ui.getIsOpen() && event.key === 'Escape') {
                 event.preventDefault();
@@ -133,6 +146,10 @@ class ReefSearch {
             if (!clickedInsidePanel) {
                 this.close();
             }
+        });
+        // Focus input when modal opens
+        this.ui.setOnOpenCallback(() => {
+            input?.focus();
         });
         this.ui.setupFocusTrap();
         this.executor.handleDeferredActions();
@@ -278,6 +295,7 @@ class ReefSearch {
         this.ui.getInput()?.focus();
         this.ui.applyAriaHidden();
         this.renderResults();
+        this.ui.getOnOpenCallback()?.();
     }
     closeInternal() {
         this.ui.setIsOpen(false);
@@ -533,6 +551,14 @@ class ReefSearch {
             selector: r.selector,
             id: r.id
         }));
+    }
+    agent() {
+        return new Agent(this.index, this.inspector, this.config.actionsMode || 'execute');
+    }
+    async executeWorkflow(definition, options) {
+        const agent = this.agent();
+        const steps = Array.isArray(definition) ? definition : definition.steps;
+        await agent.executeWorkflow(steps, options ?? (Array.isArray(definition) ? undefined : definition.options));
     }
     toggleInspector(force) {
         const shouldActive = typeof force === 'boolean' ? force : !this.inspector.isActive();

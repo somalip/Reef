@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cache Module - Documentation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+  </symbol>
+  <symbol id="icon-document" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+  </symbol>
+  <symbol id="icon-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+  </symbol>
+  <symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
+  </symbol>
+  <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65 16.65"></line>
+  </symbol>
+  <symbol id="icon-file-cabinet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="3" width="16" height="18" rx="2" ry="2"></rect>
+    <line x1="8" y1="3" x2="8" y2="21"></line>
+    <line x1="16" y1="3" x2="16" y2="21"></line>
+    <line x1="4" y1="9" x2="20" y2="9"></line>
+    <line x1="4" y1="15" x2="20" y2="15"></line>
+  </symbol>
+  <symbol id="icon-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+  </symbol>
+  <symbol id="icon-arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <polyline points="19 12 12 19 5 12"></polyline>
+  </symbol>
+  <symbol id="icon-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+    <polyline points="12 5 19 12 12 19"></polyline>
+  </symbol>
+  <symbol id="icon-arrow-up-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="7" y1="17" x2="17" y2="7"></line>
+    <polyline points="10 7 17 7 17 14"></polyline>
+  </symbol>
+  <symbol id="icon-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  </symbol>
+  <symbol id="icon-flash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="13 2 3 14 12 14 8 22 18 10 9 10 13 2"></polygon>
+  </symbol>
+  <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="10" width="18" height="11" rx="2" ry="2"></rect>
+    <circle cx="9" cy="5" r="3"></circle>
+    <circle cx="15" cy="5" r="3"></circle>
+    <path d="M9 14a3 3 0 0 1-3 3v2h3"></path>
+    <path d="M15 14a3 3 0 0 0 3 3v2h-3"></path>
+  </symbol>
+  <symbol id="icon-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+  </symbol>
+  <symbol id="icon-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+    <circle cx="12" cy="13" r="4"></circle>
+  </symbol>
+  <symbol id="icon-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10"></line>
+    <line x1="12" y1="20" x2="12" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="14"></line>
+    <line x1="2" y1="20" x2="22" y2="20"></line>
+  </symbol>
+  <symbol id="icon-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"></path>
+  </symbol>
+  <symbol id="icon-desktop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+    <line x1="2" y1="21" x2="22" y2="21"></line>
+    <line x1="12" y1="17" x2="12" y2="21"></line>
+  </symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </symbol>
+  <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+  </symbol>
+  <symbol id="icon-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <line x1="10" y1="9" x2="8" y2="9"></line>
+  </symbol>
+</svg>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <svg class="icon-svg"><use href="#icon-folder"></use></svg>
+                <h1>Cache Module Documentation</h1>
+            </div>
+            <p class="subtitle">IndexedDB Persistent Storage for Search Index</p>
+        </div>
+    </header>
+
+    <nav class="sidebar">
+        <div class="nav-section">
+            <h2>Cache Module</h2>
+            <a href="#overview" class="nav-link active">Overview</a>
+            <a href="#functions" class="nav-link">Functions</a>
+            <a href="#database-schema" class="nav-link">Database Schema</a>
+            <a href="#source" class="nav-link">Source Code</a>
+            <a href="#usage" class="nav-link">Usage</a>
+        </div>
+
+        <div class="nav-section">
+            <h2>Related Modules</h2>
+            <a href="index.html" class="nav-link">Main Documentation</a>
+            <a href="reef.html" class="nav-link">ReefSearch</a>
+            <a href="search-index.html" class="nav-link">Search Index</a>
+            <a href="config.html" class="nav-link">Config</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section id="overview" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-folder"></span>
+                Overview
+            </h2>
+            <p class="lead">
+                The <strong>cache.ts</strong> module provides persistent storage for search indexes using 
+                IndexedDB. It stores serialized indexes with metadata for TTL-based expiration.
+            </p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-folder"></use></svg></div>
+                    <h3>IndexedDB Storage</h3>
+                    <p>Uses browser's IndexedDB for persistent storage</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-clock"></use></svg></div>
+                    <h3>TTL Expiration</h3>
+                    <p>Supports time-to-live based cache expiration</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-file-text"></use></svg></div>
+                    <h3>Metadata Tracking</h3>
+                    <p>Stores version hashes and build timestamps</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-file-cabinet"></use></svg></div>
+                    <h3>Async API</h3>
+                    <p>Fully asynchronous operations</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-file-cabinet"></div>
+                    <h3>Clear Cache</h3>
+                    <p>Remove all cached data when needed</p>
+                </div>
+            </div>
+
+            <div class="architecture-diagram">
+                <h3>Cache Architecture</h3>
+                <div class="arch-row">
+                    <div class="arch-box main">
+                        <strong>cache.ts</strong><br>
+                        <small>Cache Module</small>
+                    </div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-down"></use></svg></div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-box">
+                        <strong>IndexedDB</strong><br>
+                        <small>reef-index DB</small>
+                    </div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-down"></use></svg></div>
+                </div>
+                <div class="arch-row multi">
+                    <div class="arch-box">
+                        <strong>indices</strong><br>
+                        <small>Object Store</small>
+                    </div>
+                    <div class="arch-box">
+                        <strong>version</strong><br>
+                        <small>Key Path</small>
+                    </div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-down"></use></svg></div>
+                </div>
+                <div class="arch-row multi">
+                    <div class="arch-box">
+                        <strong>index</strong><br>
+                        <small>Serialized</small>
+                    </div>
+                    <div class="arch-box">
+                        <strong>metadata</strong><br>
+                        <small>CacheMetadata</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="functions" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-gear"></use></svg>
+                Functions
+            </h2>
+
+            <div class="properties-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Function</th>
+                            <th>Returns</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>openDB()</code></td>
+                            <td><code>Promise&lt;IDBDatabase&gt;</code></td>
+                            <td>Opens the IndexedDB database, creating it if necessary</td>
+                        </tr>
+                        <tr>
+                            <td><code>saveIndex(index, metadata)</code></td>
+                            <td><code>Promise&lt;void&gt;</code></td>
+                            <td>Saves a search index with metadata to the database</td>
+                        </tr>
+                        <tr>
+                            <td><code>loadIndex(ttl?)</code></td>
+                            <td><code>Promise&lt;{index, metadata} | null&gt;</code></td>
+                            <td>Loads a cached index, optionally checking TTL expiration</td>
+                        </tr>
+                        <tr>
+                            <td><code>clearCache()</code></td>
+                            <td><code>Promise&lt;void&gt;</code></td>
+                            <td>Clears all cached data from the database</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="api-method">
+                <h3>openDB()</h3>
+                <p>Opens the Reef IndexedDB database. Creates the database and object store if they don't exist.</p>
+                <div class="code-block">
+                    <pre><code class="language-typescript">export async function openDB(): Promise&lt;IDBDatabase&gt; {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: CACHE_VERSION_KEY });
+      }
+    };
+  });
+}
+
+// Constants
+const DB_NAME = 'reef-index';
+const STORE_NAME = 'indices';
+const CACHE_VERSION_KEY = 'version';
+
+// Usage
+const db = await openDB();
+console.log('Database opened:', db.name);</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>saveIndex()</h3>
+                <p>Saves a search index with metadata to the database.</p>
+                <div class="code-block">
+                    <pre><code class="language-typescript">export async function saveIndex(
+  index: SearchIndex, 
+  metadata: CacheMetadata
+): Promise&lt;void&gt; {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  
+  const data = {
+    [CACHE_VERSION_KEY]: metadata.versionHash,
+    index: serializeIndex(index),
+    metadata
+  };
+  
+  await new Promise&lt;void&gt;((resolve, reject) => {
+    const req = store.put(data);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// Usage
+import { saveIndex } from './src/cache.js';
+import { createSearchIndex, addToIndex } from './src/search-index.js';
+
+const index = createSearchIndex();
+addToIndex(index, records);
+
+const metadata = {
+  versionHash: 'abc123',
+  buildTime: Date.now(),
+  pageCount: 10,
+  configHash: 'xyz789'
+};
+
+await saveIndex(index, metadata);</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>loadIndex()</h3>
+                <p>Loads a cached index from the database. Optionally checks TTL expiration.</p>
+                <div class="code-block">
+                    <pre><code class="language-typescript">export async function loadIndex(ttl?: number): Promise&lt;
+  { index: SearchIndex; metadata: CacheMetadata } | null
+&gt; {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+  
+  const allRecords = await new Promise&lt;any[]&gt;((resolve, reject) => {
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+
+  if (!allRecords.length) return null;
+  
+  const record = allRecords[0] as { [key: string]: any };
+  const cached = deserializeIndex(record.index);
+  const metadata: CacheMetadata = record.metadata;
+
+  if (ttl &amp;&amp; metadata.buildTime) {
+    const age = Date.now() - metadata.buildTime;
+    if (age &gt; ttl) {
+      return null; // Expired
+    }
+  }
+
+  return { index: cached, metadata };
+}
+
+// Usage
+// Load without TTL check
+const { index, metadata } = await loadIndex();
+
+// Load with TTL check (expire after 1 hour)
+const freshIndex = await loadIndex(1000 * 60 * 60);
+
+// Check if loaded
+if (freshIndex) {
+  console.log('Index loaded with', freshIndex.index.allSections.length, 'sections');
+} else {
+  console.log('No cached index or expired');
+}</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>clearCache()</h3>
+                <p>Clears all cached data from the database.</p>
+                <div class="code-block">
+                    <pre><code class="language-typescript">export async function clearCache(): Promise&lt;void&gt; {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  
+  await new Promise&lt;void&gt;((resolve, reject) => {
+    const req = store.clear();
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// Usage
+import { clearCache } from './src/cache.js';
+
+// Clear all cached data
+await clearCache();
+console.log('Cache cleared');
+
+// Useful when:
+// - Rebuilding the index from scratch
+// - Version mismatch detected
+// - User requests cache reset</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="database-schema" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-database"></use></svg>
+                Database Schema
+            </h2>
+
+            <div class="api-method">
+                <h3>Database Configuration</h3>
+                <div class="code-block">
+                    <pre><code class="language-typescript">// Database constants
+const DB_NAME = 'reef-index';
+const STORE_NAME = 'indices';
+const CACHE_VERSION_KEY = 'version';
+
+// Database version
+const DB_VERSION = 1;
+
+// Object store configuration
+{
+  name: 'indices',
+  keyPath: 'version',  // Unique identifier for cache version
+  autoIncrement: false
+}</n
+// Stored data structure
+{
+  version: string;           // Cache version hash (key path)
+  index: string;            // Serialized SearchIndex JSON
+  metadata: CacheMetadata;   // Additional metadata
+}</n
+// CacheMetadata interface (from types.ts)
+interface CacheMetadata {
+  versionHash: string;    // Hash of configuration/settings
+  buildTime: number;      // Timestamp when index was built
+  pageCount: number;      // Number of pages indexed
+  configHash: string;     // Hash of indexing configuration
+}</n
+// Example stored record
+{
+  version: 'v1-abc123',
+  index: '{"allSections": [...], "headingIndex": [...], ...}',
+  metadata: {
+    versionHash: 'config-abc',
+    buildTime: 1718000000000,
+    pageCount: 42,
+    configHash: 'settings-xyz'
+  }
+}</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>IndexedDB Structure</h3>
+                <p>Visual representation of the IndexedDB structure used by Reef cache.</p>
+                <div class="code-block">
+                    <pre><code class="language-javascript">// In browser dev tools, you can inspect:
+// Application Tab &gt; IndexedDB &gt; reef-index
+
+// The database contains:
+reef-index (database)
+  └── indices (object store)
+        ├── version: 'v1-abc123' (key)
+        │     ├── version: 'v1-abc123'
+        │     ├── index: "{...serialized index...}"
+        │     └── metadata: { versionHash, buildTime, pageCount, configHash }
+        └── version: 'v1-def456' (key)
+              ├── version: 'v1-def456'
+              ├── index: "{...serialized index...}"
+              └── metadata: {...}
+
+// Only one record per version
+// Old versions are replaced when saving with same versionHash</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="source" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-file"></use></svg>
+                Source Code
+            </h2>
+
+            <div class="code-block">
+                <pre><code class="language-typescript">/**
+ * @file IndexedDB persistent cache for search index.
+ * Stores serialized index with metadata for TTL-based expiration.
+ */
+
+import { SearchIndex, serializeIndex, deserializeIndex } from './search-index.js';
+import { CacheMetadata } from './types.js';
+
+const DB_NAME = 'reef-index';
+const STORE_NAME = 'indices';
+const CACHE_VERSION_KEY = 'version';
+
+export async function openDB(): Promise&lt;IDBDatabase&gt; {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: CACHE_VERSION_KEY });
+      }
+    };
+  });
+}
+
+export async function saveIndex(index: SearchIndex, metadata: CacheMetadata): Promise&lt;void&gt; {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  const data = {
+    [CACHE_VERSION_KEY]: metadata.versionHash,
+    index: serializeIndex(index),
+    metadata
+  };
+  await new Promise&lt;void&gt;((resolve, reject) => {
+    const req = store.put(data);
+    req.onsuccess = () => resolve(undefined);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function loadIndex(ttl?: number): Promise&lt;
+  { index: SearchIndex; metadata: CacheMetadata } | null
+&gt; {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+  
+  const allRecords = await new Promise&lt;any[]&gt;((resolve, reject) => {
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+
+  if (!allRecords.length) return null;
+  
+  const record = allRecords[0] as { [key: string]: any };
+  const cached = deserializeIndex(record.index);
+  const metadata: CacheMetadata = record.metadata;
+
+  if (ttl &amp;&amp; metadata.buildTime) {
+    const age = Date.now() - metadata.buildTime;
+    if (age &gt; ttl) {
+      return null;
+    }
+  }
+
+  return { index: cached, metadata };
+}
+
+export async function clearCache(): Promise&lt;void&gt; {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  await new Promise&lt;void&gt;((resolve, reject) => {
+    const req = store.clear();
+    req.onsuccess = () => resolve(undefined);
+    req.onerror = () => reject(req.error);
+  });
+}</code></pre>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+        </section>
+
+        <section id="usage" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-flash"></use></svg>
+                Usage
+            </h2>
+
+            <div class="api-method">
+                <h3>Basic Usage</h3>
+                <p>Saving and loading indexes with TTL-based expiration.</p>
+                <div class="code-block">
+                    <pre><code class="language-javascript">import { saveIndex, loadIndex, clearCache } from './src/cache.js';
+import { createSearchIndex, addToIndex } from './src/search-index.js';
+
+// Create and populate index
+const index = createSearchIndex();
+await addToIndex(index, records);
+
+// Save to cache with metadata
+const metadata = {
+  versionHash: 'v1-abc123',
+  buildTime: Date.now(),
+  pageCount: records.length,
+  configHash: 'default-config'
+};
+
+await saveIndex(index, metadata);
+console.log('Index saved to cache');
+
+// Load from cache (no TTL check)
+const cached = await loadIndex();
+if (cached) {
+  console.log('Loaded index with', cached.index.allSections.length, 'sections');
+  console.log('Metadata:', cached.metadata);
+}
+
+// Load with TTL check (1 hour expiration)
+const freshIndex = await loadIndex(1000 * 60 * 60);
+if (freshIndex) {
+  // Index is fresh, use it
+} else {
+  // Index expired or doesn't exist, rebuild
+  await rebuildAndSaveIndex();
+}</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>Integration with ReefSearch</h3>
+                <p>How cache is used in the main ReefSearch class.</p>
+                <div class="code-block">
+                    <pre><code class="language-javascript">// In ReefSearch class (reef.ts)
+import { saveIndex, loadIndex } from './cache.js';
+
+class ReefSearch {
+  async init() {
+    // Try to load cached index
+    const cached = await loadIndex(this.config.cacheTTL);
+    
+    if (cached &amp;&amp; cached.metadata.versionHash === this.getVersionHash()) {
+      this.index = cached.index;
+      this.diagnostics.cachedIndex = true;
+    } else {
+      // Build new index
+      await this.buildIndex();
+      
+      // Save to cache
+      await saveIndex(this.index, {
+        versionHash: this.getVersionHash(),
+        buildTime: Date.now(),
+        pageCount: this.index.allSections.length,
+        configHash: this.config.hash
+      });
+    }
+  }
+  
+  async rebuildIndex() {
+    // Clear old cache
+    await clearCache();
+    
+    // Build new index
+    await this.buildIndex();
+    
+    // Save fresh
+    await saveIndex(this.index, {
+      versionHash: this.getVersionHash(),
+      buildTime: Date.now(),
+      pageCount: this.index.allSections.length,
+      configHash: this.config.hash
+    });
+  }
+}</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>TTL-Based Cache Invalidation</h3>
+                <p>Automatically expire old indexes based on time-to-live.</p>
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Configuration
+const CACHE_TTL = {
+  // Expire after 1 hour
+  default: 1000 * 60 * 60,
+  
+  // Expire after 15 minutes for development
+  development: 1000 * 60 * 15,
+  
+  // Expire after 1 day for production
+  production: 1000 * 60 * 60 * 24,
+  
+  // Never expire
+  persistent: 0
+};
+
+// Usage
+const config = {
+  cacheTTL: CACHE_TTL.production
+};
+
+// Load with TTL check
+await loadIndex(config.cacheTTL);
+
+// Version-based invalidation
+// If config changes, versionHash changes, cache is ignored
+const metadata = {
+  versionHash: computeHashFromConfig(config), // Different on config change
+  buildTime: Date.now(),
+  ...
+};
+
+// Force cache refresh
+async function refreshCache() {
+  await clearCache();
+  // Rebuild index
+}</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>Error Handling</h3>
+                <p>Handling IndexedDB errors and edge cases.</p>
+                <div class="code-block">
+                    <pre><code class="language-javascript">import { saveIndex, loadIndex, clearCache } from './src/cache.js';
+
+// Wrap cache operations in try-catch
+async function safeSaveIndex(index, metadata) {
+  try {
+    await saveIndex(index, metadata);
+    return true;
+  } catch (error) {
+    console.error('Failed to save index:', error);
+    // Fall back to in-memory only
+    return false;
+  }
+}
+
+async function safeLoadIndex(ttl) {
+  try {
+    return await loadIndex(ttl);
+  } catch (error) {
+    console.error('Failed to load index:', error);
+    return null; // Return null to trigger rebuild
+  }
+}
+
+// Check IndexedDB support
+function isIndexedDBSupported() {
+  return typeof indexedDB !== 'undefined';
+}
+
+// Polyfill for browsers without IndexedDB
+if (!isIndexedDBSupported()) {
+  // Use in-memory cache only
+  console.warn('IndexedDB not available, using in-memory cache');
+}</n
+
+// Check storage quota
+navigator.storage.estimate().then(estimate => {
+  if (estimate.quota &lt; 100 * 1024 * 1024) {
+    console.warn('Low storage quota, cache may be limited');
+  }
+});</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

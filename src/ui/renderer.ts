@@ -20,6 +20,7 @@ export class UIRenderer {
   private settingsChangeCallback: ((key: string, value: any) => void) | null = null;
   private rebuildIndexCallback: (() => void) | null = null;
   private toggleInspectorCallback: ((active: boolean) => void) | null = null;
+  private onOpenCallback: (() => void) | null = null;
   private isSettingsOpen = false;
 
   getHost(): HTMLDivElement | null { return this.host; }
@@ -29,6 +30,7 @@ export class UIRenderer {
   getIsOpen(): boolean { return this.isOpen; }
   getFocusableElements(): HTMLElement[] { return this.focusableElements; }
   getActiveCategory(): string { return this.activeCategory; }
+  getOnOpenCallback(): (() => void) | null { return this.onOpenCallback; }
 
   setIsOpen(open: boolean): void { this.isOpen = open; }
   clearFocusableElements(): void { this.focusableElements = []; }
@@ -37,6 +39,7 @@ export class UIRenderer {
   setSettingsCallback(cb: (key: string, val: any) => void): void { this.settingsChangeCallback = cb; }
   setRebuildIndexCallback(cb: () => void): void { this.rebuildIndexCallback = cb; }
   setToggleInspectorCallback(cb: (active: boolean) => void): void { this.toggleInspectorCallback = cb; }
+  setOnOpenCallback(cb: () => void): void { this.onOpenCallback = cb; }
 
 renderUI(
     placeholder: string,

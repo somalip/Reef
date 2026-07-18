@@ -74,6 +74,7 @@ class ReefSearch {
   private setupEventListeners() {
     const input = this.ui.getInput();
     const host = this.ui.getHost()!;
+    const root = this.ui.getRoot();
 
     input?.addEventListener('input', () => {
       this.currentQuery = input?.value ?? '';
@@ -82,31 +83,33 @@ class ReefSearch {
       this.searchDebounce = requestAnimationFrame(() => this.renderResults());
     });
 
-    input?.addEventListener('keydown', (event) => {
-      // Cancel any pending debounce render to avoid race conditions
-      if (this.searchDebounce) {
-        cancelAnimationFrame(this.searchDebounce);
-        this.searchDebounce = 0;
+    // Keyboard navigation at document level - works regardless of which element has focus
+    document.addEventListener('keydown', (event) => {
+      if (!this.ui.getIsOpen()) return;
+      // Don't interfere with input field typing
+      if (event.target === input && !['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab'].includes(event.key)) {
+        return;
       }
-      
+
       const results = this.getVisibleResults();
+      
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         if (results.length) {
           this.selectedIndex = (this.selectedIndex + 1) % results.length;
+          this.renderResults();
+          this.ui.scrollSelectedIntoView(this.selectedIndex);
         }
-        this.renderResults();
-        this.ui.scrollSelectedIntoView(this.selectedIndex);
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
         if (results.length) {
           this.selectedIndex = (this.selectedIndex - 1 + results.length) % results.length;
+          this.renderResults();
+          this.ui.scrollSelectedIntoView(this.selectedIndex);
         }
-        this.renderResults();
-        this.ui.scrollSelectedIntoView(this.selectedIndex);
       } else if (event.key === 'Enter') {
         event.preventDefault();
-        const match = this.getVisibleResults()[this.selectedIndex];
+        const match = results[this.selectedIndex];
         if (match) {
           this.runSelectCallback(match);
           this.executeAction(match);
@@ -116,23 +119,27 @@ class ReefSearch {
         event.preventDefault();
         this.close();
       } else if (event.key === 'Tab') {
-        event.preventDefault();
-        const categories = ['all', 'pages', 'actions', 'files', 'links'];
-        const currentCat = this.ui.getActiveCategory();
-        const idx = categories.indexOf(currentCat);
-        const nextIdx = event.shiftKey
-          ? (idx - 1 + categories.length) % categories.length
-          : (idx + 1) % categories.length;
-        const nextCat = categories[nextIdx];
-        
-        // Update active tab chip
-        const tabEl = this.ui.getRoot()?.querySelector(`.tab-chip[data-cat="${nextCat}"]`) as HTMLElement | null;
-        if (tabEl) {
-          tabEl.click();
+        // Only handle Tab if input has focus - otherwise let normal tab navigation work
+        if (document.activeElement === input) {
+          event.preventDefault();
+          const categories = ['all', 'pages', 'actions', 'files', 'links'];
+          const currentCat = this.ui.getActiveCategory();
+          const idx = categories.indexOf(currentCat);
+          const nextIdx = event.shiftKey
+            ? (idx - 1 + categories.length) % categories.length
+            : (idx + 1) % categories.length;
+          const nextCat = categories[nextIdx];
+          
+          // Update active tab chip
+          const tabEl = root?.querySelector(`.tab-chip[data-cat="${nextCat}"]`) as HTMLElement | null;
+          if (tabEl) {
+            tabEl.click();
+          }
         }
       }
     });
 
+    // Also handle Escape key globally
     document.addEventListener('keydown', (event) => {
       if (this.ui.getIsOpen() && event.key === 'Escape') {
         event.preventDefault();
@@ -148,6 +155,11 @@ class ReefSearch {
       if (!clickedInsidePanel) {
         this.close();
       }
+    });
+
+    // Focus input when modal opens
+    this.ui.setOnOpenCallback(() => {
+      input?.focus();
     });
 
     this.ui.setupFocusTrap();
@@ -239,17 +251,14 @@ class ReefSearch {
         this.selectedIndex = index;
         this.renderResults();
       },
-      (event, index) => {
-        event.preventDefault();
-        event.stopPropagation();
-        const match = results[index] ?? results[0];
+(event, index) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const match = results[index] ?? results[0];
         if (match) {
           this.runSelectCallback(match);
           this.executeAction(match);
-          const isNavType = ['section', 'link', 'file', 'media', 'structured'].includes(match.type);
-          if (!isNavType) {
-            this.close();
-          }
+          this.close();
         }
       }
     );
@@ -306,6 +315,7 @@ class ReefSearch {
     this.ui.getInput()?.focus();
     this.ui.applyAriaHidden();
     this.renderResults();
+    this.ui.getOnOpenCallback()?.();
   }
 
   private closeInternal(): void {

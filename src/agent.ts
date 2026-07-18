@@ -198,15 +198,6 @@ switch (step.action) {
               }
               success = true;
               break;
-            case 'type':
-              if (step.selector) {
-                await this.type(step.selector, step.value || '');
-              } else if (step.recordId) {
-                const record = this.index.allSections.find(r => r.id === step.recordId);
-                if (record) await this.type(record, step.value || '');
-              }
-              success = true;
-              break;
             case 'navigate':
               if (step.url) {
                 await this.navigate(step.url);

@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent - AI Agent API Documentation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+  </symbol>
+  <symbol id="icon-document" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+  </symbol>
+  <symbol id="icon-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+  </symbol>
+  <symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
+  </symbol>
+  <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65 16.65"></line>
+  </symbol>
+  <symbol id="icon-file-cabinet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="3" width="16" height="18" rx="2" ry="2"></rect>
+    <line x1="8" y1="3" x2="8" y2="21"></line>
+    <line x1="16" y1="3" x2="16" y2="21"></line>
+    <line x1="4" y1="9" x2="20" y2="9"></line>
+    <line x1="4" y1="15" x2="20" y2="15"></line>
+  </symbol>
+  <symbol id="icon-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+  </symbol>
+  <symbol id="icon-arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <polyline points="19 12 12 19 5 12"></polyline>
+  </symbol>
+  <symbol id="icon-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+    <polyline points="12 5 19 12 12 19"></polyline>
+  </symbol>
+  <symbol id="icon-arrow-up-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="7" y1="17" x2="17" y2="7"></line>
+    <polyline points="10 7 17 7 17 14"></polyline>
+  </symbol>
+  <symbol id="icon-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  </symbol>
+  <symbol id="icon-flash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="13 2 3 14 12 14 8 22 18 10 9 10 13 2"></polygon>
+  </symbol>
+  <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="10" width="18" height="11" rx="2" ry="2"></rect>
+    <circle cx="9" cy="5" r="3"></circle>
+    <circle cx="15" cy="5" r="3"></circle>
+    <path d="M9 14a3 3 0 0 1-3 3v2h3"></path>
+    <path d="M15 14a3 3 0 0 0 3 3v2h-3"></path>
+  </symbol>
+  <symbol id="icon-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+  </symbol>
+  <symbol id="icon-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+    <circle cx="12" cy="13" r="4"></circle>
+  </symbol>
+  <symbol id="icon-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10"></line>
+    <line x1="12" y1="20" x2="12" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="14"></line>
+    <line x1="2" y1="20" x2="22" y2="20"></line>
+  </symbol>
+  <symbol id="icon-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"></path>
+  </symbol>
+  <symbol id="icon-desktop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+    <line x1="2" y1="21" x2="22" y2="21"></line>
+    <line x1="12" y1="17" x2="12" y2="21"></line>
+  </symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </symbol>
+  <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+  </symbol>
+  <symbol id="icon-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <line x1="10" y1="9" x2="8" y2="9"></line>
+  </symbol>
+</svg>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <svg class="icon-svg"><use href="#icon-home"></use></svg>
+                <h1>Agent Documentation</h1>
+            </div>
+            <p class="subtitle">Programmatic API for AI Agents to Interact with Web Pages</p>
+        </div>
+    </header>
+
+    <nav class="sidebar">
+        <div class="nav-section">
+            <h2>Agent</h2>
+            <a href="#overview" class="nav-link active">Overview</a>
+            <a href="#constructor" class="nav-link">Constructor</a>
+            <a href="#action-methods" class="nav-link">Action Methods</a>
+            <a href="#navigation-methods" class="nav-link">Navigation Methods</a>
+            <a href="#data-methods" class="nav-link">Data Methods</a>
+            <a href="#session-methods" class="nav-link">Session Methods</a>
+            <a href="#workflow-methods" class="nav-link">Workflow Methods</a>
+            <a href="#properties" class="nav-link">Properties</a>
+            <a href="#types" class="nav-link">Types</a>
+            <a href="#examples" class="nav-link">Examples</a>
+        </div>
+
+        <div class="nav-section">
+            <h2>Related Modules</h2>
+            <a href="index.html" class="nav-link">Main Documentation</a>
+            <a href="reef.html" class="nav-link">ReefSearch</a>
+            <a href="types.html" class="nav-link">Types</a>
+            <a href="workflow.html" class="nav-link">Workflow</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section id="overview" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-robot"></use></svg>
+                Overview
+            </h2>
+            <p class="lead">
+                The <strong>Agent</strong> class provides a programmatic API for AI agents to interact with web pages. 
+                It offers chainable methods for automation, data extraction, and workflow execution.
+            </p>
+
+            <div class="code-demo">
+                <h3>Getting an Agent Instance</h3>
+                <p>Get an Agent instance from ReefSearch:</p>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// From window.Reef
+const agent = window.Reef.agent();
+
+// Or create directly (with index and inspector)
+import { Agent } from './src/agent.js';
+import { createSearchIndex } from './src/search-index.js';
+
+const index = createSearchIndex();
+const inspector = { /* ... */ };
+const agent = new Agent(index, inspector, 'execute');</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-arrow-right"></use></svg></div>
+                    <h3>Chainable API</h3>
+                    <p>Fluent interface for easy method chaining. Actions return <code>this</code> for chaining.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-link"></div>
+                    <h3>Type-Safe</h3>
+                    <p>Full TypeScript support with comprehensive type definitions for all methods.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-gear"></use></svg></div>
+                    <h3>Error Handling</h3>
+                    <p>Built-in error handling with clear error messages for automation reliability.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-chart"></div>
+                    <h3>Data Extraction</h3>
+                    <p>Extract data from DOM elements, forms, and structured content.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-rocket"></div>
+                    <h3>Workflow Support</h3>
+                    <p>Execute multi-step workflows with retry logic and error recovery.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-gear"></div>
+                    <h3>Session Management</h3>
+                    <p>Access session information including cookies, localStorage, and environment data.</p>
+                </div>
+            </div>
+
+            <div class="architecture-diagram">
+                <h3>Agent Architecture</h3>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 1rem;">
+                    The Agent coordinates between the Search Index, DOM, and Browser APIs
+                </p>
+                <div class="arch-row">
+                    <div class="arch-box main">
+                        <strong>Agent</strong><br>
+                        <small>AI Interface</small>
+                    </div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-right"></use></svg></div>
+                </div>
+                <div class="arch-row multi">
+                    <div class="arch-box">
+                        <strong>Search Index</strong><br>
+                        <small>findActionable()</small>
+                    </div>
+                    <div class="arch-box">
+                        <strong>DOM</strong><br>
+                        <small>Click, Type, Extract</small>
+                    </div>
+                    <div class="arch-box">
+                        <strong>Browser</strong><br>
+                        <small>Navigate, History</small>
+                    </div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-down"></use></svg></div>
+                </div>
+                <div class="arch-row">
+                    <div class="arch-box dom">
+                        <strong>Web Page</strong><br>
+                        <small>Live DOM Content</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="constructor" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-gear"></use></svg>
+                Constructor
+            </h2>
+
+            <div class="api-method">
+                <h3>new Agent(index: SearchIndex, inspector: InspectorInterface, actionsMode?: 'execute' | 'navigate-only')</h3>
+                <p>Creates a new Agent instance.</p>
+
+                <div class="method-details">
+                    <div class="method-param">
+                        <span class="param-name">index</span>
+                        <span class="param-type">SearchIndex</span>
+                    </div>
+                    <p>The search index to query for actionable elements.</p>
+
+                    <div class="method-param">
+                        <span class="param-name">inspector</span>
+                        <span class="param-type">InspectorInterface</span>
+                    </div>
+                    <p>Visual inspector instance for debugging.</p>
+
+                    <div class="method-param">
+                        <span class="param-name">actionsMode</span>
+                        <span class="param-type">'execute' | 'navigate-only'</span>
+                        <span class="param-optional">Optional</span>
+                        <span class="param-default">Default: 'execute'</span>
+                    </div>
+                    <p>Determines whether destructive actions should be executed or just navigated to.</p>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-typescript">import { Agent } from './src/agent.js';
+import { createSearchIndex } from './src/search-index.js';
+
+// Create dependencies
+const index = createSearchIndex();
+const inspector = {
+  activate: () => {},
+  deactivate: () => {},
+  isActive: () => false,
+  setRecords: () => {}
+};
+
+// Create agent
+const agent = new Agent(index, inspector, 'execute');
+
+// Or get from ReefSearch
+const agent = window.Reef.agent();</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+
+                <div class="callout">
+                    <p><strong>Note:</strong> In most cases, you should use <code>window.Reef.agent()</code> to get a properly 
+                    configured Agent instance with access to the current index and configuration.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="action-methods" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-arrow-right"></use></svg>
+                Action Methods
+            </h2>
+            <p>
+                These methods allow the agent to interact with DOM elements. All methods are async and return 
+                <code>Promise&lt;this&gt;</code> for chaining.
+            </p>
+
+            <div class="api-method">
+                <h3>click(selector: string | IndexRecord): Promise&lt;this&gt;</h3>
+                <p>Click on an element matching the selector or IndexRecord.</p>
+
+                <div class="method-details">
+                    <div class="method-param">
+                        <span class="param-name">selector</span>
+                        <span class="param-type">string | IndexRecord</span>
+                    </div>
+                    <p>CSS selector string or IndexRecord with a selector property.</p>
+                </div>
+
+                <div class="method-returns">
+                    <span class="return-type">Promise&lt;this&gt;</span>
+                    <p>Returns <code>this</code> for method chaining.</p>
+                </div>
+
+                <div class="method-throws">
+                    <span class="throw-type">Error</span>
+                    <p>Throws if element is not found or click fails.</p>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Click by selector
+await agent.click('#login-button');
+
+// Click by IndexRecord
+await agent.click(record);
+
+// Chain with other actions
+await agent
+  .click('#menu-toggle')
+  .click('#settings-link')
+  .click('#profile-tab');</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>type(selector: string | IndexRecord, value: string): Promise&lt;this&gt;</h3>
+                <p>Type text into an input, textarea, or select element.</p>
+
+                <div class="method-details">
+                    <div class="method-param">
+                        <span class="param-name">selector</span>
+                        <span class="param-type">string | IndexRecord</span>
+                    </div>
+                    <p>CSS selector string or IndexRecord with a selector property.</p>
+
+                    <div class="method-param">
+                        <span class="param-name">value</span>
+                        <span class="param-type">string</span>
+                    </div>
+                    <p>The text value to type into the element.</p>
+                </div>
+
+                <div class="method-returns">
+                    <span class="return-type">Promise&lt;this&gt;</span>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Type into input
+await agent.type('#email', 'user@example.com');
+
+// Type into textarea
+await agent.type('#message', 'Hello, World!');
+
+// Chain typing with other actions
+await agent
+  .type('#username', 'john_doe')
+  .type('#password', 'secret123')
+  .click('#login-button');</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+
+                <div class="callout">
+                    <p><strong>Note:</strong> This method properly dispatches <code>input</code> and <code>change</code> events 
+                    to ensure form validation and React/Vue reactivity work correctly.</p>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>submit(selector?: string | IndexRecord): Promise&lt;this&gt;</h3>
+                <p>Submit a form or click a submit button.</p>
+
+                <div class="method-details">
+                    <div class="method-param">
+                        <span class="param-name">selector</span>
+                        <span class="param-type">string | IndexRecord</span>
+                        <span class="param-optional">Optional</span>
+                    </div>
+                    <p>CSS selector or IndexRecord for a specific form or submit button. If not provided, 
+                    will find and submit the first form on the page.</p>
+                </div>
+
+                <div class="method-returns">
+                    <span class="return-type">Promise&lt;this&gt;</span>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Submit without selector (uses first form)
+await agent.submit();
+
+// Submit specific form
+await agent.submit('#login-form');
+
+// Submit specific button
+await agent.submit('#submit-button');
+
+// Chain with form filling
+await agent
+  .type('#email', 'user@example.com')
+  .type('#password', 'secret')
+  .submit();</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="navigation-methods" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-arrow-up-right"></use></svg>
+                Navigation Methods
+            </h2>
+
+            <div class="api-method">
+                <h3>navigate(url: string): Promise&lt;this&gt;</h3>
+                <p>Navigate to a URL.</p>
+
+                <div class="method-details">
+                    <div class="method-param">
+                        <span class="param-name">url</span>
+                        <span class="param-type">string</span>
+                    </div>
+                    <p>URL to navigate to. Can be absolute (<code>https://...</code>), relative (<code>/page</code>), or hash (<code>#section</code>).</p>
+                </div>
+
+                <div class="method-returns">
+                    <span class="return-type">Promise&lt;this&gt;</span>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Absolute URL
+await agent.navigate('https://example.com/dashboard');
+
+// Relative URL
+await agent.navigate('/settings');
+
+// Hash navigation
+await agent.navigate('#profile-section');
+
+// Chain navigation with actions
+await agent
+  .navigate('/login')
+  .type('#email', 'user@example.com')
+  .type('#password', 'secret')
+  .submit();</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>back(): Promise&lt;this&gt;</h3>
+                <p>Navigate back in the browser history.</p>
+
+                <div class="method-returns">
+                    <span class="return-type">Promise&lt;this&gt;</span>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Go back
+await agent.back();
+
+// Chain with other actions
+await agent
+  .click('#go-to-page-2')
+  .wait(1000)
+  .back();</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>forward(): Promise&lt;this&gt;</h3>
+                <p>Navigate forward in the browser history.</p>
+
+                <div class="method-returns">
+                    <span class="return-type">Promise&lt;this&gt;</span>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Go forward
+await agent.forward();
+
+// Chain with back
+await agent
+  .back()
+  .wait(500)
+  .forward();</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>wait(timeout?: number): Promise&lt;this&gt;</h3>
+                <p>Wait for a specified amount of time.</p>
+
+                <div class="method-details">
+                    <div class="method-param">
+                        <span class="param-name">timeout</span>
+                        <span class="param-type">number</span>
+                        <span class="param-optional">Optional</span>
+                        <span class="param-default">Default: 1000</span>
+                    </div>
+                    <p>Time to wait in milliseconds.</p>
+                </div>
+
+                <div class="method-returns">
+                    <span class="return-type">Promise&lt;this&gt;</span>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Wait 1 second (default)
+await agent.wait();
+
+// Wait 2 seconds
+await agent.wait(2000);
+
+// Wait 500ms
+await agent.wait(500);
+
+// Chain waiting with actions
+await agent
+  .click('#refresh')
+  .wait(2000) // Wait for data to load
+  .extract('#data-table');</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="data-methods" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-chart"></use></svg>
+                Data Methods
+            </h2>
+
+            <div class="api-method">
+                <h3>extract(selector: string | IndexRecord): Promise&lt;any&gt;</h3>
+                <p>Extract data from an element.</p>
+
+                <div class="method-details">
+                    <div class="method-param">
+                        <span class="param-name">selector</span>
+                        <span class="param-type">string | IndexRecord</span>
+                    </div>
+                    <p>CSS selector string or IndexRecord to extract from.</p>
+                </div>
+
+                <div class="method-returns">
+                    <span class="return-type">Promise&lt;any&gt;</span>
+                    <p>Returns the extracted value. For input/textarea/select elements, returns the value. 
+                    For other elements, returns the textContent.</p>
+                </div>
+
+                <div class="method-throws">
+                    <span class="throw-type">Error</span>
+                    <p>Throws if element is not found.</p>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Extract from input
+await agent.type('#email', 'test@example.com');
+const emailValue = await agent.extract('#email');
+console.log(emailValue); // 'test@example.com'
+
+// Extract text content
+await agent.navigate('/about');
+const heading = await agent.extract('h1');
+console.log(heading); // The h1 text
+
+// Extract from textarea
+await agent.type('#message', 'Hello');
+const message = await agent.extract('#message');
+console.log(message); // 'Hello'
+
+// Extract from select
+const selectedOption = await agent.extract('#country');
+console.log(selectedOption); // The selected value</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="api-method">
+                <h3>findActionable(text: string): Promise&lt;IndexRecord | null&gt;</h3>
+                <p>Find an actionable element (action or field) by text match.</p>
+
+                <div class="method-details">
+                    <div class="method-param">
+                        <span class="param-name">text</span>
+                        <span class="param-type">string</span>
+                    </div>
+                    <p>Text to search for in actionable elements' headingText or label.</p>
+                </div>
+
+                <div class="method-returns">
+                    <span class="return-type">Promise&lt;IndexRecord | null&gt;</span>
+                    <p>Returns the matching IndexRecord or <code>null</code> if not found.</p>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Find by exact text
+const loginButton = await agent.findActionable('Login');
+if (loginButton) {
+  await agent.click(loginButton);
+}
+
+// Find by partial text
+const saveButton = await agent.findActionable('Save');
+if (saveButton) {
+  await agent.click(saveButton);
+}
+
+// Use with chaining
+await agent
+  .findActionable('Submit')
+  .then(button => button ? agent.click(button) : Promise.resolve());</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="session-methods" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-gear"></use></svg>
+                Session Methods
+            </h2>
+
+            <div class="api-method">
+                <h3>getSession(): AgentSession</h3>
+                <p>Get the current session information.</p>
+
+                <div class="method-returns">
+                    <span class="return-type">AgentSession</span>
+                    <p>Returns an object containing session information.</p>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-typescript">// Get session info
+const session = agent.getSession();
+
+// Session object structure:
+interface AgentSession {
+  id: string;              // Unique session ID
+  url: string;            // Current page URL
+  timestamp: number;      // Session creation timestamp
+  cookies: Record&lt;string, string&gt;;     // Current cookies
+  localStorage: Record&lt;string, string&gt;; // localStorage snapshot
+}
+
+// Example usage
+console.log('Session ID:', session.id);
+console.log('Current URL:', session.url);
+console.log('Cookies:', session.cookies);</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+
+                <div class="callout">
+                    <p><strong>Privacy Note:</strong> Session information is collected for debugging and automation purposes. 
+                    Cookies and localStorage data are not transmitted anywhere and remain in the browser.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="workflow-methods" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-gear"></use></svg>
+                Workflow Methods
+            </h2>
+
+            <div class="api-method">
+                <h3>executeWorkflow(steps: WorkflowStep[], options?: WorkflowOptions): Promise&lt;void&gt;</h3>
+                <p>Execute a multi-step workflow with error handling and retry logic.</p>
+
+                <div class="method-details">
+                    <div class="method-param">
+                        <span class="param-name">steps</span>
+                        <span class="param-type">WorkflowStep[]</span>
+                    </div>
+                    <p>Array of workflow steps to execute.</p>
+
+                    <div class="method-param">
+                        <span class="param-name">options</span>
+                        <span class="param-type">WorkflowOptions</span>
+                        <span class="param-optional">Optional</span>
+                    </div>
+                    <p>Workflow configuration options.</p>
+                </div>
+
+                <div class="method-returns">
+                    <span class="return-type">Promise&lt;void&gt;</span>
+                </div>
+
+                <div class="code-block">
+                    <pre><code class="language-javascript">// Define workflow steps
+await agent.executeWorkflow([
+  { action: 'navigate', url: '/login' },
+  { action: 'type', selector: '#email', value: 'user@example.com' },
+  { action: 'type', selector: '#password', value: 'secret123' },
+  { action: 'click', selector: '#login-button' },
+  { action: 'wait', timeout: 2000 },
+  { action: 'extract', selector: 'h1' }
+]);
+
+// With options
+await agent.executeWorkflow(
+  [/* steps */],
+  {
+    maxRetries: 3,
+    retryDelay: 500,
+    stopOnError: false,
+    onStepStart: (step, index) => {
+      console.log(`Starting step ${index}:`, step.action);
+    },
+    onStepComplete: (step, index, result) => {
+      console.log(`Completed step ${index}`, result);
+    },
+    onStepError: (step, index, error) => {
+      console.error(`Step ${index} failed:`, error);
+    }
+  }
+);</pre></code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+
+                <div class="config-table">
+                    <h3>WorkflowStep Interface</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>action</code></td>
+                                <td><code>'click' | 'type' | 'navigate' | 'extract' | 'submit' | 'back' | 'forward' | 'wait'</code></td>
+                                <td>The action to perform.</td>
+                            </tr>
+                            <tr>
+                                <td><code>selector</code></td>
+                                <td><code>string</code></td>
+                                <td>CSS selector for the target element.</td>
+                            </tr>
+                            <tr>
+                                <td><code>recordId</code></td>
+                                <td><code>string</code></td>
+                                <td>IndexRecord ID as an alternative to selector.</td>
+                            </tr>
+                            <tr>
+                                <td><code>value</code></td>
+                                <td><code>string</code></td>
+                                <td>Value to type (for type action).</td>
+                            </tr>
+                            <tr>
+                                <td><code>url</code></td>
+                                <td><code>string</code></td>
+                                <td>URL to navigate to (for navigate action).</td>
+                            </tr>
+                            <tr>
+                                <td><code>timeout</code></td>
+                                <td><code>number</code></td>
+                                <td>Timeout in milliseconds (for wait action).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="config-table">
+                    <h3>WorkflowOptions Interface</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Type</th>
+                                <th>Default</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>maxRetries</code></td>
+                                <td><code>number</code></td>
+                                <td><code>0</code></td>
+                                <td>Maximum number of retries for failed steps.</td>
+                            </tr>
+                            <tr>
+                                <td><code>retryDelay</code></td>
+                                <td><code>number</code></td>
+                                <td><code>500</code></td>
+                                <td>Delay in milliseconds between retries.</td>
+                            </tr>
+                            <tr>
+                                <td><code>stopOnError</code></td>
+                                <td><code>boolean</code></td>
+                                <td><code>true</code></td>
+                                <td>Whether to stop workflow execution on first error.</td>
+                            </tr>
+                            <tr>
+                                <td><code>onStepStart</code></td>
+                                <td><code>(step, index) => void</code></td>
+                                <td><code>-</code></td>
+                                <td>Callback when a step starts.</td>
+                            </tr>
+                            <tr>
+                                <td><code>onStepComplete</code></td>
+                                <td><code>(step, index, result) => void</code></td>
+                                <td><code>-</code></td>
+                                <td>Callback when a step completes successfully.</td>
+                            </tr>
+                            <tr>
+                                <td><code>onStepError</code></td>
+                                <td><code>(step, index, error) => void</code></td>
+                                <td><code>-</code></td>
+                                <td>Callback when a step fails.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="properties" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-folder"></span>
+                Properties
+            </h2>
+
+            <div class="properties-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>index</code></td>
+                            <td><code>SearchIndex</code></td>
+                            <td>The search index. Private property.</td>
+                        </tr>
+                        <tr>
+                            <td><code>inspector</code></td>
+                            <td><code>InspectorInterface</code></td>
+                            <td>Visual inspector instance. Private property.</td>
+                        </tr>
+                        <tr>
+                            <td><code>actionsMode</code></td>
+                            <td><code>'execute' | 'navigate-only'</code></td>
+                            <td>Current actions mode. Private property.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="types" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-folder"></span>
+                Types
+            </h2>
+
+            <div class="code-block">
+                <pre><code class="language-typescript">// Inspector Interface
+export type InspectorInterface = {
+  activate: () => void;
+  deactivate: () => void;
+  isActive: () => boolean;
+  setRecords: (records: IndexRecord[]) => void;
+};
+
+// Action Result
+export interface ActionResult {
+  success: boolean;
+  reason?: string;
+  element?: Element;
+}
+
+// Agent Session
+export interface AgentSession {
+  id: string;
+  url: string;
+  timestamp: number;
+  cookies?: Record&lt;string, string&gt;;
+  localStorage?: Record&lt;string, string&gt;;
+}
+
+// Workflow Step
+export interface WorkflowStep {
+  action: 'click' | 'type' | 'navigate' | 'extract' | 'submit' | 'back' | 'forward' | 'wait';
+  selector?: string;
+  value?: string;
+  url?: string;
+  recordId?: string;
+  timeout?: number;
+}
+
+// Workflow Options
+export interface WorkflowOptions {
+  maxRetries?: number;
+  retryDelay?: number;
+  stopOnError?: boolean;
+  onStepStart?: (step: WorkflowStep, index: number) => void;
+  onStepComplete?: (step: WorkflowStep, index: number, result: any) => void;
+  onStepError?: (step: WorkflowStep, index: number, error: Error) => void;
+}</pre></code>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+        </section>
+
+        <section id="examples" class="section">
+            <h2 class="section-title">
+                <svg class="icon-svg"><use href="#icon-file-text"></use></svg>
+                Examples
+            </h2>
+
+            <div class="examples-grid">
+                <div class="example-card">
+                    <h3>Login Workflow</h3>
+                    <p>Complete login automation with error handling.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const agent = window.Reef.agent();
+
+const login = async (email, password) => {
+  try {
+    await agent
+      .navigate('/login')
+      .type('#email', email)
+      .type('#password', password)
+      .submit();
+    
+    // Verify success
+    await agent.wait(2000);
+    const welcomeText = await agent.extract('.welcome-message');
+    
+    if (welcomeText.includes('Welcome')) {
+      console.log('Login successful!');
+      return true;
+    }
+    
+    console.log('Login may have failed');
+    return false;
+  } catch (error) {
+    console.error('Login error:', error);
+    return false;
+  }
+};
+
+login('user@example.com', 'secret123');</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Form Data Extraction</h3>
+                    <p>Extract data from a form after submission.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const agent = window.Reef.agent();
+
+const extractFormData = async () => {
+  // Navigate to form
+  await agent.navigate('/user-profile');
+  
+  // Extract all form fields
+  const name = await agent.extract('#name');
+  const email = await agent.extract('#email');
+  const bio = await agent.extract('#bio');
+  const country = await agent.extract('#country');
+  
+  return {
+    name,
+    email,
+    bio,
+    country
+  };
+};
+
+// Usage
+extractFormData().then(data => {
+  console.log('Profile data:', data);
+});</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Multi-Page Workflow</h3>
+                    <p>Navigate through multiple pages and extract data.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const agent = window.Reef.agent();
+
+const scrapeDashboard = async () => {
+  // Navigate to dashboard
+  await agent.navigate('/dashboard');
+  
+  // Extract summary data
+  const stats = await agent.extract('.stats-summary');
+  
+  // Click to view details
+  await agent.click('.view-details');
+  await agent.wait(1000);
+  
+  // Extract detailed data
+  const details = await agent.extract('.details-table');
+  
+  // Go back
+  await agent.back();
+  
+  // Navigate to another section
+  await agent.navigate('/dashboard#recent-activity');
+  await agent.wait(1000);
+  
+  const activity = await agent.extract('.activity-list');
+  
+  return { stats, details, activity };
+};
+
+scrapeDashboard().then(data => {
+  console.log('Dashboard data:', data);
+});</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Conditional Actions</h3>
+                    <p>Perform actions based on page content.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const agent = window.Reef.agent();
+
+const handleNotification = async () => {
+  await agent.navigate('/notifications');
+  
+  // Check if there are notifications
+  const countText = await agent.extract('.notification-count');
+  const count = parseInt(countText);
+  
+  if (count > 0) {
+    // Click to mark all as read
+    await agent.click('.mark-all-read');
+    
+    // Or process each notification
+    for (let i = 0; i < count; i++) {
+      const notification = await agent.extract(`.notification:nth-child(${i + 1})`);
+      console.log('Notification:', notification);
+      
+      await agent.click(`.notification:nth-child(${i + 1}) .mark-read`);
+      await agent.wait(200);
+    }
+  } else {
+    console.log('No new notifications');
+  }
+};
+
+handleNotification();</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Workflow with Retries</h3>
+                    <p>Execute a workflow with automatic retry on failure.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const agent = window.Reef.agent();
+
+const unstableWorkflow = async () => {
+  await agent.executeWorkflow([
+    { action: 'navigate', url: '/dashboard' },
+    { action: 'click', selector: '#refresh-data' },
+    { action: 'wait', timeout: 3000 },
+    { action: 'extract', selector: '#chart-data' }
+  ], {
+    maxRetries: 5,              // Retry up to 5 times
+    retryDelay: 1000,          // Wait 1 second between retries
+    stopOnError: false,        // Continue with next step even if one fails
+    onStepError: (step, index, error) => {
+      console.warn(`Step ${index} (${step.action}) failed, retrying...`, error);
+    },
+    onStepComplete: (step, index, result) => {
+      console.log(`Step ${index} (${step.action}) completed`);
+    }
+  });
+};
+
+unstableWorkflow().catch(error => {
+  console.error('Workflow failed after retries:', error);
+});</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <h3>Session Information</h3>
+                    <p>Access session data for debugging and logging.</p>
+                    <div class="code-block">
+                        <pre><code class="language-javascript">const agent = window.Reef.agent();
+
+// Get session info
+const session = agent.getSession();
+
+console.log('=== Session Information ===');
+console.log('Session ID:', session.id);
+console.log('Current URL:', session.url);
+console.log('Timestamp:', new Date(session.timestamp).toISOString());
+console.log('Cookies:', session.cookies);
+console.log('localStorage keys:', Object.keys(session.localStorage || {}));
+
+// Use session ID for logging
+const logAction = (action, details = {}) => {
+  console.log(`[${session.id}] ${action}`, details);
+};
+
+logAction('agent_created');
+logAction('navigation_started', { url: '/dashboard' });</pre></code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 Reef. MIT License.</p>
+            <p>Agent - AI Agent API Documentation</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
