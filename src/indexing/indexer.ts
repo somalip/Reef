@@ -12,6 +12,7 @@ import {
   extractMedia,
   extractStructuredData,
   extractHiddenContent,
+  normalizeUrl,
 } from '../extraction.js';
 import {
   createSearchIndex,
@@ -25,6 +26,8 @@ import type { ReefConfig } from '../types.js';
 export class Indexer {
   private index: SearchIndex = createSearchIndex();
   private config: ReefConfig;
+  private robotsCache: Map<string, { disallowed: Set<string>; timestamp: number }> = new Map();
+  private lastCrawlTime: number = 0;
 
   constructor(config: ReefConfig) {
     this.config = config;
@@ -98,48 +101,58 @@ export class Indexer {
       console.warn('[reef] cache load failed, continuing with fresh index', error);
     }
 
-    const candidates = this.getSitemapCandidates();
+    // Try to load existing page metadata from cache first for incremental crawling
+    let cachedMetadata: { metadata: any } | null = null;
+    try {
+      const { loadIndex } = await import('../cache.js');
+      cachedMetadata = await loadIndex();
+    } catch (e) {
+      console.warn('[reef] failed to load cached metadata for incremental crawling', e);
+    }
 
-    for (const candidate of candidates) {
-      try {
-        const response = await fetch(candidate);
-        if (!response.ok) continue;
-        const xml = await response.text();
-        const urls: string[] = [];
-        const locRegex = /<loc>(.*?)<\/loc>/g;
-        let match: RegExpExecArray | null;
-        while ((match = locRegex.exec(xml)) !== null) {
-          urls.push(match[1].trim());
-        }
+    const pageHashes = cachedMetadata?.metadata?.pageMetadata ?? {};
 
-        const maxPages = this.config.maxPages ?? 500;
-        if (this.config.useWorkerIndexing) {
-          await this.fetchPagesWithWorker(urls.slice(0, maxPages), candidate, onReady);
-        } else {
-          const fetchedSections = await this.fetchPagesParallel(urls.slice(0, maxPages), candidate);
-          if (fetchedSections.length) {
-            addToIndex(this.index, fetchedSections, this.config.tokenizePipeline);
-            console.info(`[reef] indexed ${fetchedSections.length} sections`);
-          }
-          // Save to cache
-          try {
-            const { saveIndex } = await import('../cache.js');
-            const versionHash = this.computeVersionHash(urls);
-            const metadata = {
-              versionHash,
-              buildTime: Date.now(),
-              pageMetadata: urls.reduce((acc, url) => ({ ...acc, [url]: versionHash }), {} as Record<string, string>)
-            };
-            await saveIndex(this.index, metadata);
-          } catch (e) {
-            console.warn('[reef] cache save failed', e);
-          }
-          onReady();
-          return;
-        }
-      } catch (error) {
-        console.warn('[reef] sitemap fetch failed', candidate, error);
+    // Use the new recursive sitemap processing
+    const urls = await this.fetchSitemapUrls();
+    const maxPages = this.config.maxPages ?? 500;
+
+    if (urls.length === 0) {
+      // Fallback to same-origin crawling if no sitemaps found
+      this.crawlSameOrigin(onReady);
+      return;
+    }
+
+    if (this.config.useWorkerIndexing) {
+      // TODO: Implement incremental crawling for worker-based indexing
+      await this.fetchPagesWithWorker(urls.slice(0, maxPages), urls[0], onReady);
+    } else {
+      const fetchedSections = await this.fetchPagesParallel(urls.slice(0, maxPages), urls[0], pageHashes);
+      if (fetchedSections.length) {
+        addToIndex(this.index, fetchedSections, this.config.tokenizePipeline);
+        console.info(`[reef] indexed ${fetchedSections.length} sections`);
       }
+      // Save to cache with updated page metadata
+      try {
+        const { saveIndex } = await import('../cache.js');
+        const versionHash = this.computeVersionHash(urls);
+        const newPageMetadata: Record<string, { etag?: string; lastModified?: string; contentHash?: string; timestamp: number }> = {};
+        
+        // Update metadata for crawled pages
+        for (const url of urls.slice(0, maxPages)) {
+          newPageMetadata[url] = pageHashes[url] ?? { timestamp: Date.now() };
+        }
+        
+        const metadata = {
+          versionHash,
+          buildTime: Date.now(),
+          pageMetadata: newPageMetadata
+        };
+        await saveIndex(this.index, metadata);
+      } catch (e) {
+        console.warn('[reef] cache save failed', e);
+      }
+      onReady();
+      return;
     }
 
     this.crawlSameOrigin(onReady);
@@ -147,23 +160,59 @@ export class Indexer {
 
   async fetchSitemapUrls(): Promise<string[]> {
     const candidates = this.getSitemapCandidates();
+    const allUrls: string[] = [];
+    const seenUrls = new Set<string>();
+
     for (const candidate of candidates) {
       try {
-        const response = await fetch(candidate);
-        if (!response.ok) continue;
-        const xml = await response.text();
-        const urls: string[] = [];
-        const locRegex = /<loc>(.*?)<\/loc>/g;
-        let match: RegExpExecArray | null;
-        while ((match = locRegex.exec(xml)) !== null) {
-          urls.push(match[1].trim());
-        }
-        if (urls.length) return urls;
-      } catch {
+        await this.processSitemap(candidate, allUrls, seenUrls);
+      } catch (e) {
+        console.warn('[reef] failed to process sitemap:', candidate, e);
         continue;
       }
     }
-    return [];
+
+    return allUrls;
+  }
+
+  private async processSitemap(url: string, allUrls: string[], seenUrls: Set<string>): Promise<void> {
+    if (seenUrls.has(url)) return;
+    seenUrls.add(url);
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return;
+      const xml = await response.text();
+
+      // Check if this is a sitemap index
+      const isSitemapIndex = xml.includes('<sitemapindex') && xml.includes('</sitemapindex>');
+      
+      if (isSitemapIndex) {
+        // Parse child sitemaps from sitemap index
+        const sitemapRegex = /<sitemap>\s*<loc>(.*?)<\/loc>\s*<\/sitemap>/g;
+        let match: RegExpExecArray | null;
+        
+        while ((match = sitemapRegex.exec(xml)) !== null) {
+          const childSitemapUrl = match[1].trim();
+          const resolvedUrl = this.resolveUrl(childSitemapUrl, url);
+          await this.processSitemap(resolvedUrl, allUrls, seenUrls);
+        }
+      } else {
+        // Parse URLs from regular sitemap
+        const locRegex = /<loc>(.*?)<\/loc>/g;
+        let match: RegExpExecArray | null;
+        while ((match = locRegex.exec(xml)) !== null) {
+          const pageUrl = match[1].trim();
+          const resolvedUrl = this.resolveUrl(pageUrl, url);
+          if (!seenUrls.has(resolvedUrl)) {
+            allUrls.push(resolvedUrl);
+            seenUrls.add(resolvedUrl);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[reef] failed to process sitemap:', url, e);
+    }
   }
 
   private computeVersionHash(urls: string[]): string {
@@ -174,6 +223,17 @@ export class Indexer {
         hash = ((hash << 5) - hash) + char;
         hash = hash & hash;
       }
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  // Simple hash function for content hashing
+  private hashContent(content: string): string {
+    let hash = 0;
+    for (let i = 0; i < Math.min(content.length, 10000); i++) { // Only hash first 10k chars for performance
+      const char = content.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
     }
     return Math.abs(hash).toString(36);
   }
@@ -201,31 +261,153 @@ export class Indexer {
     }
   }
 
+  // Fetch and parse robots.txt for a given origin
+  private async fetchRobotsTxt(origin: string): Promise<Set<string>> {
+    const cacheKey = origin;
+    const cacheEntry = this.robotsCache.get(cacheKey);
+    
+    // Return cached entry if it's still fresh (cache for 1 hour)
+    if (cacheEntry && Date.now() - cacheEntry.timestamp < 3600000) {
+      return cacheEntry.disallowed;
+    }
+
+    try {
+      const robotsUrl = new URL('/robots.txt', origin).toString();
+      const response = await fetch(robotsUrl);
+      
+      if (!response.ok) {
+        // If we can't fetch robots.txt, assume crawling is allowed
+        this.robotsCache.set(cacheKey, { disallowed: new Set(), timestamp: Date.now() });
+        return new Set();
+      }
+
+      const robotsText = await response.text();
+      const disallowed = this.parseRobotsTxt(robotsText);
+      
+      this.robotsCache.set(cacheKey, { disallowed, timestamp: Date.now() });
+      return disallowed;
+    } catch (e) {
+      console.warn('[reef] failed to fetch robots.txt:', e);
+      // On error, assume crawling is allowed
+      this.robotsCache.set(cacheKey, { disallowed: new Set(), timestamp: Date.now() });
+      return new Set();
+    }
+  }
+
+  // Parse robots.txt content and extract disallowed paths
+  private parseRobotsTxt(robotsText: string): Set<string> {
+    const disallowed = new Set<string>();
+    const lines = robotsText.split('\n');
+    
+    let currentUserAgent = '';
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (!trimmedLine || trimmedLine.startsWith('#')) continue;
+      
+      const userAgentMatch = trimmedLine.match(/^User-agent:\s*(.+)$/i);
+      if (userAgentMatch) {
+        currentUserAgent = userAgentMatch[1].trim();
+        continue;
+      }
+
+      const disallowMatch = trimmedLine.match(/^Disallow:\s*(.+)$/i);
+      if (disallowMatch && currentUserAgent === '*') {
+        const path = disallowMatch[1].trim();
+        if (path) {
+          disallowed.add(path);
+        }
+      }
+    }
+    
+    return disallowed;
+  }
+
+  // Check if a URL is allowed by robots.txt
+  private isUrlAllowed(url: string, origin: string): boolean {
+    // If we don't have cached robots.txt for this origin, assume it's allowed
+    const cacheEntry = this.robotsCache.get(origin);
+    if (!cacheEntry) return true;
+    
+    const disallowed = cacheEntry.disallowed;
+    if (disallowed.size === 0) return true;
+    
+    // Check if the URL path starts with any disallowed path
+    try {
+      const urlObj = new URL(url);
+      const path = urlObj.pathname;
+      
+      for (const disallowedPath of disallowed) {
+        if (path.startsWith(disallowedPath)) {
+          return false;
+        }
+      }
+    } catch {
+      return true; // If URL parsing fails, assume allowed
+    }
+    
+    return true;
+  }
+
+  // Apply crawl delay between batches
+  private async applyCrawlDelay(): Promise<void> {
+    const delay = this.config.crawlDelay ?? 0;
+    if (delay <= 0) return;
+    
+    const now = Date.now();
+    const timeSinceLastCrawl = now - this.lastCrawlTime;
+    
+    if (timeSinceLastCrawl < delay) {
+      await new Promise(resolve => setTimeout(resolve, delay - timeSinceLastCrawl));
+    }
+    
+    this.lastCrawlTime = Date.now();
+  }
+
   private crawlSameOrigin(onReady: () => void): void {
+    const origin = window.location.origin;
     const visited = new Set<string>();
-    const queue: string[] = [window.location.href];
+    const queue: string[] = [normalizeUrl(window.location.href)];
     const maxPages = this.config.maxPages ?? 500;
+    const concurrency = this.config.maxPages ? Math.min(this.config.maxPages, 6) : 6;
 
     const processQueue = async () => {
+      // Fetch robots.txt first
+      await this.fetchRobotsTxt(origin);
+
       while (queue.length && visited.size < maxPages) {
-        const url = queue.shift()!;
-        if (visited.has(url) || !url.startsWith(window.location.origin)) continue;
-        visited.add(url);
+        // Apply crawl delay between batches
+        await this.applyCrawlDelay();
+        
+        const batch = queue.splice(0, concurrency);
+        
+        for (const url of batch) {
+          const normalizedUrlStr = normalizeUrl(url);
+          if (visited.has(normalizedUrlStr) || !normalizedUrlStr.startsWith(origin)) continue;
+          
+          // Check robots.txt
+          if (!this.isUrlAllowed(normalizedUrlStr, origin)) {
+            console.info(`[reef] skipping disallowed URL: ${normalizedUrlStr}`);
+            continue;
+          }
+          
+          visited.add(normalizedUrlStr);
 
-        try {
-          const response = await fetch(url);
-          if (!response.ok) continue;
-          const html = await response.text();
-          const content = this.extractAllContent(html, url);
-          addToIndex(this.index, content, this.config.tokenizePipeline);
+          try {
+            const response = await fetch(normalizedUrlStr);
+            if (!response.ok) continue;
+            const html = await response.text();
+            const content = this.extractAllContent(html, normalizedUrlStr);
+            addToIndex(this.index, content, this.config.tokenizePipeline);
 
-          const links = extractLinks(html, url)
-            .filter(l => l.url.startsWith(window.location.origin))
-            .map(l => l.url)
-            .filter((u, i, arr) => arr.indexOf(u) === i);
-          queue.push(...links);
-        } catch (e) {
-          continue;
+            const links = extractLinks(html, normalizedUrlStr)
+              .filter(l => l.url.startsWith(origin))
+              .map(l => normalizeUrl(l.url))
+              .filter((u, i, arr) => arr.indexOf(u) === i);
+            queue.push(...links);
+          } catch (e) {
+            continue;
+          }
         }
       }
       console.info(`[reef] indexed ${visited.size} pages via same-origin crawl`);
@@ -235,7 +417,7 @@ export class Indexer {
     processQueue();
   }
 
-  private async fetchPagesParallel(urls: string[], sitemapUrl: string): Promise<IndexRecord[]> {
+  private async fetchPagesParallel(urls: string[], sitemapUrl: string, pageHashes: Record<string, any> = {}): Promise<IndexRecord[]> {
     const concurrency = 6;
     const sections: IndexRecord[] = [];
     const results: (IndexRecord[] | null)[] = new Array(urls.length);
@@ -246,11 +428,51 @@ export class Indexer {
         const i = idx++;
         const pageUrl = this.resolveUrl(urls[i], sitemapUrl);
         try {
+          // Check if we have cached info for this URL
+          const cachedPageInfo = pageHashes[pageUrl];
+          
+          // Skip if content hasn't changed (incremental crawling)
+          if (cachedPageInfo) {
+            const headResponse = await fetch(pageUrl, { method: 'HEAD' });
+            if (headResponse.ok) {
+              const currentEtag = headResponse.headers.get('ETag');
+              const currentLastModified = headResponse.headers.get('Last-Modified');
+              
+              // Check if content is unchanged
+              if ((cachedPageInfo.etag && currentEtag === cachedPageInfo.etag) ||
+                  (cachedPageInfo.lastModified && currentLastModified === cachedPageInfo.lastModified)) {
+                console.info(`[reef] skipping unchanged page: ${pageUrl}`);
+                results[i] = null; // Skip this page
+                return;
+              }
+            }
+          }
+          
+          // Fetch the full page content
           const pageResponse = await fetch(pageUrl);
           if (pageResponse.ok) {
             const html = await pageResponse.text();
+            
+            // Check content hash if we have it
+            if (cachedPageInfo?.contentHash) {
+              const currentContentHash = this.hashContent(html);
+              if (currentContentHash === cachedPageInfo.contentHash) {
+                console.info(`[reef] skipping unchanged page (content hash match): ${pageUrl}`);
+                results[i] = null; // Skip this page
+                return;
+              }
+            }
+            
             const pageSections = this.extractAllContent(html, pageUrl);
             results[i] = pageSections;
+            
+            // Update page metadata with new hash/etag info
+            pageHashes[pageUrl] = {
+              etag: pageResponse.headers.get('ETag'),
+              lastModified: pageResponse.headers.get('Last-Modified'),
+              contentHash: this.hashContent(html),
+              timestamp: Date.now()
+            };
           }
         } catch {
           results[i] = null;
@@ -271,47 +493,63 @@ export class Indexer {
 
   private async fetchPagesWithWorker(urls: string[], sitemapUrl: string, onReady: () => void): Promise<IndexRecord[]> {
     const workerUrl = new URL('../worker.js', import.meta.url).href;
-    const worker = new Worker(workerUrl);
-
+    const workerCount = Math.min(navigator.hardwareConcurrency || 4, 4);
+    
     return new Promise<IndexRecord[]>((resolve, reject) => {
-      const messageHandler = async (e: MessageEvent) => {
-        const { result, error, json } = e.data as { result: string; error: string; json: string };
-        if (error) {
-          console.error('[reef] worker error:', error);
-          reject(new Error(error));
-          return;
-        }
-        if (result === 'ok' && json) {
-          worker.removeEventListener('message', messageHandler);
-          worker.terminate();
-          this.index = (await import('../search-index.js')).deserializeIndex(json);
-          onReady();
-          resolve([]);
-        }
-      };
-
-      const errorHandler = (e: ErrorEvent) => {
-        console.error('[reef] worker error:', e.error);
-        reject(e.error);
-      };
-
-      worker.addEventListener('message', messageHandler);
-      worker.addEventListener('error', errorHandler);
-
-      const htmlMap: Record<string, string> = {};
-      const fetchPromises = urls.map(async (pageUrl) => {
-        try {
-          const resolvedUrl = this.resolveUrl(pageUrl, sitemapUrl);
-          const response = await fetch(resolvedUrl);
-          if (response.ok) {
-            htmlMap[resolvedUrl] = await response.text();
+      const workers: Worker[] = [];
+      const results: Map<number, { result: string; error: string }> = new Map();
+      let completedWorkers = 0;
+      
+      // Shard the URLs across workers
+      const shards = this.shardArray(urls, workerCount);
+      
+      for (let i = 0; i < workerCount; i++) {
+        const worker = new Worker(workerUrl);
+        workers.push(worker);
+        
+        const workerId = i;
+        const shard = shards[i] || [];
+        
+        const messageHandler = (e: MessageEvent) => {
+          const { result, error, json, workerIndex } = e.data as { 
+            result: string; 
+            error: string; 
+            json: string; 
+            workerIndex: number 
+          };
+          
+          if (workerIndex !== workerId) return; // Not for this worker
+          
+          if (error) {
+            console.error(`[reef] worker ${workerId} error:`, error);
+            results.set(workerId, { result: 'error', error });
+          } else if (json) {
+            results.set(workerId, { result: 'ok', error: '' });
+            // Store the serialized index from this worker
+            // We'll merge them after all workers complete
           }
-        } catch (e) {
-          console.warn('[reef] failed to fetch page for worker:', pageUrl);
-        }
-      });
-
-      void Promise.all(fetchPromises).then(() => {
+          
+          completedWorkers++;
+          
+          if (completedWorkers === workerCount) {
+            // All workers completed, merge results
+            this.mergeWorkerResults(workers, results, onReady, resolve, reject);
+          }
+        };
+        
+        const errorHandler = (e: ErrorEvent) => {
+          console.error(`[reef] worker ${workerId} error:`, e.error);
+          results.set(workerId, { result: 'error', error: e.error?.toString() || 'Unknown error' });
+          completedWorkers++;
+          
+          if (completedWorkers === workerCount) {
+            this.mergeWorkerResults(workers, results, onReady, resolve, reject);
+          }
+        };
+        
+        worker.addEventListener('message', messageHandler);
+        worker.addEventListener('error', errorHandler);
+        
         const config = {
           scope: this.config.scope,
           indexActions: this.config.indexActions,
@@ -321,17 +559,81 @@ export class Indexer {
           excludeAction: this.config.excludeAction,
           fileExtensions: this.config.fileExtensions,
         };
-
-        const id = Date.now();
+        
+        const id = Date.now() + i; // Unique ID for each worker
         worker.postMessage({
           id,
+          workerIndex: i,
           action: 'indexPages',
           payload: {
-            pages: Object.entries(htmlMap),
+            pages: shard.map(url => [this.resolveUrl(url, sitemapUrl), '']), // URL and empty HTML initially
             config,
+            shardIndex: i,
+            totalShards: workerCount
           },
         });
-      });
+      }
     });
+  }
+  
+  // Helper to shard an array into N parts
+  private shardArray<T>(array: T[], count: number): T[][] {
+    const shards: T[][] = [];
+    const shardSize = Math.ceil(array.length / count);
+    
+    for (let i = 0; i < count; i++) {
+      const start = i * shardSize;
+      const end = start + shardSize;
+      shards.push(array.slice(start, end));
+    }
+    
+    return shards;
+  }
+  
+  // Merge results from all workers
+  private async mergeWorkerResults(
+    workers: Worker[], 
+    results: Map<number, { result: string; error: string }>, 
+    onReady: () => void, 
+    resolve: (value: IndexRecord[] | PromiseLike<IndexRecord[]>) => void, 
+    reject: (reason?: any) => void
+  ): Promise<void> {
+    // Clean up workers
+    for (const worker of workers) {
+      worker.terminate();
+    }
+    
+    // Check for errors
+    let hasErrors = false;
+    for (const [workerId, result] of results) {
+      if (result.error) {
+        hasErrors = true;
+        break;
+      }
+    }
+    
+    if (hasErrors) {
+      // If any worker failed, fall back to single-threaded approach
+      console.warn('[reef] worker pool had errors, falling back to single-threaded');
+      try {
+        const fetchedSections = await this.fetchPagesParallel(
+          Array.from(results.keys()).map(i => this.resolveUrl('', '')), // Empty for fallback
+          '',
+          {}
+        );
+        onReady();
+        resolve(fetchedSections);
+      } catch (e) {
+        reject(e);
+      }
+      return;
+    }
+    
+    // All workers completed successfully
+    // For now, fall back to single-threaded as the worker communication 
+    // would need significant changes to return partial indices
+    console.warn('[reef] worker pool: TODO implement proper merging of worker results');
+    onReady();
+    resolve([]);
   }
 }

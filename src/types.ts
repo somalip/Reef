@@ -31,10 +31,16 @@ export interface SearchOptions {
   includeMatches?: boolean;
   weights?: Partial<Record<'headingText' | 'bodyText' | 'label' | 'breadcrumb', number>>;
   extended?: boolean;
-  scoringAlgorithm?: 'reef-classic' | 'bm25';
+  scoringAlgorithm?: 'reef-classic' | 'bm25' | 'bm25f';
+  bm25fOptions?: { k1?: number; b?: number };
   filter?: (record: IndexRecord) => boolean;
   sortFn?: (a: ScoredRecord, b: ScoredRecord) => number;
   typeWeights?: Partial<Record<IndexRecord['type'], number>>;
+  diversify?: boolean;
+  mmrLambda?: number; // MMR diversity parameter (0-1), default 0.5
+  trackPopularity?: boolean;
+  popularQueryBoost?: number;
+  popularityBoost?: number; // Multiplicative boost factor for popularity ranking
 }
 
 export interface MatchSpan {
@@ -46,7 +52,20 @@ export interface MatchSpan {
 export interface CacheMetadata {
   versionHash: string;
   buildTime: number;
-  pageMetadata: Record<string, string>;
+  pageMetadata: Record<string, {
+    etag?: string;
+    lastModified?: string;
+    contentHash?: string;
+    timestamp: number;
+  }>;
+}
+
+// Per-page hash information for incremental crawling
+export interface PageHashInfo {
+  etag?: string;
+  lastModified?: string;
+  contentHash?: string;
+  timestamp: number;
 }
 
 export type TokenFilter = (token: string) => string | null;
@@ -119,4 +138,10 @@ export interface ReefConfig {
   prebuiltIndexUrl?: string;
   useWorkerIndexing?: boolean;
   ttl?: number;
+  chunkSize?: number;
+  crawlDelay?: number;
+  bm25fOptions?: { k1?: number; b?: number };
+  popularityTracking?: boolean;
+  popularityBoost?: number; // Multiplicative boost factor for popularity ranking
+  mmrLambda?: number; // MMR diversity parameter (0-1), default 0.5
 }

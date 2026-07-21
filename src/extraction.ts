@@ -79,6 +79,34 @@ export function findParentSectionId(html: string, headingMatchEnd: number): stri
 
 const headingCache = new Map<string, IndexRecord[]>();
 
+export function chunkBodyText(bodyText: string, chunkSize: number, record: IndexRecord): IndexRecord[] {
+  if (chunkSize <= 0 || bodyText.length <= chunkSize) {
+    return [record];
+  }
+  
+  const chunks: IndexRecord[] = [];
+  const overlap = Math.floor(chunkSize * 0.2); // 20% overlap
+  
+  for (let i = 0; i < bodyText.length; i += chunkSize - overlap) {
+    const chunkEnd = Math.min(i + chunkSize, bodyText.length);
+    const chunkText = bodyText.slice(i, chunkEnd);
+    
+    // Create a new record for this chunk
+    const chunkRecord: IndexRecord = {
+      ...record,
+      id: `${record.id}-chunk-${Math.floor(i / chunkSize)}`,
+      url: `${record.url}-chunk-${Math.floor(i / chunkSize)}`,
+      bodyText: chunkText,
+      headingText: `${record.headingText} (chunk ${Math.floor(i / chunkSize) + 1})`,
+      headingId: `${record.headingId}-chunk-${Math.floor(i / chunkSize)}`,
+    };
+    
+    chunks.push(chunkRecord);
+  }
+  
+  return chunks;
+}
+
 export function extractSections(html: string, url: string): IndexRecord[] {
   if (headingCache.has(url)) {
     return headingCache.get(url)!;
@@ -517,6 +545,64 @@ export function extractStructuredData(html: string, url: string): IndexRecord[] 
   }
 
   return structured;
+}
+
+// Known tracking parameters to strip
+const TRACKING_PARAMS = new Set([
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+  'gclid', 'fbclid', 'mc_cid', 'mc_eid', 'mc_id',
+  'referrer', 'ref', 'source', 'campaign', 'click_id'
+]);
+
+// Strip known tracking parameters from URL
+function stripTrackingParams(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    const params = new URLSearchParams(urlObj.search);
+    
+    // Remove tracking parameters
+    for (const param of TRACKING_PARAMS) {
+      params.delete(param);
+    }
+    
+    // Remove empty parameters
+    for (const [key, value] of params.entries()) {
+      if (!value) {
+        params.delete(key);
+      }
+    }
+    
+    // Reconstruct URL
+    urlObj.search = params.toString();
+    return urlObj.toString();
+  } catch {
+    return url;
+  }
+}
+
+// Normalize URL: strip trailing slash, sort/drop known tracking query params, resolve to canonical if present
+export function normalizeUrl(url: string, html?: string): string {
+  if (!url) return url;
+  
+  // Strip trailing slash from pathname
+  let normalized = url.replace(/\/$/, '');
+  
+  // Strip tracking parameters
+  normalized = stripTrackingParams(normalized);
+  
+  // Check for canonical URL in HTML if provided
+  if (html) {
+    const canonicalMatch = html.match(/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["']/i);
+    if (canonicalMatch?.[1]) {
+      const canonicalUrl = stripTrackingParams(canonicalMatch[1]);
+      // If canonical URL is different, use it
+      if (canonicalUrl !== normalized) {
+        return canonicalUrl.replace(/\/$/, '');
+      }
+    }
+  }
+  
+  return normalized;
 }
 
 export function resolveUrl(value: string, base: string): string {

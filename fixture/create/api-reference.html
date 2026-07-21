@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reef — API Reference</title>
+  <meta name="description" content="Complete API reference for all public exports from the Reef search library: indexing, searching, caching, crawling, and agent/workflow functions.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+  <symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <symbol id="icon-document" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="icon-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
+  <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="11" rx="2" ry="2"/><circle cx="9" cy="5" r="3"/><circle cx="15" cy="5" r="3"/></symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="icon-flash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 8 22 18 10 9 10 13 2"/></symbol>
+  <symbol id="icon-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></symbol>
+  <symbol id="icon-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+</svg>
+
+<header class="header">
+  <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <div class="header-content">
+    <div class="logo">
+      <svg class="icon-svg"><use href="#icon-document"/></svg>
+      <h1>API Reference</h1>
+    </div>
+    <p class="subtitle">Complete public surface of the Reef search library</p>
+  </div>
+</header>
+
+<nav class="sidebar" id="sidebar">
+  <div class="nav-section">
+    <h2>API Reference</h2>
+    <a href="#indexing" class="nav-link active">Indexing</a>
+    <a href="#searching" class="nav-link">Searching</a>
+    <a href="#analytics" class="nav-link">Analytics &amp; Autocomplete</a>
+    <a href="#caching" class="nav-link">Caching</a>
+    <a href="#crawling" class="nav-link">Crawling</a>
+    <a href="#extraction" class="nav-link">Extraction</a>
+    <a href="#agent" class="nav-link">Agent / Workflow</a>
+  </div>
+  <div class="nav-section">
+    <h2>Guides</h2>
+    <a href="guides-scoring.html" class="nav-link">Scoring</a>
+    <a href="guides-crawling.html" class="nav-link">Crawling</a>
+    <a href="guides-query-syntax.html" class="nav-link">Query Syntax</a>
+    <a href="guides-workflow.html" class="nav-link">Workflows</a>
+    <a href="config-reference.html" class="nav-link">Config Reference</a>
+    <a href="changelog.html" class="nav-link">Changelog</a>
+  </div>
+  <div class="nav-section">
+    <h2>All Pages</h2>
+    <a href="index.html" class="nav-link">Main Docs</a>
+    <a href="search.html" class="nav-link">search.ts</a>
+    <a href="types.html" class="nav-link">types.ts</a>
+    <a href="cache.html" class="nav-link">cache.ts</a>
+    <a href="worker.html" class="nav-link">worker.ts</a>
+    <a href="agent.html" class="nav-link">agent.ts</a>
+  </div>
+</nav>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<main class="main-content">
+
+  <!-- ─── INDEXING ──────────────────────────────────────────────── -->
+  <section id="indexing" class="section">
+    <h2 class="section-title">
+      <svg class="icon-svg"><use href="#icon-database"/></svg>
+      Indexing
+    </h2>
+    <p class="lead">Functions for creating and maintaining the in-memory search index.</p>
+
+    <!-- createSearchIndex -->
+    <div class="api-method">
+      <h3 id="createSearchIndex"><code>createSearchIndex()</code></h3>
+      <p>Creates and returns a new, empty <code>SearchIndex</code>. The index holds three complementary lookup structures — <code>headingIds</code> (exact heading text → records), <code>headingIndex</code> (prefix map), and <code>bodyIndex</code> (body word → records) — plus a <code>headingTrie</code> for efficient autocomplete, per-field BM25F frequency tables, and a popularity ring-buffer.</p>
+      <div class="properties-table"><table>
+        <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody><tr><td colspan="4"><em>No parameters.</em></td></tr></tbody>
+      </table></div>
+      <p><strong>Returns:</strong> <code>SearchIndex</code></p>
+      <div class="code-block"><pre><code class="language-typescript">const index = createSearchIndex();
+// index.allSections === []
+// index.totalDocs === 0</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+
+    <!-- addToIndex -->
+    <div class="api-method">
+      <h3 id="addToIndex"><code>addToIndex(index, records, pipeline?)</code></h3>
+      <p>Adds an array of <code>IndexRecord</code> objects to the index. Populates <code>headingIds</code>, <code>headingIndex</code>, <code>headingTrie</code>, <code>bodyIndex</code>, per-field BM25F frequency tables (<code>fieldDocFreq</code>), and <code>allSections</code>.</p>
+      <div class="properties-table"><table>
+        <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>index</code></td><td><code>SearchIndex</code></td><td>—</td><td>Target index.</td></tr>
+          <tr><td><code>records</code></td><td><code>IndexRecord[]</code></td><td>—</td><td>Records to add.</td></tr>
+          <tr><td><code>pipeline</code></td><td><code>TokenFilter[]</code></td><td><code>undefined</code> (uses built-in stop-word/diacritic/stem pipeline)</td><td>Custom tokenization pipeline.</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Returns:</strong> <code>void</code></p>
+      <div class="code-block"><pre><code class="language-typescript">addToIndex(index, [
+  { id: '/page#intro', url: '/page#intro', headingText: 'Introduction',
+    headingId: 'intro', breadcrumb: 'Docs', bodyText: 'Getting started…', type: 'section' }
+]);
+// Custom pipeline example:
+const pipeline: TokenFilter[] = [
+  tok => tok === 'the' ? null : tok,          // custom stop-word
+  tok => tok.replace(/tion$/, 't'),           // custom stem
+];
+addToIndex(index, records, pipeline);</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+
+    <!-- addSectionsToIndex -->
+    <div class="api-method">
+      <h3 id="addSectionsToIndex"><code>addSectionsToIndex(index, records, pipeline?)</code></h3>
+      <p>Alias for <code>addToIndex</code> — identical behaviour, kept for backward compatibility.</p>
+    </div>
+
+    <!-- removeFromIndex -->
+    <div class="api-method">
+      <h3 id="removeFromIndex"><code>removeFromIndex(index, id)</code></h3>
+      <p>Removes a record by its <code>id</code>. Also performs <strong>finer-grained query-cache invalidation</strong>: only cached queries whose terms overlap with the removed record's tokens are evicted; unrelated cached queries are preserved.</p>
+      <div class="properties-table"><table>
+        <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>index</code></td><td><code>SearchIndex</code></td><td>Target index.</td></tr>
+          <tr><td><code>id</code></td><td><code>string</code></td><td>The <code>IndexRecord.id</code> to remove.</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Returns:</strong> <code>void</code></p>
+      <div class="code-block"><pre><code class="language-typescript">removeFromIndex(index, '/page#intro');</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+
+    <!-- updateRecord -->
+    <div class="api-method">
+      <h3 id="updateRecord"><code>updateRecord(index, record)</code></h3>
+      <p>Replaces an existing record in-place. Internally calls <code>removeFromIndex</code> then <code>addToIndex</code>; cache invalidation covers both old and new tokens.</p>
+      <div class="properties-table"><table>
+        <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>index</code></td><td><code>SearchIndex</code></td><td>Target index.</td></tr>
+          <tr><td><code>record</code></td><td><code>IndexRecord</code></td><td>Updated record (must have same <code>id</code>).</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Returns:</strong> <code>void</code></p>
+      <div class="code-block"><pre><code class="language-typescript">updateRecord(index, { ...existingRecord, bodyText: 'Updated content…' });</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+
+    <!-- getAllSections -->
+    <div class="api-method">
+      <h3 id="getAllSections"><code>getAllSections(index)</code></h3>
+      <p>Returns the flat <code>allSections</code> array — all records regardless of type.</p>
+      <p><strong>Returns:</strong> <code>IndexRecord[]</code></p>
+    </div>
+
+    <!-- serializeIndex / deserializeIndex -->
+    <div class="api-method">
+      <h3 id="serializeIndex"><code>serializeIndex(index)</code> / <code>deserializeIndex(json)</code></h3>
+      <p><code>serializeIndex</code> converts the index to a JSON string. The trie is <em>not</em> serialized — it is rebuilt on deserialization. <code>deserializeIndex</code> parses that JSON and reconstructs all Maps and the trie, with an automatic migration path for old indices that lack <code>fieldDocFreq</code> (frequencies are approximated from <code>docFrequency</code>).</p>
+      <div class="code-block"><pre><code class="language-typescript">const json = serializeIndex(index);
+// Store: localStorage.setItem('reef', json);
+// or pass to saveIndex() in cache.ts
+
+const restored = deserializeIndex(json);
+// trie is rebuilt, fieldDocFreq migrated if absent</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+  </section>
+
+  <!-- ─── SEARCHING ─────────────────────────────────────────────── -->
+  <section id="searching" class="section">
+    <h2 class="section-title">
+      <svg class="icon-svg"><use href="#icon-search"/></svg>
+      Searching
+    </h2>
+
+    <!-- searchSections -->
+    <div class="api-method">
+      <h3 id="searchSections"><code>searchSections(query, index, limitOrOptions?)</code></h3>
+      <p>The core search function. Accepts a plain number limit (legacy) or a full <code>SearchOptions</code> object. Returns <code>IndexRecord[]</code> unless <code>includeScore</code> or <code>includeMatches</code> is set, in which case it returns <code>ScoredRecord[]</code>.</p>
+      <p>Scoring pipeline (in order):</p>
+      <ol>
+        <li>Exact heading match → <code>100 × fieldWeight × (1 + lengthNorm)</code></li>
+        <li>Prefix heading match → <code>50 × fieldWeight × (1 + lengthNorm)</code></li>
+        <li>Body-word matches → <code>20 × fieldWeight × (1 + lengthNorm)</code></li>
+        <li>BM25F full scan (only when <code>scoringAlgorithm: 'bm25f'</code> and no hits from above)</li>
+        <li>Proximity bonus multiplier for multi-term queries (max 2× for adjacent terms)</li>
+        <li>Exact-phrase bonus: +50% for contiguous token sequence</li>
+        <li>Popularity multiplicative boost (when <code>trackPopularity: true</code>)</li>
+        <li>Staged fuzzy fallback (1-typo then 2-typo)</li>
+        <li>Extended query syntax fallback (when <code>extended: true</code>)</li>
+        <li>MMR re-ranking (when <code>diversify: true</code>)</li>
+      </ol>
+      <div class="properties-table"><table>
+        <thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>limit</code></td><td><code>number</code></td><td><code>8</code></td><td>Max results returned.</td></tr>
+          <tr><td><code>fuzzy</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Enable Levenshtein-based typo tolerance (staged: 1-edit then 2-edit).</td></tr>
+          <tr><td><code>fuzzyDistance</code></td><td><code>number</code></td><td><code>2</code></td><td>Max edit distance for fuzzy stage 3.</td></tr>
+          <tr><td><code>includeScore</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Return <code>ScoredRecord[]</code> with normalized 0–1 score.</td></tr>
+          <tr><td><code>includeMatches</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Include <code>MatchSpan[]</code> positions for highlight.</td></tr>
+          <tr><td><code>scoringAlgorithm</code></td><td><code>'reef-classic' | 'bm25' | 'bm25f'</code></td><td><code>'reef-classic'</code></td><td>Ranking algorithm. See <a href="guides-scoring.html">Scoring guide</a>.</td></tr>
+          <tr><td><code>bm25fOptions</code></td><td><code>{ k1?: number; b?: number }</code></td><td><code>{ k1:1.5, b:0.75 }</code></td><td>BM25F saturation (k1) and length-norm (b) tuning.</td></tr>
+          <tr><td><code>weights</code></td><td><code>Partial&lt;Record&lt;'headingText'|'bodyText'|'label'|'breadcrumb', number&gt;&gt;</code></td><td><code>{ headingText:2, bodyText:1, label:1.5, breadcrumb:0.5 }</code></td><td>Per-field score multipliers.</td></tr>
+          <tr><td><code>extended</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Enable extended query syntax (<code>!exclude</code>, <code>'phrase'</code>, etc.).</td></tr>
+          <tr><td><code>filter</code></td><td><code>(record: IndexRecord) =&gt; boolean</code></td><td>—</td><td>Post-score filter predicate.</td></tr>
+          <tr><td><code>sortFn</code></td><td><code>(a,b: ScoredRecord) =&gt; number</code></td><td>—</td><td>Custom comparator applied after default score sort.</td></tr>
+          <tr><td><code>typeWeights</code></td><td><code>Partial&lt;Record&lt;IndexRecord['type'], number&gt;&gt;</code></td><td>—</td><td>Multiplicative boosts per record type.</td></tr>
+          <tr><td><code>diversify</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Apply MMR re-ranking for result diversity.</td></tr>
+          <tr><td><code>mmrLambda</code></td><td><code>number</code></td><td><code>0.5</code></td><td>MMR diversity weight. 0 = pure diversity, 1 = pure relevance.</td></tr>
+          <tr><td><code>trackPopularity</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Apply query-popularity ranking boost.</td></tr>
+          <tr><td><code>popularityBoost</code></td><td><code>number</code></td><td><code>1.2</code></td><td>Base multiplicative popularity boost factor.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="code-block"><pre><code class="language-typescript">// Basic search
+const results = searchSections('install', index, 10);
+
+// BM25F with tuning
+const bm25fResults = searchSections('install', index, {
+  scoringAlgorithm: 'bm25f',
+  bm25fOptions: { k1: 1.2, b: 0.5 },
+  limit: 10,
+  includeScore: true,
+});
+
+// Diversified results
+const diverse = searchSections('config', index, {
+  diversify: true,
+  mmrLambda: 0.7,   // 70% diversity weight
+  limit: 8,
+});
+
+// With popularity feedback
+const popular = searchSections('login', index, {
+  trackPopularity: true,
+  popularityBoost: 1.5,
+  limit: 8,
+});</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+
+    <!-- parseExtendedQuery -->
+    <div class="api-method">
+      <h3 id="parseExtendedQuery"><code>parseExtendedQuery(query)</code></h3>
+      <p>Parses a query string using the extended syntax into a <code>QueryNode</code> AST. Pass the result to <code>matchExtendedNode</code> internally via <code>searchSections({ extended: true })</code>. See <a href="guides-query-syntax.html">Query Syntax guide</a>.</p>
+      <p><strong>Returns:</strong> <code>QueryNode</code> — a recursive tree of <code>{ type: 'and'|'or'|'term'|'exact'|'exclude'|'prefix'|'suffix' }</code>.</p>
+    </div>
+
+    <!-- getSnippet -->
+    <div class="api-method">
+      <h3 id="getSnippet"><code>getSnippet(record, matches, contextChars?)</code></h3>
+      <p>Generates an HTML snippet with the best match highlighted using <code>&lt;mark&gt;</code> tags. Selects the longest <code>MatchSpan</code>, expands a context window of <code>contextChars</code> characters on each side, and adds <code>…</code> ellipsis when the snippet is not at the document boundary.</p>
+      <div class="properties-table"><table>
+        <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>record</code></td><td><code>IndexRecord</code></td><td>—</td><td>Source record (uses <code>bodyText</code>, falls back to <code>headingText</code>).</td></tr>
+          <tr><td><code>matches</code></td><td><code>MatchSpan[]</code></td><td>—</td><td>Positions from <code>includeMatches: true</code>.</td></tr>
+          <tr><td><code>contextChars</code></td><td><code>number</code></td><td><code>60</code></td><td>Characters of context around the match.</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Returns:</strong> <code>string</code> — HTML with <code>&lt;mark&gt;…&lt;/mark&gt;</code> around the best match.</p>
+      <div class="code-block"><pre><code class="language-typescript">const results = searchSections('install', index, {
+  includeMatches: true,
+  limit: 5,
+}) as ScoredRecord[];
+
+for (const { record, matches } of results) {
+  const snippet = getSnippet(record, matches ?? [], 80);
+  container.innerHTML += `&lt;p&gt;${snippet}&lt;/p&gt;`;
+}</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+
+    <!-- levenshteinDistance / findClosestWord -->
+    <div class="api-method">
+      <h3 id="levenshtein"><code>levenshteinDistance(a, b)</code> / <code>findClosestWord(query, index, maxDistance?)</code></h3>
+      <p><code>levenshteinDistance</code> computes the edit distance between two strings using a space-optimised DP (O(n) space). <code>findClosestWord</code> scans all heading and body-index keys and returns the closest one within <code>maxDistance</code> edits (default 2), or <code>null</code>.</p>
+      <div class="code-block"><pre><code class="language-typescript">levenshteinDistance('install', 'instal'); // 1
+findClosestWord('instalaton', index);     // 'installation'</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+  </section>
+
+  <!-- ─── ANALYTICS & AUTOCOMPLETE ─────────────────────────────── -->
+  <section id="analytics" class="section">
+    <h2 class="section-title">
+      <svg class="icon-svg"><use href="#icon-chart"/></svg>
+      Analytics &amp; Autocomplete
+    </h2>
+
+    <!-- suggest -->
+    <div class="api-method">
+      <h3 id="suggest"><code>suggest(query, index, limit?)</code></h3>
+      <p>Returns up to <code>limit</code> heading-text suggestions for the given prefix. Uses the <strong>trie</strong> as the primary source (O(prefix-length) traversal), falls back to the prefix-map and then substring-contains matching for older indices or when the trie yields fewer than <code>limit</code> results. Requires at least 2 characters.</p>
+      <div class="properties-table"><table>
+        <thead><tr><th>Param</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><code>query</code></td><td><code>string</code></td><td>—</td></tr>
+          <tr><td><code>index</code></td><td><code>SearchIndex</code></td><td>—</td></tr>
+          <tr><td><code>limit</code></td><td><code>number</code></td><td><code>10</code></td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Returns:</strong> <code>string[]</code></p>
+      <div class="code-block"><pre><code class="language-typescript">const completions = suggest('inst', index, 5);
+// ['Installation', 'Instructions', 'Instance Management']</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+
+    <!-- facets -->
+    <div class="api-method">
+      <h3 id="facets"><code>facets(index)</code></h3>
+      <p>Counts records by type. Useful for building filter UI (e.g., "Sections (42) | Actions (8) | Files (3)").</p>
+      <p><strong>Returns:</strong> <code>Record&lt;IndexRecord['type'], number&gt;</code></p>
+      <div class="code-block"><pre><code class="language-typescript">facets(index);
+// { section: 120, action: 15, field: 8, link: 30, file: 4, media: 2, structured: 5 }</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+
+    <!-- trackQuery / getPopularQueries -->
+    <div class="api-method">
+      <h3 id="trackQuery"><code>trackQuery(index, query, selectedId?)</code> / <code>getPopularQueries(index, n?)</code></h3>
+      <p><code>trackQuery</code> appends the query to a ring-buffer (max 100). When <code>selectedId</code> is provided, it also increments a <code>PopularityEntry</code> for the <code>(query, recordId)</code> pair. This data is consumed by the <code>trackPopularity</code> scoring option in <code>searchSections</code>.</p>
+      <p><code>getPopularQueries</code> tallies the ring-buffer and returns the top <code>n</code> queries sorted by frequency.</p>
+      <div class="code-block"><pre><code class="language-typescript">// Track a search + click event
+trackQuery(index, 'authentication', clickedRecord.id);
+
+// Later, get popular queries for a trending-searches widget
+const trending = getPopularQueries(index, 5);
+// ['authentication', 'install', 'config', …]</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+  </section>
+
+  <!-- ─── CACHING ────────────────────────────────────────────────── -->
+  <section id="caching" class="section">
+    <h2 class="section-title">
+      <svg class="icon-svg"><use href="#icon-lock"/></svg>
+      Caching (cache.ts)
+    </h2>
+    <p class="lead">IndexedDB persistence with optional gzip compression and TTL expiry. Exported from <code>cache.ts</code> (not re-exported via <code>search.ts</code>; import directly).</p>
+
+    <div class="api-method">
+      <h3 id="saveIndex"><code>saveIndex(index, metadata)</code></h3>
+      <p>Serializes the index to JSON, optionally compresses with gzip (via the <code>CompressionStream</code> API when available), and stores in IndexedDB under the <code>reef-index</code> database. Falls back to uncompressed storage on unsupported browsers.</p>
+      <div class="properties-table"><table>
+        <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>index</code></td><td><code>SearchIndex</code></td><td>The in-memory index.</td></tr>
+          <tr><td><code>metadata</code></td><td><code>CacheMetadata</code></td><td><code>{ versionHash, buildTime, pageMetadata }</code>.</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Returns:</strong> <code>Promise&lt;void&gt;</code></p>
+    </div>
+
+    <div class="api-method">
+      <h3 id="loadIndex"><code>loadIndex(ttl?)</code></h3>
+      <p>Loads the most recent cached entry. Decompresses if needed. Returns <code>null</code> if no entry exists or if the entry is older than <code>ttl</code> milliseconds. Gracefully handles decompression failures by attempting an uncompressed fallback read.</p>
+      <div class="properties-table"><table>
+        <thead><tr><th>Param</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><code>ttl</code></td><td><code>number</code></td><td><code>undefined</code> (no expiry)</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Returns:</strong> <code>Promise&lt;{ index: SearchIndex; metadata: CacheMetadata } | null&gt;</code></p>
+      <div class="code-block"><pre><code class="language-typescript">import { saveIndex, loadIndex, clearCache } from './src/cache.js';
+
+const cached = await loadIndex(24 * 60 * 60 * 1000); // 24 h TTL
+if (cached) {
+  useIndex(cached.index);
+} else {
+  const fresh = await buildIndex();
+  await saveIndex(fresh, {
+    versionHash: 'abc123',
+    buildTime: Date.now(),
+    pageMetadata: {}
+  });
+}</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    </div>
+
+    <div class="api-method">
+      <h3 id="clearCache"><code>clearCache()</code></h3>
+      <p>Clears all entries from the <code>reef-index</code> IndexedDB object store.</p>
+      <p><strong>Returns:</strong> <code>Promise&lt;void&gt;</code></p>
+    </div>
+  </section>
+
+  <!-- ─── CRAWLING ───────────────────────────────────────────────── -->
+  <section id="crawling" class="section">
+    <h2 class="section-title">
+      <svg class="icon-svg"><use href="#icon-flash"/></svg>
+      Crawling (indexer.ts — Indexer class)
+    </h2>
+    <p class="lead">The <code>Indexer</code> class (in <code>src/indexing/indexer.ts</code>) is used internally by <code>reef.ts</code> and is not re-exported via <code>search.ts</code>. Key methods documented here for reference.</p>
+
+    <div class="api-method">
+      <h3><code>new Indexer(config)</code></h3>
+      <p>Accepts a <code>ReefConfig</code> object. Initialises an empty index, a <code>robotsCache</code> Map, and a <code>lastCrawlTime</code> counter.</p>
+    </div>
+
+    <div class="api-method">
+      <h3><code>indexer.boot(onReady, showToast?)</code></h3>
+      <p>Orchestrates the full boot sequence:</p>
+      <ol>
+        <li>If <code>prebuiltIndexUrl</code> is set, fetches and deserializes it.</li>
+        <li>Otherwise, checks IndexedDB cache (honoring <code>ttl</code>).</li>
+        <li>If stale/missing, calls <code>fetchSitemapUrls()</code> to discover pages.</li>
+        <li>Runs <code>fetchPagesParallel()</code> (6 concurrent) with incremental-crawl ETag/hash checks.</li>
+        <li>Saves the new index + metadata to cache.</li>
+        <li>Falls back to <code>crawlSameOrigin()</code> if no sitemap URLs are found.</li>
+      </ol>
+      <p><strong>Returns:</strong> <code>Promise&lt;void&gt;</code></p>
+    </div>
+
+    <div class="api-method">
+      <h3><code>indexer.fetchSitemapUrls()</code></h3>
+      <p>Recursively processes sitemaps. Detects <code>&lt;sitemapindex&gt;</code> documents and follows child <code>&lt;sitemap&gt;&lt;loc&gt;</code> entries. Deduplicates via a <code>seenUrls</code> Set.</p>
+      <p><strong>Returns:</strong> <code>Promise&lt;string[]&gt;</code></p>
+    </div>
+  </section>
+
+  <!-- ─── EXTRACTION ────────────────────────────────────────────── -->
+  <section id="extraction" class="section">
+    <h2 class="section-title">
+      <svg class="icon-svg"><use href="#icon-document"/></svg>
+      Extraction (extraction.ts)
+    </h2>
+
+    <div class="properties-table"><table>
+      <thead><tr><th>Function</th><th>Signature</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>extractSections</code></td><td><code>(html, url) → IndexRecord[]</code></td><td>Extracts heading-delimited sections. Caches by URL.</td></tr>
+        <tr><td><code>chunkBodyText</code></td><td><code>(bodyText, chunkSize, record) → IndexRecord[]</code></td><td>Splits long body text into overlapping chunks (20% overlap). Returns the original record unchanged when <code>bodyText.length ≤ chunkSize</code>.</td></tr>
+        <tr><td><code>extractActions</code></td><td><code>(html, url, excludeSelector?) → IndexRecord[]</code></td><td>Extracts <code>button</code>, <code>[role="button"]</code>, <code>summary</code>, <code>[data-reef-action]</code> elements.</td></tr>
+        <tr><td><code>extractFields</code></td><td><code>(html, url) → IndexRecord[]</code></td><td>Extracts labeled form inputs (skips hidden/button/submit/reset).</td></tr>
+        <tr><td><code>extractLinks</code></td><td><code>(html, url) → IndexRecord[]</code></td><td>Extracts non-nofollow anchor tags. External links get type <code>'link'</code>; same-origin get <code>'section'</code>.</td></tr>
+        <tr><td><code>extractFiles</code></td><td><code>(html, url, extensions?) → IndexRecord[]</code></td><td>Extracts links to file extensions (default: pdf, doc, xls, ppt, zip, csv).</td></tr>
+        <tr><td><code>extractMedia</code></td><td><code>(html, url) → IndexRecord[]</code></td><td>Extracts <code>img[alt]</code> and <code>video</code>/<code>audio</code> with title/aria-label.</td></tr>
+        <tr><td><code>extractStructuredData</code></td><td><code>(html, url) → IndexRecord[]</code></td><td>Parses <code>&lt;script type="application/ld+json"&gt;</code> blocks. Handles FAQPage and generic Schema.org types.</td></tr>
+        <tr><td><code>extractHiddenContent</code></td><td><code>(doc) → void</code></td><td>Opens <code>&lt;details&gt;</code> and removes <code>aria-hidden="false"</code> so hidden text is indexable.</td></tr>
+        <tr><td><code>normalizeUrl</code></td><td><code>(url, html?) → string</code></td><td>Strips trailing slash, removes known tracking params (utm_*, gclid, fbclid…), and resolves against <code>&lt;link rel="canonical"&gt;</code> when <code>html</code> is supplied.</td></tr>
+        <tr><td><code>resolveUrl</code></td><td><code>(value, base) → string</code></td><td>Resolves relative URL against base using <code>new URL()</code>.</td></tr>
+        <tr><td><code>stripTags</code></td><td><code>(html) → string</code></td><td>Removes HTML tags (custom char-by-char parser, no regex).</td></tr>
+        <tr><td><code>generateSelector</code></td><td><code>(element) → string</code></td><td>Generates a CSS selector path. Stops at first <code>id</code>.</td></tr>
+        <tr><td><code>extractHeadingId</code></td><td><code>(fullMatch, text) → string</code></td><td>Returns existing <code>id</code> attr or slugifies text.</td></tr>
+        <tr><td><code>hasExplicitId</code></td><td><code>(fullMatch) → boolean</code></td><td>Checks if a heading tag has an explicit <code>id</code> attribute.</td></tr>
+        <tr><td><code>findParentSectionId</code></td><td><code>(html, offset) → string | null</code></td><td>Looks 500 chars ahead for a <code>&lt;section id&gt;</code> or <code>&lt;article id&gt;</code>.</td></tr>
+        <tr><td><code>extractActionName</code></td><td><code>(element) → string | null</code></td><td>Resolves label from aria-label, aria-labelledby, textContent, or title.</td></tr>
+        <tr><td><code>isDestructiveAction</code></td><td><code>(label) → boolean</code></td><td>Returns true for labels containing: delete, remove, cancel subscription, pay, checkout, submit order, confirm.</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="code-block"><pre><code class="language-typescript">// Chunk long articles for better BM25F precision
+import { chunkBodyText } from './src/search.js';
+const chunks = chunkBodyText(longBodyText, 500, baseRecord);
+addToIndex(index, chunks);
+
+// Normalize a URL (strips UTMs, resolves canonical)
+import { normalizeUrl } from './src/search.js';
+normalizeUrl('https://example.com/page/?utm_source=twitter', pageHtml);
+// → 'https://example.com/page'  (or canonical from &lt;link rel="canonical"&gt;)</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  </section>
+
+  <!-- ─── AGENT / WORKFLOW ──────────────────────────────────────── -->
+  <section id="agent" class="section">
+    <h2 class="section-title">
+      <svg class="icon-svg"><use href="#icon-robot"/></svg>
+      Agent / Workflow
+    </h2>
+    <p class="lead">DOM automation via the <code>Agent</code> class (<code>agent.ts</code>) and declarative YAML workflows (<code>workflow.ts</code>). See <a href="guides-workflow.html">Workflow guide</a> for the YAML format.</p>
+
+    <h3>Agent class methods</h3>
+    <div class="properties-table"><table>
+      <thead><tr><th>Method</th><th>Signature</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>click</code></td><td><code>(selector: string | IndexRecord) → Promise&lt;this&gt;</code></td><td>Dispatches a bubbling <code>MouseEvent('click')</code> to the resolved element. Chainable.</td></tr>
+        <tr><td><code>type</code></td><td><code>(selector, value) → Promise&lt;this&gt;</code></td><td>Sets value on an input/textarea/select and dispatches <code>input</code> + <code>change</code> events (React-compatible via descriptor set).</td></tr>
+        <tr><td><code>navigate</code></td><td><code>(url) → Promise&lt;this&gt;</code></td><td>Sets <code>window.location.href</code>. Only absolute or root-relative URLs.</td></tr>
+        <tr><td><code>submit</code></td><td><code>(selector?) → Promise&lt;this&gt;</code></td><td>Dispatches <code>submit</code> on a form or clicks a submit button. Falls back to document-level <code>form</code>/<code>button[type=submit]</code>.</td></tr>
+        <tr><td><code>extract</code></td><td><code>(selector) → Promise&lt;any&gt;</code></td><td>Returns <code>.value</code> for inputs or <code>.textContent</code> for other elements.</td></tr>
+        <tr><td><code>back</code></td><td><code>() → Promise&lt;this&gt;</code></td><td>Calls <code>window.history.back()</code>.</td></tr>
+        <tr><td><code>forward</code></td><td><code>() → Promise&lt;this&gt;</code></td><td>Calls <code>window.history.forward()</code>.</td></tr>
+        <tr><td><code>wait</code></td><td><code>(timeout?: number) → Promise&lt;this&gt;</code></td><td>Waits <code>timeout</code> ms (default 1000).</td></tr>
+        <tr><td><code>findActionable</code></td><td><code>(text) → Promise&lt;IndexRecord | null&gt;</code></td><td>Searches <code>allSections</code> for action/field records whose heading or label includes <code>text</code>.</td></tr>
+        <tr><td><code>executeWorkflow</code></td><td><code>(steps, options?) → Promise&lt;void&gt;</code></td><td>Runs a <code>WorkflowStep[]</code> with retry and error-hook support.</td></tr>
+        <tr><td><code>getSession</code></td><td><code>() → AgentSession</code></td><td>Returns current URL, timestamp, cookies, and localStorage snapshot.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Workflow functions (workflow.ts)</h3>
+    <div class="properties-table"><table>
+      <thead><tr><th>Function</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>parseYAML(yaml)</code></td><td>Parses a YAML string into a <code>WorkflowDefinition</code> (name + steps + options). Simple line-based parser — no external dependency.</td></tr>
+        <tr><td><code>validateWorkflow(def)</code></td><td>Returns an array of validation error strings (empty = valid). Checks that required fields are present for each action type.</td></tr>
+        <tr><td><code>executeWorkflow(definition, agent)</code></td><td>Validates then calls <code>agent.executeWorkflow(steps, options)</code>.</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="code-block"><pre><code class="language-typescript">import { Agent } from './src/agent.js';
+import { parseYAML, executeWorkflow } from './src/workflow.js';
+
+const agent = new Agent(index, inspector);
+
+// Chained API
+await agent.navigate('/login')
+  .then(a => a.type('#email', 'user@example.com'))
+  .then(a => a.type('#password', 'secret'))
+  .then(a => a.submit());
+
+// YAML workflow
+const yaml = `
+- action: navigate
+  url: /login
+- action: type
+  selector: "#email"
+  value: user@example.com
+- action: submit
+  selector: form
+`;
+const def = parseYAML(yaml);
+await executeWorkflow(def, agent);</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

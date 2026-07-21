@@ -3,7 +3,7 @@
  * Re-exports functions from search-index.ts and extraction.ts for external use.
  */
 
-export type { IndexRecord, SectionDocument, SearchOptions, ScoredRecord, MatchSpan, TokenFilter } from './types.js';
+export type { IndexRecord, SectionDocument, SearchOptions, ScoredRecord, MatchSpan, TokenFilter, ReefConfig } from './types.js';
 export {
   createSearchIndex,
   addToIndex,
@@ -21,6 +21,7 @@ export {
   facets,
   trackQuery,
   getPopularQueries,
+  getSnippet,
   type QueryNode,
 } from './search-index.js';
 export {
@@ -30,6 +31,7 @@ export {
   hasExplicitId,
   findParentSectionId,
   extractSections,
+  chunkBodyText,
   extractActionName,
   isDestructiveAction,
   extractActions,
@@ -39,5 +41,6 @@ export {
   extractMedia,
   extractStructuredData,
   extractHiddenContent,
+  normalizeUrl,
   resolveUrl,
 } from './extraction.js';
