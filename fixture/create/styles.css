@@ -489,6 +489,9 @@ body {
     overflow: hidden;
     margin: 1rem 0;
     transition: var(--transition);
+    width: 100%;
+    max-width: 100%;
+    /* Ensure the block fills the container on small screens */
 }
 
 .code-block:hover {
@@ -506,6 +509,9 @@ body {
     max-height: 400px;
     overflow-y: auto;
     background: #0f172a;
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .code-block code {
