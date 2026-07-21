@@ -21,7 +21,7 @@
   </symbol>
   <symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="12" r="3"></circle>
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
   </symbol>
   <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -112,6 +112,13 @@
 </svg>
 
     <header class="header">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
         <div class="header-content">
             <div class="logo">
                 <svg class="icon-svg"><use href="#icon-home"></use></svg>
@@ -121,7 +128,7 @@
         </div>
     </header>
 
-    <nav class="sidebar">
+    <nav class="sidebar" id="sidebar">
         <div class="nav-section">
             <h2>Agent</h2>
             <a href="#overview" class="nav-link active">Overview</a>
@@ -145,6 +152,8 @@
         </div>
     </nav>
 
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <main class="main-content">
         <section id="overview" class="section">
             <h2 class="section-title">
@@ -157,22 +166,44 @@
             </p>
 
             <div class="code-demo">
-                <h3>Getting an Agent Instance</h3>
-                <p>Get an Agent instance from ReefSearch:</p>
-
-                <div class="code-block">
-                    <pre><code class="language-javascript">// From window.Reef
-const agent = window.Reef.agent();
-
-// Or create directly (with index and inspector)
-import { Agent } from './src/agent.js';
-import { createSearchIndex } from './src/search-index.js';
-
-const index = createSearchIndex();
-const inspector = { /* ... */ };
-const agent = new Agent(index, inspector, 'execute');</pre></code>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <h3>Interactive Demo: Agent Workflow Simulation</h3>
+                <p>Try the Agent API methods directly in your browser:</p>
+                
+                <div class="demo-preview" id="demo-agent-overview-preview" style="display: flex; flex-direction: column; align-items: stretch; gap: 1rem; padding: 1.25rem;">
+                    <!-- Visual Mock Screen representing a mini browser window -->
+                    <div id="agent-mock-browser" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--background-color); color: var(--text-color); box-shadow: var(--shadow-md); overflow: hidden; transition: var(--transition); display: flex; flex-direction: column; min-height: 200px; text-align: left; position: relative; width: 100%;">
+                        <!-- Browser Header -->
+                        <div style="background: var(--background-light); padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); font-size: 0.75rem;">
+                            <div style="display: flex; gap: 0.25rem;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #eab308; display: inline-block;"></span>
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block;"></span>
+                            </div>
+                            <div id="mock-browser-url" style="background: var(--background-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.125rem 0.5rem; flex: 1; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">https://reef-demo.local/login</div>
+                        </div>
+                        <!-- Browser Content Area -->
+                        <div id="mock-browser-content" style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.75rem; position: relative;">
+                            <!-- Form Mockup -->
+                            <div id="mock-login-form" style="display: flex; flex-direction: column; gap: 0.5rem; max-width: 250px; margin: 0 auto; width: 100%;">
+                                <input type="text" id="mock-email-input" placeholder="Enter email..." disabled style="padding: 0.375rem; border: 1px solid var(--border-color); border-radius: 4px; background: transparent; font-size: 0.8125rem; width: 100%;">
+                                <input type="password" id="mock-password-input" placeholder="Enter password..." disabled style="padding: 0.375rem; border: 1px solid var(--border-color); border-radius: 4px; background: transparent; font-size: 0.8125rem; width: 100%;">
+                                <button id="mock-login-btn" style="padding: 0.375rem; background: var(--primary-color); color: var(--background-color); border: none; border-radius: 4px; font-size: 0.8125rem; cursor: pointer; transition: var(--transition); font-weight: 500;">Sign In</button>
+                            </div>
+                        </div>
+                        <!-- Simulated Cursor -->
+                        <div id="agent-mock-cursor" style="position: absolute; width: 16px; height: 16px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22%23171717%22 stroke=%22white%22 stroke-width=%222%22><path d=%22M4.5 3V17L9 12.5L14 21L17 19.5L12 11.5L17.5 11Z%22/></svg>') no-repeat; z-index: 10; top: 20px; left: 20px; transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); pointer-events: none;"></div>
+                    </div>
                 </div>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0;">
+                    <button class="demo-btn" onclick="demoAgentAction('click')">Simulate Click</button>
+                    <button class="demo-btn" onclick="demoAgentAction('type')">Simulate Type</button>
+                    <button class="demo-btn" onclick="demoAgentAction('submit')">Simulate Submit</button>
+                    <button class="demo-btn" onclick="demoAgentAction('navigate')">Simulate Navigate</button>
+                    <button class="demo-btn" onclick="demoAgentAction('extract')">Simulate Extract</button>
+                </div>
+                
+                <div class="demo-result" id="demo-agent-result" style="display: none;"></div>
             </div>
 
             <div class="features-grid">
@@ -197,12 +228,12 @@ const agent = new Agent(index, inspector, 'execute');</pre></code>
                     <p>Extract data from DOM elements, forms, and structured content.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-rocket"></div>
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-rocket"></use></svg></div>
                     <h3>Workflow Support</h3>
                     <p>Execute multi-step workflows with retry logic and error recovery.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-gear"></div>
+                    <div class="feature-icon"><svg class="icon-svg"><use href="#icon-gear"></use></svg></div>
                     <h3>Session Management</h3>
                     <p>Access session information including cookies, localStorage, and environment data.</p>
                 </div>
@@ -322,24 +353,6 @@ const agent = window.Reef.agent();</pre></code>
                 <h3>click(selector: string | IndexRecord): Promise&lt;this&gt;</h3>
                 <p>Click on an element matching the selector or IndexRecord.</p>
 
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">selector</span>
-                        <span class="param-type">string | IndexRecord</span>
-                    </div>
-                    <p>CSS selector string or IndexRecord with a selector property.</p>
-                </div>
-
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;this&gt;</span>
-                    <p>Returns <code>this</code> for method chaining.</p>
-                </div>
-
-                <div class="method-throws">
-                    <span class="throw-type">Error</span>
-                    <p>Throws if element is not found or click fails.</p>
-                </div>
-
                 <div class="code-block">
                     <pre><code class="language-javascript">// Click by selector
 await agent.click('#login-button');
@@ -359,24 +372,6 @@ await agent
             <div class="api-method">
                 <h3>type(selector: string | IndexRecord, value: string): Promise&lt;this&gt;</h3>
                 <p>Type text into an input, textarea, or select element.</p>
-
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">selector</span>
-                        <span class="param-type">string | IndexRecord</span>
-                    </div>
-                    <p>CSS selector string or IndexRecord with a selector property.</p>
-
-                    <div class="method-param">
-                        <span class="param-name">value</span>
-                        <span class="param-type">string</span>
-                    </div>
-                    <p>The text value to type into the element.</p>
-                </div>
-
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;this&gt;</span>
-                </div>
 
                 <div class="code-block">
                     <pre><code class="language-javascript">// Type into input
@@ -402,20 +397,6 @@ await agent
             <div class="api-method">
                 <h3>submit(selector?: string | IndexRecord): Promise&lt;this&gt;</h3>
                 <p>Submit a form or click a submit button.</p>
-
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">selector</span>
-                        <span class="param-type">string | IndexRecord</span>
-                        <span class="param-optional">Optional</span>
-                    </div>
-                    <p>CSS selector or IndexRecord for a specific form or submit button. If not provided, 
-                    will find and submit the first form on the page.</p>
-                </div>
-
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;this&gt;</span>
-                </div>
 
                 <div class="code-block">
                     <pre><code class="language-javascript">// Submit without selector (uses first form)
@@ -447,18 +428,6 @@ await agent
                 <h3>navigate(url: string): Promise&lt;this&gt;</h3>
                 <p>Navigate to a URL.</p>
 
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">url</span>
-                        <span class="param-type">string</span>
-                    </div>
-                    <p>URL to navigate to. Can be absolute (<code>https://...</code>), relative (<code>/page</code>), or hash (<code>#section</code>).</p>
-                </div>
-
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;this&gt;</span>
-                </div>
-
                 <div class="code-block">
                     <pre><code class="language-javascript">// Absolute URL
 await agent.navigate('https://example.com/dashboard');
@@ -483,10 +452,6 @@ await agent
                 <h3>back(): Promise&lt;this&gt;</h3>
                 <p>Navigate back in the browser history.</p>
 
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;this&gt;</span>
-                </div>
-
                 <div class="code-block">
                     <pre><code class="language-javascript">// Go back
 await agent.back();
@@ -504,10 +469,6 @@ await agent
                 <h3>forward(): Promise&lt;this&gt;</h3>
                 <p>Navigate forward in the browser history.</p>
 
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;this&gt;</span>
-                </div>
-
                 <div class="code-block">
                     <pre><code class="language-javascript">// Go forward
 await agent.forward();
@@ -524,20 +485,6 @@ await agent
             <div class="api-method">
                 <h3>wait(timeout?: number): Promise&lt;this&gt;</h3>
                 <p>Wait for a specified amount of time.</p>
-
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">timeout</span>
-                        <span class="param-type">number</span>
-                        <span class="param-optional">Optional</span>
-                        <span class="param-default">Default: 1000</span>
-                    </div>
-                    <p>Time to wait in milliseconds.</p>
-                </div>
-
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;this&gt;</span>
-                </div>
 
                 <div class="code-block">
                     <pre><code class="language-javascript">// Wait 1 second (default)
@@ -569,25 +516,6 @@ await agent
                 <h3>extract(selector: string | IndexRecord): Promise&lt;any&gt;</h3>
                 <p>Extract data from an element.</p>
 
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">selector</span>
-                        <span class="param-type">string | IndexRecord</span>
-                    </div>
-                    <p>CSS selector string or IndexRecord to extract from.</p>
-                </div>
-
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;any&gt;</span>
-                    <p>Returns the extracted value. For input/textarea/select elements, returns the value. 
-                    For other elements, returns the textContent.</p>
-                </div>
-
-                <div class="method-throws">
-                    <span class="throw-type">Error</span>
-                    <p>Throws if element is not found.</p>
-                </div>
-
                 <div class="code-block">
                     <pre><code class="language-javascript">// Extract from input
 await agent.type('#email', 'test@example.com');
@@ -614,19 +542,6 @@ console.log(selectedOption); // The selected value</pre></code>
             <div class="api-method">
                 <h3>findActionable(text: string): Promise&lt;IndexRecord | null&gt;</h3>
                 <p>Find an actionable element (action or field) by text match.</p>
-
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">text</span>
-                        <span class="param-type">string</span>
-                    </div>
-                    <p>Text to search for in actionable elements' headingText or label.</p>
-                </div>
-
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;IndexRecord | null&gt;</span>
-                    <p>Returns the matching IndexRecord or <code>null</code> if not found.</p>
-                </div>
 
                 <div class="code-block">
                     <pre><code class="language-javascript">// Find by exact text
@@ -660,11 +575,6 @@ await agent
                 <h3>getSession(): AgentSession</h3>
                 <p>Get the current session information.</p>
 
-                <div class="method-returns">
-                    <span class="return-type">AgentSession</span>
-                    <p>Returns an object containing session information.</p>
-                </div>
-
                 <div class="code-block">
                     <pre><code class="language-typescript">// Get session info
 const session = agent.getSession();
@@ -674,8 +584,8 @@ interface AgentSession {
   id: string;              // Unique session ID
   url: string;            // Current page URL
   timestamp: number;      // Session creation timestamp
-  cookies: Record&lt;string, string&gt;;     // Current cookies
-  localStorage: Record&lt;string, string&gt;; // localStorage snapshot
+  cookies: Record<string, string>;     // Current cookies
+  localStorage: Record<string, string>; // localStorage snapshot
 }
 
 // Example usage
@@ -702,25 +612,6 @@ console.log('Cookies:', session.cookies);</pre></code>
                 <h3>executeWorkflow(steps: WorkflowStep[], options?: WorkflowOptions): Promise&lt;void&gt;</h3>
                 <p>Execute a multi-step workflow with error handling and retry logic.</p>
 
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">steps</span>
-                        <span class="param-type">WorkflowStep[]</span>
-                    </div>
-                    <p>Array of workflow steps to execute.</p>
-
-                    <div class="method-param">
-                        <span class="param-name">options</span>
-                        <span class="param-type">WorkflowOptions</span>
-                        <span class="param-optional">Optional</span>
-                    </div>
-                    <p>Workflow configuration options.</p>
-                </div>
-
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;void&gt;</span>
-                </div>
-
                 <div class="code-block">
                     <pre><code class="language-javascript">// Define workflow steps
 await agent.executeWorkflow([
@@ -738,7 +629,7 @@ await agent.executeWorkflow(
   {
     maxRetries: 3,
     retryDelay: 500,
-    stopOnError: false,
+    stopOnError: true,
     onStepStart: (step, index) => {
       console.log(`Starting step ${index}:`, step.action);
     },
@@ -751,103 +642,6 @@ await agent.executeWorkflow(
   }
 );</pre></code>
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-
-                <div class="config-table">
-                    <h3>WorkflowStep Interface</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Property</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>action</code></td>
-                                <td><code>'click' | 'type' | 'navigate' | 'extract' | 'submit' | 'back' | 'forward' | 'wait'</code></td>
-                                <td>The action to perform.</td>
-                            </tr>
-                            <tr>
-                                <td><code>selector</code></td>
-                                <td><code>string</code></td>
-                                <td>CSS selector for the target element.</td>
-                            </tr>
-                            <tr>
-                                <td><code>recordId</code></td>
-                                <td><code>string</code></td>
-                                <td>IndexRecord ID as an alternative to selector.</td>
-                            </tr>
-                            <tr>
-                                <td><code>value</code></td>
-                                <td><code>string</code></td>
-                                <td>Value to type (for type action).</td>
-                            </tr>
-                            <tr>
-                                <td><code>url</code></td>
-                                <td><code>string</code></td>
-                                <td>URL to navigate to (for navigate action).</td>
-                            </tr>
-                            <tr>
-                                <td><code>timeout</code></td>
-                                <td><code>number</code></td>
-                                <td>Timeout in milliseconds (for wait action).</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="config-table">
-                    <h3>WorkflowOptions Interface</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Property</th>
-                                <th>Type</th>
-                                <th>Default</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>maxRetries</code></td>
-                                <td><code>number</code></td>
-                                <td><code>0</code></td>
-                                <td>Maximum number of retries for failed steps.</td>
-                            </tr>
-                            <tr>
-                                <td><code>retryDelay</code></td>
-                                <td><code>number</code></td>
-                                <td><code>500</code></td>
-                                <td>Delay in milliseconds between retries.</td>
-                            </tr>
-                            <tr>
-                                <td><code>stopOnError</code></td>
-                                <td><code>boolean</code></td>
-                                <td><code>true</code></td>
-                                <td>Whether to stop workflow execution on first error.</td>
-                            </tr>
-                            <tr>
-                                <td><code>onStepStart</code></td>
-                                <td><code>(step, index) => void</code></td>
-                                <td><code>-</code></td>
-                                <td>Callback when a step starts.</td>
-                            </tr>
-                            <tr>
-                                <td><code>onStepComplete</code></td>
-                                <td><code>(step, index, result) => void</code></td>
-                                <td><code>-</code></td>
-                                <td>Callback when a step completes successfully.</td>
-                            </tr>
-                            <tr>
-                                <td><code>onStepError</code></td>
-                                <td><code>(step, index, error) => void</code></td>
-                                <td><code>-</code></td>
-                                <td>Callback when a step fails.</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </section>
@@ -912,11 +706,11 @@ export interface ActionResult {
 
 // Agent Session
 export interface AgentSession {
-  id: string;
-  url: string;
-  timestamp: number;
-  cookies?: Record&lt;string, string&gt;;
-  localStorage?: Record&lt;string, string&gt;;
+  id: string;              // Unique session ID
+  url: string;            // Current page URL
+  timestamp: number;      // Session creation timestamp
+  cookies?: Record<string, string>;     // Current browser cookies
+  localStorage?: Record<string, string>; // Current localStorage data
 }
 
 // Workflow Step
@@ -1121,6 +915,33 @@ unstableWorkflow().catch(error => {
 });</pre></code>
                         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                     </div>
+                    <div class="demo-preview" id="demo-agent-workflow-preview" style="display: flex; flex-direction: column; align-items: stretch; gap: 1rem; padding: 1.25rem; margin-bottom: 1rem;">
+                        <!-- Visual Mock Screen representing a mini browser window -->
+                        <div id="workflow-mock-browser" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--background-color); color: var(--text-color); box-shadow: var(--shadow-md); overflow: hidden; transition: var(--transition); display: flex; flex-direction: column; min-height: 200px; text-align: left; position: relative; width: 100%;">
+                            <!-- Browser Header -->
+                            <div style="background: var(--background-light); padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); font-size: 0.75rem;">
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #eab308; display: inline-block;"></span>
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block;"></span>
+                                </div>
+                                <div id="workflow-browser-url" style="background: var(--background-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.125rem 0.5rem; flex: 1; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">https://reef-demo.local/login</div>
+                            </div>
+                            <!-- Browser Content Area -->
+                            <div id="workflow-browser-content" style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.75rem; position: relative;">
+                                <!-- Form Mockup -->
+                                <div id="workflow-login-form" style="display: flex; flex-direction: column; gap: 0.5rem; max-width: 250px; margin: 0 auto; width: 100%;">
+                                    <input type="text" id="workflow-email-input" placeholder="Enter email..." disabled style="padding: 0.375rem; border: 1px solid var(--border-color); border-radius: 4px; background: transparent; font-size: 0.8125rem; width: 100%;">
+                                    <input type="password" id="workflow-password-input" placeholder="Enter password..." disabled style="padding: 0.375rem; border: 1px solid var(--border-color); border-radius: 4px; background: transparent; font-size: 0.8125rem; width: 100%;">
+                                    <button id="workflow-login-btn" style="padding: 0.375rem; background: var(--primary-color); color: var(--background-color); border: none; border-radius: 4px; font-size: 0.8125rem; cursor: pointer; transition: var(--transition); font-weight: 500;">Sign In</button>
+                                </div>
+                            </div>
+                            <!-- Simulated Cursor -->
+                            <div id="workflow-mock-cursor" style="position: absolute; width: 16px; height: 16px; background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22%23171717%22 stroke=%22white%22 stroke-width=%222%22><path d=%22M4.5 3V17L9 12.5L14 21L17 19.5L12 11.5L17.5 11Z%22/></svg>') no-repeat; z-index: 10; top: 20px; left: 20px; transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); pointer-events: none;"></div>
+                        </div>
+                    </div>
+                    <button class="demo-btn" onclick="demoReefAgent()">Run Workflow Demo</button>
+                    <div class="demo-result" id="demo-reef-agent-result" style="display: none; margin-top: 0.5rem;"></div>
                 </div>
 
                 <div class="example-card">

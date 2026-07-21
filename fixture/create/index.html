@@ -21,7 +21,7 @@
   </symbol>
   <symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="12" r="3"></circle>
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
   </symbol>
   <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -110,8 +110,16 @@
     <line x1="10" y1="9" x2="8" y2="9"></line>
   </symbol>
 </svg>
+
     <header class="header">
         <div class="header-content">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
             <div class="logo">
                 <svg class="icon-svg"><use href="#icon-home"></use></svg>
                 <h1>Reef Documentation</h1>
@@ -120,7 +128,7 @@
         </div>
     </header>
 
-    <nav class="sidebar">
+    <nav class="sidebar" id="sidebar">
         <div class="nav-section">
             <h2>Getting Started</h2>
             <a href="#overview" class="nav-link active">Overview</a>
@@ -133,7 +141,6 @@
             <a href="reef.html" class="nav-link">ReefSearch (Main)</a>
             <a href="agent.html" class="nav-link">Agent</a>
             <a href="search.html" class="nav-link">Search</a>
-            <a href="search-index.html" class="nav-link">Search Index</a>
             <a href="types.html" class="nav-link">Types</a>
         </div>
 
@@ -159,22 +166,15 @@
         </div>
     </nav>
 
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <main class="main-content">
         <section id="overview" class="section">
             <h2 class="section-title">
 <svg class="icon-svg"><use href="#icon-document"></use></svg>
-                 Overview
-             </h2>
-             <p class="lead">
-                 Reef is a <strong>client-side library</strong> that enables AI agents to 
-                 <strong>search, extract, and act</strong> on live DOM content. 
-                 No servers, no APIs—just pure browser power.
-             </p>
-
-             <div class="features-grid">
-                 <div class="feature-card">
-                     <div class="feature-icon"><svg class="icon-svg"><use href="#icon-search"></use></svg></div>
-            <p class="lead">
+                  Overview
+              </h2>
+<p class="lead">
                 Reef is a <strong>client-side library</strong> that enables AI agents to 
                 <strong>search, extract, and act</strong> on live DOM content. 
                 No servers, no APIs—just pure browser power.
@@ -221,6 +221,44 @@
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
                 <p>Press <kbd>Cmd/Ctrl+K</kbd> on any page to open the search overlay.</p>
+            </div>
+
+            <div class="demo-container" data-demo="quickstart">
+                <h3>Interactive Demo: Quick Start</h3>
+                <div class="demo-preview" id="demo-quickstart-preview" style="display: flex; flex-direction: column; align-items: stretch; gap: 1rem; padding: 1.25rem;">
+                    <!-- Visual Mock Screen representing a mini browser window -->
+                    <div id="quickstart-mock-browser" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--background-color); color: var(--text-color); box-shadow: var(--shadow-md); overflow: hidden; display: flex; flex-direction: column; min-height: 180px; text-align: left; position: relative; width: 100%;">
+                        <!-- Browser Header -->
+                        <div style="background: var(--background-light); padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); font-size: 0.75rem;">
+                            <div style="display: flex; gap: 0.25rem;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #eab308; display: inline-block;"></span>
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block;"></span>
+                            </div>
+                            <div style="background: var(--background-color); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.125rem 0.5rem; flex: 1; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">https://reef-site.local/</div>
+                        </div>
+                        <!-- Browser Content Area -->
+                        <div id="quickstart-browser-content" style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0.5rem; position: relative;">
+                            <p style="font-size: 0.8125rem; color: var(--text-muted);">Press Cmd+K or click Open Search to trigger search overlay.</p>
+<div id="agent-mock-cursor" class="demo-cursor"></div>
+                            <!-- Mock Search Modal Overlay (hidden by default) -->
+                            <div id="quickstart-mock-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: var(--transition); z-index: 5;">
+                                <div style="background: var(--background-color); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); width: 85%; max-width: 260px; padding: 0.75rem; transform: scale(0.9); transition: var(--transition);" id="quickstart-overlay-box">
+                                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--primary-color); font-weight: bold; font-family: var(--font-mono);">&gt; search docs...</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);">
+                                        <div style="padding: 0.25rem; background: var(--background-light); border-radius: 4px; margin-bottom: 0.25rem;">🔍 Getting Started</div>
+                                        <div style="padding: 0.25rem;">🛠️ Installation Guide</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+                    <button class="demo-btn" onclick="runDemo('quickstart', 'keydown')">Simulate Cmd+K</button>
+                    <button class="demo-btn" onclick="runDemo('quickstart', 'open')">Open Search</button>
+                </div>
+                <div class="demo-result" id="demo-quickstart-result"></div>
             </div>
         </section>
 
@@ -426,6 +464,26 @@ window.Reef = new ReefSearch();</pre></code>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <div class="demo-container" data-demo="config">
+                <h3>Interactive Demo: Configuration</h3>
+                <div class="demo-preview" id="demo-config-preview" style="display: flex; flex-direction: column; align-items: stretch; gap: 1rem; padding: 1.25rem;">
+                    <!-- Visual Mock HUD for configuration preview -->
+                    <div id="config-mock-hud" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #ffffff; color: #171717; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; box-shadow: var(--shadow-md); transition: var(--transition);">
+                        <div style="font-weight: bold; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.25rem; font-size: 0.8125rem;" id="config-mock-header">&gt; search docs...</div>
+                        <div style="font-size: 0.75rem;" id="config-mock-content">
+                            <span style="color: #10b981;">✓ Custom styling configuration loaded</span>
+                        </div>
+                    </div>
+<div id="config-mock-cursor" class="demo-cursor"></div>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+                    <button class="demo-btn" onclick="runDemo('config', 'theme-light')">Light Theme</button>
+                    <button class="demo-btn" onclick="runDemo('config', 'theme-dark')">Dark Theme</button>
+                    <button class="demo-btn" onclick="runDemo('config', 'mode-opaque')">Opaque Mode</button>
+                </div>
+                <div class="demo-result" id="demo-config-result"></div>
             </div>
         </section>
 

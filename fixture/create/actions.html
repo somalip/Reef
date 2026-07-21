@@ -203,6 +203,26 @@ executor.executeAction(result, 'execute', showToast);</pre></code>
                 </div>
             </div>
 
+            <div class="demo-container" data-demo="action-sim">
+                <h3>Interactive Demo: Action Executor Simulator</h3>
+                <div class="demo-preview" id="demo-action-sim-preview" style="display: flex; flex-direction: column; align-items: stretch; gap: 1rem; padding: 1.25rem;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; align-items: center;">
+                        <select id="demo-action-type" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--background-color); color: var(--text-color); font-family: var(--font-family); font-size: 0.875rem;">
+                            <option value="click">Click Element</option>
+                            <option value="type">Type/Input Text</option>
+                            <option value="submit">Submit Form</option>
+                            <option value="navigate">Navigate URL</option>
+                        </select>
+                        <input type="text" id="demo-action-selector" placeholder="Selector (e.g. #submit-btn)" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--background-color); color: var(--text-color); font-family: var(--font-family); font-size: 0.875rem; width: 180px;">
+                        <input type="text" id="demo-action-value" placeholder="Value (for typing)" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--background-color); color: var(--text-color); font-family: var(--font-family); font-size: 0.875rem; width: 140px;">
+                        <button class="demo-btn" onclick="runInteractiveAction()" style="margin: 0;">Run Action</button>
+                    </div>
+                    <div id="demo-action-logs" style="max-height: 150px; overflow-y: auto; text-align: left; font-family: var(--font-mono); font-size: 0.8125rem; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
+                        <div style="color: var(--text-muted); font-style: italic; text-align: center;">Set parameters and click "Run Action" to start execution simulation</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="architecture-diagram">
                 <h3>Action Execution Flow</h3>
                 <div class="arch-row">

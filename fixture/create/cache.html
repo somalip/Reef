@@ -179,6 +179,39 @@
                 </div>
             </div>
 
+            <div class="demo-container" data-demo="cache-sim">
+                <h3>Interactive Demo: Cache Store Simulator</h3>
+                <div class="demo-preview" id="demo-cache-sim-preview" style="display: flex; flex-direction: column; align-items: stretch; gap: 1rem; padding: 1.25rem;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
+                        <input type="text" id="demo-cache-key" placeholder="Key (e.g. sitemap-index)" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--background-color); color: var(--text-color); font-family: var(--font-family); font-size: 0.875rem; width: 160px;">
+                        <input type="text" id="demo-cache-val" placeholder="Value (JSON string)" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--background-color); color: var(--text-color); font-family: var(--font-family); font-size: 0.875rem; width: 180px;">
+                        <button class="demo-btn" onclick="saveCacheSimItem()" style="margin: 0;">Store</button>
+                        <button class="demo-btn" onclick="getCacheSimItem()" style="margin: 0;">Retrieve</button>
+                        <button class="demo-btn" onclick="deleteCacheSimItem()" style="margin: 0;">Delete</button>
+                        <button class="demo-btn" onclick="clearCacheSim()" style="margin: 0; background: var(--secondary-color);">Clear All</button>
+                    </div>
+                    <div id="demo-cache-storage-view" style="max-height: 150px; overflow-y: auto; text-align: left; font-size: 0.8125rem; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                                    <th style="padding: 0.25rem 0.5rem; text-align: left; font-weight: 500;">Key</th>
+                                    <th style="padding: 0.25rem 0.5rem; text-align: left; font-weight: 500;">Value</th>
+                                    <th style="padding: 0.25rem 0.5rem; text-align: right; font-weight: 500;">Expires (TTL)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="demo-cache-table-body">
+                                <tr>
+                                    <td colspan="3" style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-style: italic;">Cache is empty</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="demo-cache-console" style="background: var(--background-light); padding: 0.5rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.75rem; text-align: left; border-left: 3px solid var(--primary-color);">
+                        Ready. Try storing a cache item.
+                    </div>
+                </div>
+            </div>
+
             <div class="architecture-diagram">
                 <h3>Cache Architecture</h3>
                 <div class="arch-row">

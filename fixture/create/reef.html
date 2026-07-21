@@ -21,7 +21,7 @@
   </symbol>
   <symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="12" r="3"></circle>
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
   </symbol>
   <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -112,6 +112,13 @@
 </svg>
 
     <header class="header">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
         <div class="header-content">
             <div class="logo">
                 <svg class="icon-svg"><use href="#icon-home"></use></svg>
@@ -121,7 +128,7 @@
         </div>
     </header>
 
-    <nav class="sidebar">
+    <nav class="sidebar" id="sidebar">
         <div class="nav-section">
             <h2>ReefSearch</h2>
             <a href="#overview" class="nav-link active">Overview</a>
@@ -145,6 +152,8 @@
         </div>
     </nav>
 
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <main class="main-content">
         <section id="overview" class="section">
             <h2 class="section-title">
@@ -157,74 +166,23 @@
             </p>
 
             <div class="code-demo">
-                <h3>Import and Usage</h3>
-                <p>ReefSearch can be used via script tag or imported as a module:</p>
-
-                <div class="code-block">
-                    <pre><code class="language-html">&lt;script src="reef.min.js"&gt;&lt;/script&gt;
-&lt;script&gt;
-// Reef is automatically available on window
-window.Reef.open();
-&lt;/script&gt;</pre></code>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <h3>Interactive Demo: ReefSearch API</h3>
+                <p>Test the ReefSearch methods directly in your browser:</p>
+                
+                <div class="demo-preview" id="demo-reef-overview-preview">
+                    Click buttons below to see live demos of ReefSearch functionality
                 </div>
-
-                <div class="code-block">
-                    <pre><code class="language-javascript">// ES Module import (when built)
-import ReefSearch from './src/reef.js';
-
-// Initialize
-const reef = new ReefSearch();
-window.Reef = reef;</pre></code>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0;">
+                    <button class="demo-btn" onclick="demoReefSearch('installation')">Search: Installation</button>
+                    <button class="demo-btn" onclick="demoReefSearch('action')">Search: Action</button>
+                    <button class="demo-btn" onclick="demoReefAct('action-1')">Act: Execute Action</button>
+                    <button class="demo-btn" onclick="demoReefAct('field-1')">Act: Focus Field</button>
                 </div>
+                
+                <div class="demo-result" id="demo-reef-search-result" style="display: none;"></div>
+                <div class="demo-result" id="demo-reef-act-result" style="display: none;"></div>
             </div>
-
-            <div class="architecture-diagram">
-                <h3>ReefSearch Architecture</h3>
-                <div class="arch-row">
-                    <div class="arch-box main">
-                        <strong>ReefSearch</strong><br>
-                        <small>Main Class</small>
-                    </div>
-                </div>
-                <div class="arch-row">
-                    <div class="arch-arrow"><svg class="icon-svg" style="width:1.5rem;height:1.5rem"><use href="#icon-arrow-down"></use></svg></div>
-                </div>
-                <div class="arch-row multi">
-                    <div class="arch-box">
-                        <strong>config</strong><br>
-                        <small>ReefConfig</small>
-                    </div>
-                    <div class="arch-box">
-                        <strong>index</strong><br>
-                        <small>SearchIndex</small>
-                    </div>
-                    <div class="arch-box">
-                        <strong>ui</strong><br>
-                        <small>UIRenderer</small>
-                    </div>
-                    <div class="arch-box">
-                        <strong>indexer</strong><br>
-                        <small>Indexer</small>
-                    </div>
-                    <div class="arch-box">
-                        <strong>executor</strong><br>
-                        <small>ActionExecutor</small>
-                    </div>
-                </div>
-            </div>
-
-            <p>
-                ReefSearch coordinates between:
-                <ul>
-                    <li><strong>UIRenderer</strong> - Manages the search modal and results display</li>
-                    <li><strong>Indexer</strong> - Handles sitemap fetching, page crawling, and content extraction</li>
-                    <li><strong>ActionExecutor</strong> - Executes actions (clicks, navigation) based on search results</li>
-                    <li><strong>Agent</strong> - Provides programmatic API for AI agents</li>
-                    <li><strong>ConfigReader</strong> - Reads and applies configuration from script attributes or API</li>
-                </ul>
-            </p>
         </section>
 
         <section id="constructor" class="section">
@@ -267,7 +225,7 @@ const reef = new ReefSearch({
 
         <section id="properties" class="section">
             <h2 class="section-title">
-                <svg class="icon-svg"><use href="#icon-folder"></span>
+                <svg class="icon-svg"><use href="#icon-folder"></use></svg>
                 Properties
             </h2>
 
@@ -394,13 +352,6 @@ window.Reef.openWithQuery('installation');</pre></code>
             <div class="api-method">
                 <h3>setHeadless(headless: boolean): void</h3>
                 <p>Switch between headless and regular mode.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">headless</span>
-                        <span class="param-type">boolean</span>
-                    </div>
-                    <p>When <code>true</code>, removes the modal UI and disables hotkey.</p>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">// Switch to headless mode
 window.Reef.setHeadless(true);
@@ -414,14 +365,6 @@ window.Reef.setHeadless(false);</pre></code>
             <div class="api-method">
                 <h3>setColorScheme(scheme: object): void</h3>
                 <p>Update the color scheme of the UI.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">scheme</span>
-                        <span class="param-type">object</span>
-                    </div>
-                    <p>Color scheme object with properties: <code>primary</code>, <code>secondary</code>, 
-                    <code>background</code>, <code>text</code>, <code>border</code>, <code>radius</code>.</p>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">window.Reef.setColorScheme({
   primary: '#ff6b6b',
@@ -462,14 +405,6 @@ window.Reef.setMode('high-contrast'); // High contrast for accessibility</pre></
             <div class="api-method">
                 <h3>setHotkey(hotkey: string): void</h3>
                 <p>Set custom hotkey for opening the search modal.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">hotkey</span>
-                        <span class="param-type">string</span>
-                    </div>
-                    <p>Hotkey string. Supported values: <code>'ctrlk'</code>, <code>'cmdk'</code>, <code>'ctrlshiftk'</code>, <code>'altk'</code>, <code>'f'</code>.
-                    Multiple hotkeys can be separated by commas.</p>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">// Single hotkey
 window.Reef.setHotkey('altk'); // Opens with Alt+K
@@ -513,13 +448,6 @@ window.Reef.setFontFamily('\'Inter\', -apple-system, BlinkMacSystemFont, sans-se
             <div class="api-method">
                 <h3>onselect(callback: (result: IndexRecord) => void): void</h3>
                 <p>Register a callback for when a search result is selected.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">callback</span>
-                        <span class="param-type">(result: IndexRecord) => void</span>
-                    </div>
-                    <p>Callback function that receives the selected <code>IndexRecord</code>.</p>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">window.Reef.onselect(function(result) {
   console.log('Selected:', result.type, result.headingText);
@@ -556,18 +484,6 @@ window.Reef.offselect();</pre></code>
             <div class="api-method">
                 <h3>search(query: string, limit?: number): IndexRecord[]</h3>
                 <p>Search the index programmatically.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">query</span>
-                        <span class="param-type">string</span>
-                    </div>
-                    <div class="method-param">
-                        <span class="param-name">limit</span>
-                        <span class="param-type">number</span>
-                        <span class="param-optional">Optional</span>
-                        <span class="param-default">Default: 8</span>
-                    </div>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">// Search for "installation"
 const results = window.Reef.search('installation', 10);
@@ -581,17 +497,6 @@ const results = window.Reef.search('getting started');</pre></code>
             <div class="api-method">
                 <h3>searchSections(query: string, options?: SearchOptions | number): ScoredRecord[]</h3>
                 <p>Advanced search with options.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">query</span>
-                        <span class="param-type">string</span>
-                    </div>
-                    <div class="method-param">
-                        <span class="param-name">options</span>
-                        <span class="param-type">SearchOptions | number</span>
-                        <span class="param-optional">Optional</span>
-                    </div>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">// With options object
 const results = window.Reef.searchSections('installation', {
@@ -626,13 +531,6 @@ const fields = allRecords.filter(r => r.type === 'field');</pre></code>
             <div class="api-method">
                 <h3>addCustomRecords(records: IndexRecord[]): void</h3>
                 <p>Add custom records to the index.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">records</span>
-                        <span class="param-type">IndexRecord[]</span>
-                    </div>
-                    <p>Array of custom records to add to the index.</p>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">window.Reef.addCustomRecords([{
   id: 'custom-1',
@@ -730,17 +628,6 @@ const loginButton = tools.find(t => t.name.includes('Login'));</pre></code>
             <div class="api-method">
                 <h3>act(recordId: string): Promise&lt;{ success: boolean; reason?: string }&gt;</h3>
                 <p>Execute an action by record ID.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">recordId</span>
-                        <span class="param-type">string</span>
-                    </div>
-                    <p>The ID of the record to act upon.</p>
-                </div>
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;{ success: boolean; reason?: string }&gt;</span>
-                    <p>Resolves with success status and optional reason for failure.</p>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">// Execute an action by ID
 window.Reef.act('page.html#action-0').then(result => {
@@ -753,24 +640,15 @@ window.Reef.act('page.html#action-0').then(result => {
 });</pre></code>
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
+                <div class="demo-container" data-demo="act-demo">
+                    <button class="demo-btn" onclick="demoReefAct('action-1')">Execute Action Demo</button>
+                    <div class="demo-result" id="demo-reef-act-result" style="display: none;"></div>
+                </div>
             </div>
 
             <div class="api-method">
                 <h3>fillField(recordId: string, value: string): Promise&lt;{ success: boolean; reason?: string }&gt;</h3>
                 <p>Fill a field with a value programmatically.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">recordId</span>
-                        <span class="param-type">string</span>
-                    </div>
-                    <div class="method-param">
-                        <span class="param-name">value</span>
-                        <span class="param-type">string</span>
-                    </div>
-                </div>
-                <div class="method-returns">
-                    <span class="return-type">Promise&lt;{ success: boolean; reason?: string }&gt;</span>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">// Fill a field by ID
 window.Reef.fillField('page.html#field-2', 'user@example.com').then(result => {
@@ -867,17 +745,6 @@ await agent
             <div class="api-method">
                 <h3>executeWorkflow(definition: WorkflowStep[] | object, options?: WorkflowOptions): Promise&lt;void&gt;</h3>
                 <p>Execute a multi-step workflow.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">definition</span>
-                        <span class="param-type">WorkflowStep[] | { steps: WorkflowStep[]; options?: WorkflowOptions }</span>
-                    </div>
-                    <div class="method-param">
-                        <span class="param-name">options</span>
-                        <span class="param-type">WorkflowOptions</span>
-                        <span class="param-optional">Optional</span>
-                    </div>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">// Array of steps
 await window.Reef.executeWorkflow([
@@ -909,14 +776,6 @@ await window.Reef.executeWorkflow({
             <div class="api-method">
                 <h3>toggleInspector(force?: boolean): void</h3>
                 <p>Toggle the visual inspector for debugging.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">force</span>
-                        <span class="param-type">boolean</span>
-                        <span class="param-optional">Optional</span>
-                    </div>
-                    <p>Force enable or disable. If not provided, toggles the current state.</p>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">// Toggle inspector
 window.Reef.toggleInspector();
@@ -951,13 +810,6 @@ console.log(config.hotkey, config.mode, config.maxPages);
             <div class="api-method">
                 <h3>setOnReady(callback: (data: { index: IndexRecord[] }) => void): void</h3>
                 <p>Set a callback that fires when the index is ready.</p>
-                <div class="method-details">
-                    <div class="method-param">
-                        <span class="param-name">callback</span>
-                        <span class="param-type">(data: { index: IndexRecord[] }) => void</span>
-                    </div>
-                    <p>Callback receives an object with the <code>index</code> property containing all indexed records.</p>
-                </div>
                 <div class="code-block">
                     <pre><code class="language-javascript">// Set onReady callback
 window.Reef.setOnReady(({ index }) => {

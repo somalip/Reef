@@ -21,7 +21,7 @@
   </symbol>
   <symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="12" r="3"></circle>
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.07A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.07A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0 1.82-.33l-.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.07a1.65 1.65 0 0 0-1.51 1z"></path>
   </symbol>
   <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -112,6 +112,13 @@
 </svg>
 
     <header class="header">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
         <div class="header-content">
             <div class="logo">
                 <svg class="icon-svg"><use href="#icon-home"></use></svg>
@@ -121,7 +128,7 @@
         </div>
     </header>
 
-    <nav class="sidebar">
+    <nav class="sidebar" id="sidebar">
         <div class="nav-section">
             <h2>Types</h2>
             <a href="#overview" class="nav-link active">Overview</a>
@@ -142,6 +149,8 @@
             <a href="search.html" class="nav-link">Search</a>
         </div>
     </nav>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <main class="main-content">
         <section id="overview" class="section">
@@ -188,6 +197,19 @@ const config: ReefConfig = {
 };</pre></code>
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
+            </div>
+
+            <div class="demo-container" data-demo="types-overview">
+                <h3>Interactive Demo: Type Checking</h3>
+                <div class="demo-preview" id="demo-types-overview-preview">
+                    Try type checking with custom records
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+                    <button class="demo-btn" onclick="runDemo('types-overview', 'section')">Section Type</button>
+                    <button class="demo-btn" onclick="runDemo('types-overview', 'action')">Action Type</button>
+                    <button class="demo-btn" onclick="runDemo('types-overview', 'field')">Field Type</button>
+                </div>
+                <div class="demo-result" id="demo-types-overview-result"></div>
             </div>
 
             <div class="features-grid">
@@ -422,7 +444,7 @@ const mediaRecord: IndexRecord = {
   
   // Tokenization
   tokenizePipeline?: TokenFilter[];
-  synonyms?: Record&lt;string, string[]&gt;;
+  synonyms?: Record<string, string[]>;
   
   // Cache
   prebuiltIndexUrl?: string;    // URL for prebuilt index JSON
@@ -453,7 +475,7 @@ const stemmingFilter: TokenFilter = (token) => {
 };
 
 // Usage in configuration
-const config: Partial&lt;ReefConfig&gt; = {
+const config: Partial<ReefConfig> = {
   tokenizePipeline: [stopWordsFilter, stemmingFilter]
 };</pre></code>
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
@@ -468,7 +490,7 @@ const config: Partial&lt;ReefConfig&gt; = {
                     <pre><code class="language-typescript">export interface CacheMetadata {
   versionHash: string;          // Hash for version detection
   buildTime: number;           // Timestamp when cache was built
-  pageMetadata: Record&lt;string, string&gt;; // Metadata for each page
+  pageMetadata: Record<string, string>; // Metadata for each page
 }</pre></code>
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
@@ -489,16 +511,16 @@ const config: Partial&lt;ReefConfig&gt; = {
                     <pre><code class="language-typescript">export interface SearchOptions {
   limit?: number;              // Maximum number of results (default: 8)
   fuzzy?: boolean;             // Enable fuzzy search (default: false)
-  fuzzyThreshold?: number;     // Fuzzy match threshold (0-1)
+  fuzzyThreshold?: number;   // Fuzzy match threshold (0-1)
   fuzzyDistance?: number;      // Maximum edit distance for fuzzy matching
   includeScore?: boolean;      // Include score in results
   includeMatches?: boolean;    // Include match positions
-  weights?: Partial&lt;Record&lt;'headingText' | 'bodyText' | 'label' | 'breadcrumb', number&gt;&gt;;
+  weights?: Partial<Record<'headingText' | 'bodyText' | 'label' | 'breadcrumb', number>>;
   extended?: boolean;          // Enable extended query syntax
   scoringAlgorithm?: 'reef-classic' | 'bm25'; // Scoring algorithm
   filter?: (record: IndexRecord) => boolean;  // Filter function for results
   sortFn?: (a: ScoredRecord, b: ScoredRecord) => number; // Custom sort function
-  typeWeights?: Partial&lt;Record&lt;IndexRecord['type'], number&gt;&gt;; // Weight by type
+  typeWeights?: Partial<Record<IndexRecord['type'], number>>; // Weight by type
 }</pre></code>
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
@@ -691,15 +713,14 @@ if (result.success) {
   id: string;              // Unique session identifier
   url: string;            // Current page URL
   timestamp: number;      // Session creation timestamp
-  cookies?: Record&lt;string, string&gt;;     // Current browser cookies
-  localStorage?: Record&lt;string, string&gt;; // Current localStorage data
+  cookies?: Record<string, string>;     // Current browser cookies
+  localStorage?: Record<string, string>; // Current localStorage data
 }
 
 // Example usage
 const session: AgentSession = agent.getSession();
 console.log('Session ID:', session.id);
-console.log('Current URL:', session.url);
-console.log('Cookies:', session.cookies);</pre></code>
+console.log('Current URL:', session.url);</pre></code>
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
             </div>
@@ -730,10 +751,10 @@ export interface CachedData {
 
 // Cache storage interface
 export interface IndexedDBCache {
-  get: (key: string) => Promise&lt;any&gt;;
-  set: (key: string, value: any) => Promise&lt;void&gt;;
-  remove: (key: string) => Promise&lt;void&gt;;
-  clear: () => Promise&lt;void&gt;;
+  get: (key: string) => Promise<any>;
+  set: (key: string, value: any) => Promise<void>;
+  remove: (key: string) => Promise<void>;
+  clear: () => Promise<void>;
 }</pre></code>
                 <button class="copy-btn" onclick="copyCode(this)">Copy</button>
             </div>
@@ -744,6 +765,19 @@ export interface IndexedDBCache {
                 <svg class="icon-svg"><use href="#icon-folder"></use></svg>
                 Complete Type Definitions
             </h2>
+
+            <div class="demo-container" data-demo="types-complete">
+                <h3>Interactive Demo: Type Explorer</h3>
+                <div class="demo-preview" id="demo-types-complete-preview">
+                    Explore type definitions interactively
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+                    <button class="demo-btn" onclick="runDemo('types-complete', 'IndexRecord')">IndexRecord</button>
+                    <button class="demo-btn" onclick="runDemo('types-complete', 'ReefConfig')">ReefConfig</button>
+                    <button class="demo-btn" onclick="runDemo('types-complete', 'AgentSession')">AgentSession</button>
+                </div>
+                <div class="demo-result" id="demo-types-complete-result"></div>
+            </div>
 
             <div class="code-block">
                 <pre><code class="language-typescript">/**
@@ -777,12 +811,12 @@ export interface SearchOptions {
   fuzzyDistance?: number;
   includeScore?: boolean;
   includeMatches?: boolean;
-  weights?: Partial&lt;Record&lt;'headingText' | 'bodyText' | 'label' | 'breadcrumb', number&gt;&gt;;
+  weights?: Partial<Record<'headingText' | 'bodyText' | 'label' | 'breadcrumb', number>>;
   extended?: boolean;
   scoringAlgorithm?: 'reef-classic' | 'bm25';
   filter?: (record: IndexRecord) => boolean;
   sortFn?: (a: ScoredRecord, b: ScoredRecord) => number;
-  typeWeights?: Partial&lt;Record&lt;IndexRecord['type'], number&gt;&gt;;
+  typeWeights?: Partial<Record<IndexRecord['type'], number>>;
 }
 
 export interface MatchSpan {
@@ -800,7 +834,7 @@ export interface ScoredRecord {
 export interface CacheMetadata {
   versionHash: string;
   buildTime: number;
-  pageMetadata: Record&lt;string, string&gt;;
+  pageMetadata: Record<string, string>;
 }
 
 export type TokenFilter = (token: string) => string | null;
@@ -828,8 +862,8 @@ export interface AgentSession {
   id: string;
   url: string;
   timestamp: number;
-  cookies?: Record&lt;string, string&gt;;
-  localStorage?: Record&lt;string, string&gt;;
+  cookies?: Record<string, string>;
+  localStorage?: Record<string, string>;
 }
 
 export interface ActionResult {
@@ -863,7 +897,7 @@ export interface ReefConfig {
   headless?: boolean;
   onReady?: (data: { index: IndexRecord[] }) => void;
   tokenizePipeline?: TokenFilter[];
-  synonyms?: Record&lt;string, string[]&gt;;
+  synonyms?: Record<string, string[]>;
   prebuiltIndexUrl?: string;
   useWorkerIndexing?: boolean;
   ttl?: number;
