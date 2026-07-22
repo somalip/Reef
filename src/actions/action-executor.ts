@@ -91,12 +91,36 @@ export class ActionExecutor {
 
   private highlightAndScrollTo(element: HTMLElement, closeCallback: () => void): void {
     closeCallback();
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    element.style.boxShadow = '0 0 0 3px rgba(67, 217, 200, 0.5)';
-    element.style.borderRadius = '4px';
-    setTimeout(() => {
-      element.style.boxShadow = '';
-    }, 2000);
+    this.revealTabContaining(element);
+
+    // Tab switches can update layout after the click handler returns. Waiting
+    // for two frames makes the target visible before measuring/scrolling it.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.style.boxShadow = '0 0 0 3px rgba(67, 217, 200, 0.5)';
+      element.style.borderRadius = '4px';
+      setTimeout(() => {
+        element.style.boxShadow = '';
+      }, 2000);
+    }));
+  }
+
+  private revealTabContaining(element: HTMLElement): void {
+    const pane = element.closest('.tab-pane') as HTMLElement | null;
+    if (!pane || pane.getAttribute('aria-hidden') === 'false' || pane.style.display !== 'none') return;
+
+    const tabId = pane.id.replace(/^tab-/, '');
+    const tabButton = Array.from(document.querySelectorAll('[data-tab]'))
+      .find(button => button.getAttribute('data-tab') === tabId) as HTMLElement | undefined;
+
+    // The host page owns tab state, so use its normal click handler when one
+    // exists. The fallback keeps navigation working on pages without one.
+    if (tabButton) {
+      tabButton.click();
+    } else {
+      pane.style.display = 'flex';
+      pane.classList.add('active');
+    }
   }
 
   private setupDeferredScroll(result: IndexRecord): void {
@@ -142,12 +166,15 @@ export class ActionExecutor {
     const attempt = (): boolean => {
       const element = findTarget();
       if (!element) return false;
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      element.style.boxShadow = '0 0 0 3px rgba(67, 217, 200, 0.5)';
-      element.style.borderRadius = '4px';
-      setTimeout(() => {
-        element.style.boxShadow = '';
-      }, 2000);
+      this.revealTabContaining(element);
+      requestAnimationFrame(() => {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.style.boxShadow = '0 0 0 3px rgba(67, 217, 200, 0.5)';
+        element.style.borderRadius = '4px';
+        setTimeout(() => {
+          element.style.boxShadow = '';
+        }, 2000);
+      });
       return true;
     };
 

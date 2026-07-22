@@ -251,7 +251,6 @@ class ReefSearch {
     this.ui.renderResults(query, results, this.selectedIndex,
       (index) => {
         this.selectedIndex = index;
-        this.renderResults();
       },
 (event, index) => {
           event.preventDefault();
