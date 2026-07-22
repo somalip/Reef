@@ -1,16 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>index.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/index.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/reef.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/actions.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/agent.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/browser.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/cache.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/config.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/indexing.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/search.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/types.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/ui.html</loc><lastmod>2026-07-18</lastmod></url>
-  <url><loc>fixture/create/worker.html</loc><lastmod>2026-07-18</lastmod></url>
 </urlset>

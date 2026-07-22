@@ -12,6 +12,8 @@ export class UIRenderer {
   private input: HTMLInputElement | null = null;
   private resultsList: HTMLElement | null = null;
   private focusableElements: HTMLElement[] = [];
+  private resultMouseEnterHandler: EventListener | null = null;
+  private resultClickHandler: EventListener | null = null;
   private isOpen = false;
   private modeChangeCallback: ((mode: string) => void) | null = null;
 
@@ -71,66 +73,69 @@ renderUI(
           inset: 0;
           z-index: 2147483647;
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           justify-content: center;
-          padding: 12vh 1.25rem 0;
-          background: rgba(0, 0, 0, 0.6);
+          padding: 1.25rem;
+          background: rgba(0, 0, 0, 0.55);
+          backdrop-filter: blur(2px);
+          -webkit-backdrop-filter: blur(2px);
           opacity: 0;
           pointer-events: none;
-          transition: opacity 0.14s ease;
+          transition: opacity 0.12s ease;
         }
         :host(.is-hidden) { display: none; }
         :host(.open) { opacity: 1; pointer-events: auto; }
 
         :host(.mode-opaque) .panel {
-          background: rgba(20,30,28,0.92) !important;
+          background: rgba(10, 14, 13, 0.97) !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
         }
         :host(.mode-high-contrast) .panel {
           background: rgba(255,255,255,0.98);
+          backdrop-filter: none;
           --primary-color: #0066cc;
           --text-color: #111111;
-          --border-color: #e0e0e0;
+          --border-color: #cccccc;
         }
-        :host(.mode-high-contrast) .input {
-          color: #111111;
-        }
-        :host(.mode-high-contrast) .result-type-label {
-          color: #0066cc;
-        }
-        :host(.mode-high-contrast) .result .heading {
-          color: #111111;
-        }
-        :host(.mode-high-contrast) .result .snippet {
-          color: #444444;
-        }
+        :host(.mode-high-contrast) .input { color: #111111; }
+        :host(.mode-high-contrast) .result-type-label { color: #0066cc; }
+        :host(.mode-high-contrast) .result .heading { color: #111111; }
+        :host(.mode-high-contrast) .result .snippet { color: #444444; }
 
         .panel {
           width: 100%;
-          max-width: 560px;
-          background: rgba(20,30,28,0.88);
-          color: var(--text-color, #edebe6);
-          border: 1px solid var(--border-color, rgba(255,255,255,0.1));
-          border-radius: 24px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+          max-width: 580px;
+          background: rgba(12, 18, 16, 0.72);
+          backdrop-filter: blur(24px) saturate(160%);
+          -webkit-backdrop-filter: blur(24px) saturate(160%);
+          color: var(--text-color, #e8e6e1);
+          border: 1px solid var(--border-color, rgba(255,255,255,0.12));
+          border-radius: 0;
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,0.04) inset,
+            0 24px 64px rgba(0,0,0,0.6),
+            0 4px 16px rgba(0,0,0,0.3);
           overflow: hidden;
-          transform: translateY(-8px) scale(0.98);
-          transition: transform 0.14s ease;
+          transform: translateY(-6px);
+          transition: transform 0.12s ease;
           position: relative;
         }
-        :host(.open) .panel { transform: translateY(0) scale(1); }
+        :host(.open) .panel { transform: translateY(0); }
 
         .input-row {
           display: flex;
           align-items: center;
           gap: 0.75rem;
-          padding: 0.95rem 1rem;
-          border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+          padding: 0.9rem 1rem;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
+          background: rgba(255,255,255,0.03);
         }
 
         .icon {
-          opacity: 0.6;
+          opacity: 0.5;
           flex-shrink: 0;
-          stroke: var(--primary-color, #66d9c8);
+          stroke: var(--primary-color, #5ecfbe);
         }
 
         .input {
@@ -138,201 +143,234 @@ renderUI(
           background: transparent;
           border: 0;
           outline: none;
-          color: var(--text-color, #edebe6);
-          font-size: 1rem;
-          font-family: var(--font-family, Inter, system-ui, sans-serif);
+          color: var(--text-color, #e8e6e1);
+          font-size: 0.9375rem;
+          font-family: var(--font-family, ui-monospace, monospace);
+          letter-spacing: 0.01em;
         }
         .input::placeholder {
-          color: #8a8a8f;
+          color: rgba(255,255,255,0.25);
+          font-family: var(--font-family, ui-monospace, monospace);
         }
 
         .hint {
           font-family: ui-monospace, monospace;
-          font-size: 0.72rem;
-          color: #a0a0a5;
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 10px;
-          padding: 0.2rem 0.6rem;
+          font-size: 0.6875rem;
+          color: rgba(255,255,255,0.3);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 0;
+          padding: 0.15rem 0.5rem;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
         }
 
         .settings-toggle-btn {
           background: transparent;
           border: 0;
           cursor: pointer;
-          color: var(--text-color, #edebe6);
-          opacity: 0.6;
+          color: rgba(255,255,255,0.4);
           display: flex;
           align-items: center;
           padding: 0.25rem;
-          border-radius: 6px;
-          transition: opacity 0.15s, background-color 0.15s;
+          transition: color 0.12s;
         }
         .settings-toggle-btn:hover {
-          opacity: 1;
-          background: rgba(255, 255, 255, 0.08);
+          color: var(--primary-color, #5ecfbe);
         }
 
         .tabs-row {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          padding: 0.6rem 1rem;
-          border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+          gap: 0;
+          padding: 0;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
           overflow-x: auto;
           scrollbar-width: none;
+          background: rgba(255,255,255,0.02);
         }
-        .tabs-row::-webkit-scrollbar {
-          display: none;
-        }
+        .tabs-row::-webkit-scrollbar { display: none; }
+
         .tab-chip {
           display: flex;
           align-items: center;
-          gap: 0.35rem;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 9999px;
-          padding: 0.3rem 0.75rem;
-          font-size: 0.75rem;
-          color: var(--text-color, #edebe6);
-          opacity: 0.8;
+          gap: 0.4rem;
+          background: transparent;
+          border: none;
+          border-right: 1px solid rgba(255,255,255,0.06);
+          border-radius: 0;
+          padding: 0.55rem 1rem;
+          font-size: 0.7rem;
+          font-family: ui-monospace, monospace;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: rgba(255,255,255,0.4);
           cursor: pointer;
           white-space: nowrap;
-          transition: all 0.15s ease;
+          transition: color 0.12s, background 0.12s;
         }
         .tab-chip:hover {
-          background: rgba(255, 255, 255, 0.08);
-          opacity: 1;
+          color: rgba(255,255,255,0.75);
+          background: rgba(255,255,255,0.04);
         }
         .tab-chip.active {
-          background: var(--primary-color, #66d9c8);
-          color: #0c1412;
-          opacity: 1;
-          font-weight: 500;
-          border-color: var(--primary-color, #66d9c8);
+          color: var(--primary-color, #5ecfbe);
+          background: rgba(94,207,190,0.06);
+          border-bottom: 2px solid var(--primary-color, #5ecfbe);
+          margin-bottom: -1px;
         }
         .tab-chip.active .tab-badge {
-          background: rgba(0, 0, 0, 0.15);
-          color: inherit;
+          background: rgba(94,207,190,0.15);
+          color: var(--primary-color, #5ecfbe);
         }
         .tab-badge {
-          font-size: 0.65rem;
-          background: rgba(255, 255, 255, 0.1);
-          color: #a0a0a5;
+          font-size: 0.6rem;
+          background: rgba(255,255,255,0.07);
+          color: rgba(255,255,255,0.35);
           padding: 0.05rem 0.35rem;
-          border-radius: 9999px;
+          border-radius: 0;
+          font-family: ui-monospace, monospace;
         }
 
         .results {
           max-height: 340px;
           overflow-y: auto;
-          padding: 0.5rem;
+          padding: 0.25rem 0;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.1) transparent;
         }
+        .results::-webkit-scrollbar { width: 3px; }
+        .results::-webkit-scrollbar-track { background: transparent; }
+        .results::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
 
         .result {
           display: flex;
           flex-direction: column;
-          gap: 0.25rem;
+          gap: 0.2rem;
           width: 100%;
           text-align: left;
-          padding: 0.8rem 1rem;
-          border-radius: 16px;
-          margin-top: 0.25rem;
+          padding: 0.75rem 1rem;
+          border-radius: 0;
+          margin: 0;
           cursor: pointer;
-          border: 0;
+          border: none;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
           background: transparent;
           color: inherit;
+          transition: background 0.1s;
         }
+        .result:last-child { border-bottom: none; }
         .result:hover, .result.is-selected {
-          background: rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.06);
         }
+        .result.is-selected {
+          border-left: 2px solid var(--primary-color, #5ecfbe);
+          padding-left: calc(1rem - 2px);
+        }
+
         .result-type {
           display: flex;
           align-items: center;
-          gap: 0.25rem;
-          font-size: 0.7rem;
-          margin-bottom: 0.25rem;
+          gap: 0.3rem;
+          margin-bottom: 0.1rem;
         }
         .result-type-icon {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 16px;
-          height: 16px;
-          flex-shrink: 0;
-        }
-        .result-type-icon svg {
           width: 14px;
           height: 14px;
-          stroke: var(--primary-color, #66d9c8);
+          flex-shrink: 0;
+          opacity: 0.7;
+        }
+        .result-type-icon svg {
+          width: 13px;
+          height: 13px;
+          stroke: var(--primary-color, #5ecfbe);
         }
         .result-type-label {
           font-family: ui-monospace, monospace;
-          font-size: 0.7rem;
+          font-size: 0.6375rem;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          color: var(--primary-color, #66d9c8);
+          letter-spacing: 0.1em;
+          color: var(--primary-color, #5ecfbe);
+          opacity: 0.8;
         }
         .result .breadcrumb {
           font-family: ui-monospace, monospace;
-          font-size: 0.75rem;
-          color: #a0a0a5;
+          font-size: 0.6875rem;
+          color: rgba(255,255,255,0.3);
+          letter-spacing: 0.02em;
         }
         .result .heading {
-          font-size: 0.95rem;
+          font-size: 0.875rem;
           font-weight: 500;
-          color: var(--text-color, #edebe6);
+          color: var(--text-color, #e8e6e1);
+          line-height: 1.35;
+          letter-spacing: 0.01em;
         }
         .result .snippet {
-          font-size: 0.85rem;
-          color: var(--text-color, #a0a0a5);
+          font-size: 0.8rem;
+          color: rgba(255,255,255,0.45);
           line-height: 1.5;
         }
         .result mark {
-          background: rgba(255,255,255,0.2);
-          color: var(--primary-color, #66d9c8);
-          border-radius: 4px;
+          background: rgba(94,207,190,0.18);
+          color: var(--primary-color, #5ecfbe);
+          border-radius: 0;
           padding: 0 2px;
+          font-style: normal;
         }
         .result-action-hint {
-          font-size: 0.75rem;
+          font-size: 0.6875rem;
           font-family: ui-monospace, monospace;
-          color: #8a8a8f;
-          margin-top: 0.25rem;
+          margin-top: 0.15rem;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
         }
-        .result-action-hint.run-here { color: var(--primary-color, #66d9c8); }
-        .result-action-hint.go-there { color: #a0a0a5; }
+        .result-action-hint.run-here { color: var(--primary-color, #5ecfbe); opacity: 0.7; }
+        .result-action-hint.go-there { color: rgba(255,255,255,0.3); }
+
         .empty {
-          padding: 2rem;
-          color: #8a8a8f;
+          padding: 2.5rem 1rem;
+          color: rgba(255,255,255,0.3);
           text-align: center;
-          font-size: 0.9rem;
+          font-size: 0.8125rem;
+          font-family: ui-monospace, monospace;
+          letter-spacing: 0.04em;
         }
         .footer {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0.75rem 1rem;
-          border-top: 1px solid rgba(255,255,255,0.08);
-          color: #a0a0a5;
-          font-size: 0.75rem;
+          padding: 0.6rem 1rem;
+          border-top: 1px solid rgba(255,255,255,0.07);
+          color: rgba(255,255,255,0.25);
+          font-size: 0.6875rem;
           font-family: ui-monospace, monospace;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          background: rgba(255,255,255,0.02);
         }
         .k {
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 8px;
-          padding: 0.15rem 0.5rem;
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 0;
+          padding: 0.1rem 0.4rem;
           margin: 0 0.2rem;
+          font-size: 0.6375rem;
+          background: rgba(255,255,255,0.04);
         }
 
         .is-hidden { display: none !important; }
-        
+
         .settings-view {
-          padding: 1.25rem;
+          padding: 1rem 1.25rem 1.25rem;
           max-height: 380px;
           overflow-y: auto;
           display: flex;
           flex-direction: column;
           gap: 1.25rem;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.08) transparent;
         }
 
         .settings-section {
@@ -343,11 +381,14 @@ renderUI(
 
         .settings-section h4 {
           margin: 0;
-          font-size: 0.8rem;
+          font-size: 0.6375rem;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          color: var(--primary-color, #66d9c8);
+          letter-spacing: 0.12em;
+          color: var(--primary-color, #5ecfbe);
           font-family: ui-monospace, monospace;
+          opacity: 0.7;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          padding-bottom: 0.4rem;
         }
 
         .settings-grid {
@@ -359,87 +400,94 @@ renderUI(
         .settings-item {
           display: flex;
           flex-direction: column;
-          gap: 0.35rem;
+          gap: 0.3rem;
         }
 
         .settings-item label {
-          font-size: 0.75rem;
-          color: #a0a0a5;
+          font-size: 0.6875rem;
+          color: rgba(255,255,255,0.35);
+          font-family: ui-monospace, monospace;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
         }
 
         .settings-control {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 8px;
-          color: var(--text-color, #edebe6);
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 0;
+          color: var(--text-color, #e8e6e1);
           padding: 0.4rem 0.6rem;
-          font-size: 0.8rem;
-          font-family: inherit;
+          font-size: 0.75rem;
+          font-family: ui-monospace, monospace;
           outline: none;
-          transition: border-color 0.15s ease;
+          transition: border-color 0.12s;
+          appearance: auto;
         }
-
         .settings-control:focus {
-          border-color: var(--primary-color, #66d9c8);
+          border-color: var(--primary-color, #5ecfbe);
         }
 
         .checkbox-item {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          font-size: 0.8rem;
+          font-size: 0.75rem;
+          font-family: ui-monospace, monospace;
           cursor: pointer;
+          color: rgba(255,255,255,0.6);
         }
-
         .checkbox-item input {
           cursor: pointer;
-          accent-color: var(--primary-color, #66d9c8);
+          accent-color: var(--primary-color, #5ecfbe);
         }
 
         .btn-action {
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          color: var(--text-color, #edebe6);
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: rgba(255,255,255,0.6);
           padding: 0.45rem 0.75rem;
-          border-radius: 8px;
-          font-size: 0.8rem;
+          border-radius: 0;
+          font-size: 0.75rem;
+          font-family: ui-monospace, monospace;
           cursor: pointer;
-          font-family: inherit;
-          transition: all 0.15s ease;
+          letter-spacing: 0.04em;
+          transition: background 0.12s, border-color 0.12s;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 0.35rem;
         }
-
         .btn-action:hover {
-          background: rgba(255, 255, 255, 0.12);
-          border-color: rgba(255, 255, 255, 0.25);
+          background: rgba(255,255,255,0.09);
+          border-color: rgba(255,255,255,0.2);
+          color: rgba(255,255,255,0.85);
         }
 
         .btn-primary-action {
-          background: var(--primary-color, #66d9c8);
-          border-color: var(--primary-color, #66d9c8);
-          color: #0c1412;
-          font-weight: 500;
+          background: rgba(94,207,190,0.12);
+          border-color: rgba(94,207,190,0.3);
+          color: var(--primary-color, #5ecfbe);
         }
-
         .btn-primary-action:hover {
-          background: var(--primary-color, #66d9c8);
-          opacity: 0.9;
+          background: rgba(94,207,190,0.2);
+          border-color: var(--primary-color, #5ecfbe);
+          color: var(--primary-color, #5ecfbe);
+          opacity: 1;
         }
 
         .diagnostic-row {
           display: flex;
           justify-content: space-between;
-          font-size: 0.75rem;
+          font-size: 0.6875rem;
+          font-family: ui-monospace, monospace;
           border-bottom: 1px solid rgba(255,255,255,0.05);
-          padding-bottom: 0.35rem;
+          padding-bottom: 0.3rem;
+          color: rgba(255,255,255,0.4);
+          letter-spacing: 0.04em;
         }
-
         .diagnostic-value {
           font-family: ui-monospace, monospace;
-          color: var(--primary-color, #66d9c8);
+          color: var(--primary-color, #5ecfbe);
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -788,16 +836,43 @@ renderUI(
         })
         .join('');
 
-      this.resultsList.querySelectorAll('button').forEach((button) => {
-        button.addEventListener('mouseenter', () => {
-          const idx = Number(button.getAttribute('data-index')) ?? 0;
-          onResultMouseEnter(idx);
+      // Use event delegation instead of per-button listeners to avoid DOM detachment bugs
+      const handleMouseEnter = (event: Event) => {
+        const button = (event.target as HTMLElement).closest('button[data-index]');
+        if (!button) return;
+        const idx = Number(button.getAttribute('data-index')) ?? 0;
+        // Update selected class directly without triggering full re-render
+        this.resultsList?.querySelectorAll('.result').forEach((el, i) => {
+          if (i === idx) {
+            el.classList.add('is-selected');
+          } else {
+            el.classList.remove('is-selected');
+          }
         });
-        button.addEventListener('click', (event) => {
-          const idx = Number(button.getAttribute('data-index')) ?? 0;
-          onResultClick(event as unknown as MouseEvent, idx);
-        });
-      });
+        onResultMouseEnter(idx);
+      };
+
+      const handleClick = (event: Event) => {
+        const button = (event.target as HTMLElement).closest('button[data-index]');
+        if (!button) return;
+        const idx = Number(button.getAttribute('data-index')) ?? 0;
+        onResultClick(event as MouseEvent, idx);
+      };
+
+      // Rendering replaces the result buttons, so remove the delegated listeners
+      // from the list itself before installing the new closures.
+      if (this.resultMouseEnterHandler) {
+        this.resultsList.removeEventListener('mouseenter', this.resultMouseEnterHandler, true);
+      }
+      if (this.resultClickHandler) {
+        this.resultsList.removeEventListener('click', this.resultClickHandler);
+      }
+
+      // Attach delegated listeners
+      this.resultMouseEnterHandler = handleMouseEnter as EventListener;
+      this.resultClickHandler = handleClick as EventListener;
+      this.resultsList.addEventListener('mouseenter', this.resultMouseEnterHandler, true);
+      this.resultsList.addEventListener('click', this.resultClickHandler);
     }
   }
 

@@ -37,26 +37,34 @@ export function getSnippet(text: string, query: string): string {
 
 export function getResultTypeIcon(type: string): string {
   switch (type) {
-    case 'section': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
-    case 'action': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
-    case 'field': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
-    case 'link': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.51l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.51l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>';
-    case 'file': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.44l-5.12 5.12a5 5 0 0 1-1.62.98l-2.6.45a2.43 2.43 0 0 1-2.89-2.04l-.26-2.16a5 5 0 0 1 .89-4.08l5.12-5.12a5 5 0 0 1 6.36 6.36z"/><circle cx="7" cy="7" r="1"/></svg>';
-    case 'media': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 15"/></svg>';
-    case 'structured': return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><polyline points="7 11 11 15 15 9"/></svg>';
-    default: return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    case 'section':
+      return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"><path d="M4 6h16M4 10h10M4 14h12M4 18h8"/></svg>';
+    case 'action':
+      return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"><polyline points="13 2 13 9 20 9"/><polyline points="11 22 11 15 4 15"/><path d="M3 12l4-4 4 4 4-4 4 4"/></svg>';
+    case 'field':
+      return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"><rect x="3" y="8" width="18" height="8"/><line x1="7" y1="12" x2="7" y2="12"/></svg>';
+    case 'link':
+      return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"><path d="M10 13a5 5 0 0 0 7.54.51l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.51l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>';
+    case 'file':
+      return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"><path d="M13 2H6v20h12V7z"/><polyline points="13 2 13 7 18 7"/></svg>';
+    case 'media':
+      return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"><rect x="3" y="3" width="18" height="18"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+    case 'structured':
+      return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"><circle cx="12" cy="12" r="9"/><polyline points="9 12 11 14 15 10"/></svg>';
+    default:
+      return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"><path d="M13 2H6v20h12V7z"/><polyline points="13 2 13 7 18 7"/></svg>';
   }
 }
 
 export function getResultTypeLabel(type: string): string {
   switch (type) {
-    case 'section': return 'Section';
-    case 'action': return 'Action';
-    case 'field': return 'Field';
-    case 'link': return 'Link';
-    case 'file': return 'File';
-    case 'media': return 'Media';
+    case 'section':    return 'Section';
+    case 'action':     return 'Action';
+    case 'field':      return 'Field';
+    case 'link':       return 'Link';
+    case 'file':       return 'File';
+    case 'media':      return 'Media';
     case 'structured': return 'Answer';
-    default: return 'Section';
+    default:           return 'Section';
   }
 }

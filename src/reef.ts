@@ -86,8 +86,10 @@ class ReefSearch {
     // Keyboard navigation at document level - works regardless of which element has focus
     document.addEventListener('keydown', (event) => {
       if (!this.ui.getIsOpen()) return;
-      // Don't interfere with input field typing
-      if (event.target === input && !['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab'].includes(event.key)) {
+      // Events crossing a shadow root are retargeted to the host. Use the
+      // composed path to identify keystrokes that originated in the input.
+      const originatedInInput = input ? event.composedPath().includes(input) : false;
+      if (originatedInInput && !['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab'].includes(event.key)) {
         return;
       }
 
@@ -120,7 +122,7 @@ class ReefSearch {
         this.close();
       } else if (event.key === 'Tab') {
         // Only handle Tab if input has focus - otherwise let normal tab navigation work
-        if (document.activeElement === input) {
+        if (originatedInInput) {
           event.preventDefault();
           const categories = ['all', 'pages', 'actions', 'files', 'links'];
           const currentCat = this.ui.getActiveCategory();
@@ -253,7 +255,7 @@ class ReefSearch {
       },
 (event, index) => {
           event.preventDefault();
-          event.stopImmediatePropagation();
+          event.stopPropagation();
           const match = results[index] ?? results[0];
         if (match) {
           this.runSelectCallback(match);

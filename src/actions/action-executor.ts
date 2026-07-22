@@ -12,17 +12,9 @@ export class ActionExecutor {
   private deferredActionHandler: () => void = () => {};
 
   navigateToSection(result: IndexRecord, closeCallback: () => void): void {
-    const currentUrl = window.location.href.split('#')[0];
-    const targetUrl = result.url.split('#')[0];
+    const currentUrl = this.urlWithoutHash(window.location.href);
+    const targetUrl = this.urlWithoutHash(result.url);
     const isSamePage = currentUrl === targetUrl;
-
-    if (result.selector) {
-      const element = document.querySelector(result.selector);
-      if (element) {
-        this.highlightAndScrollTo(element as HTMLElement, closeCallback);
-        return;
-      }
-    }
 
     if (isSamePage) {
       const heading = this.findHeadingElementByText(result.headingText);
@@ -30,8 +22,21 @@ export class ActionExecutor {
         this.highlightAndScrollTo(heading, closeCallback);
         return;
       }
+      const element = this.findElement(result.selector);
+      if (element) {
+        this.highlightAndScrollTo(element, closeCallback);
+        return;
+      }
+      // Same page but element not found — use native hash navigation when possible.
+      closeCallback();
+      const fragment = this.urlFragment(result.url);
+      if (fragment) {
+        window.location.hash = this.decodeFragment(fragment);
+      }
+      return;
     }
 
+    // Cross-page navigation
     this.setupDeferredScroll(result);
     closeCallback();
     window.location.href = result.url;
@@ -49,6 +54,41 @@ export class ActionExecutor {
     return null;
   }
 
+  private findElement(selector?: string): HTMLElement | null {
+    if (!selector) return null;
+    try {
+      return document.querySelector(selector) as HTMLElement | null;
+    } catch {
+      return null;
+    }
+  }
+
+  private urlWithoutHash(url: string): string {
+    try {
+      const parsed = new URL(url, window.location.href);
+      parsed.hash = '';
+      return parsed.href;
+    } catch {
+      return url.split('#')[0];
+    }
+  }
+
+  private urlFragment(url: string): string {
+    try {
+      return new URL(url, window.location.href).hash.slice(1);
+    } catch {
+      return url.split('#')[1] ?? '';
+    }
+  }
+
+  private decodeFragment(fragment: string): string {
+    try {
+      return decodeURIComponent(fragment);
+    } catch {
+      return fragment;
+    }
+  }
+
   private highlightAndScrollTo(element: HTMLElement, closeCallback: () => void): void {
     closeCallback();
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -63,6 +103,7 @@ export class ActionExecutor {
     const target = {
       headingText: result.headingText,
       selector: result.selector,
+      fragment: this.urlFragment(result.url),
     };
     try {
       sessionStorage.setItem('reef-deferred-scroll', JSON.stringify(target));
@@ -76,22 +117,26 @@ export class ActionExecutor {
     if (!raw) return;
     sessionStorage.removeItem('reef-deferred-scroll');
 
-    let target: { headingText: string; selector?: string } | null = null;
+    let target: { headingText?: string; selector?: string; fragment?: string } | null = null;
     try {
       target = JSON.parse(raw);
     } catch (error) {
       console.error('[reef] Failed to parse deferred scroll target:', error);
       return;
     }
-    if (!target || !target.headingText) return;
+    if (!target || (!target.headingText && !target.selector && !target.fragment)) return;
     const deferredTarget = target;
 
     const findTarget = (): HTMLElement | null => {
-      if (deferredTarget.selector) {
-        const element = document.querySelector(deferredTarget.selector) as HTMLElement | null;
-        if (element) return element;
+      if (deferredTarget.fragment) {
+        const element = document.getElementById(this.decodeFragment(deferredTarget.fragment));
+        if (element) return element as HTMLElement;
       }
-      return this.findHeadingElementByText(deferredTarget.headingText);
+      const selectorElement = this.findElement(deferredTarget.selector);
+      if (selectorElement) return selectorElement;
+      return deferredTarget.headingText
+        ? this.findHeadingElementByText(deferredTarget.headingText)
+        : null;
     };
 
     const attempt = (): boolean => {
