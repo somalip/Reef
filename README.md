@@ -6,7 +6,11 @@ Reef is a client-side search and interaction layer for static sites. Add one scr
 
 No backend. No account. No query analytics by default. The index is built and searched in the visitor’s browser.
 
-![Reef logo](web/reef_logo_updated.png)
+<br>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f8fdfbe5-4612-405e-a821-b3c5b13d5dd0" width="250" alt="transparent logo">
+</p>
 
 <p>
   <a href="https://www.npmjs.com/package/reef-search"><img src="https://img.shields.io/npm/v/reef-search?style=flat-square" alt="npm version"></a>
