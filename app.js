@@ -7,13 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Application State
   const state = {
     activeTab: 'overview',
-    cliLogs: [
-      `[SYSTEM] Reef Engine v1.4.0 Initialized in Client Memory.`,
-      `[SYSTEM] Loaded sitemap index with 18 pages. Memory usage: ~142 KB.`,
-      `[HINT] Type 'help' or click command chips below to test CLI primitives.`
-    ],
     selectedArchPhase: 0,
     selectedApiMethod: 'agent()',
+    apiMethodQuery: '',
     apiLogs: [],
     benchmarkVisibleTools: ['Reef', 'Pagefind', 'Stork', 'Algolia', 'Meilisearch'],
     installActionsMode: 'execute',
@@ -285,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isPinned: false,
       latency: { text: '85ms (Client)', score: 'good' },
       cost: { text: '$0.00 / Mo', score: 'good' },
-      setup: { text: 'CLI Build Step', score: 'neutral' },
+      setup: { text: 'Build Step', score: 'neutral' },
       agentic: { text: 'None', score: 'bad' },
       offline: { text: '100% Offline', score: 'good' },
       privacy: { text: 'Zero Telemetry', score: 'good' }
@@ -394,10 +390,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const SEARCH_INDEX_ITEMS = [
     { id: '1', title: 'BM25F Search Engine', type: 'CORE', section: 'Architecture', description: 'Multi-field BM25F scoring with MMR diversity re-ranking and query popularity boosting.', tab: 'architecture', codeSnippet: 'window.Reef.search("query")' },
     { id: '2', title: 'Agentic Browser Automation API', type: 'API', section: 'Agentic API', description: 'act(), fillField(), agent() chain, executeWorkflow() — full DOM automation primitives.', tab: 'api', codeSnippet: 'Reef.agent().click("#btn").type("#input", "val")' },
-    { id: '3', title: 'Interactive Terminal CLI', type: 'CLI', section: 'Terminal CLI', description: 'Run live search, suggest, act, fill, sitemap, and popular commands.', tab: 'cli', codeSnippet: 'reef> search BM25' },
-    { id: '4', title: 'Script Embed Configurator', type: 'INSTALL', section: 'Install', description: 'Generate script tags with data-actions-mode (execute/navigate-only) and data-hotkey bindings.', tab: 'install', codeSnippet: '<script data-actions-mode="execute" data-hotkey="cmdk">' },
-    { id: '5', title: 'Engine Comparison Matrix', type: 'BENCHMARK', section: 'Benchmarks', description: 'Compare Reef against Pagefind, Stork, Algolia, and Meilisearch.', tab: 'benchmarks', codeSnippet: 'Latency: 38ms | Cost: $0.00 | IndexedDB Cache' },
-    { id: '6', title: 'Security & Privacy Specifications', type: 'FAQ', section: 'FAQ', description: 'Zero-telemetry policy, actionsMode (execute/navigate-only), IndexedDB cache, BM25F scoring.', tab: 'faq', codeSnippet: '100% Private — Zero Telemetry' }
+    { id: '3', title: 'Script Embed Configurator', type: 'INSTALL', section: 'Install', description: 'Generate script tags with data-actions-mode (execute/navigate-only) and data-hotkey bindings.', tab: 'install', codeSnippet: '<script data-actions-mode="execute" data-hotkey="cmdk">' },
+    { id: '4', title: 'Engine Comparison Matrix', type: 'BENCHMARK', section: 'Benchmarks', description: 'Compare Reef against Pagefind, Stork, Algolia, and Meilisearch.', tab: 'benchmarks', codeSnippet: 'Latency: 38ms | Cost: $0.00 | IndexedDB Cache' },
+    { id: '5', title: 'Security & Privacy Specifications', type: 'FAQ', section: 'FAQ', description: 'Zero-telemetry policy, actionsMode (execute/navigate-only), IndexedDB cache, BM25F scoring.', tab: 'faq', codeSnippet: '100% Private — Zero Telemetry' }
   ];
 
   // DOM Elements
@@ -410,7 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const brandLogoBtn = document.getElementById('brandLogoBtn');
 
   // Overview Elements
-  const launchCliBtn = document.getElementById('launchCliBtn');
   const exploreApiBtn = document.getElementById('exploreApiBtn');
   const copySnippetBtn = document.getElementById('copySnippetBtn');
   const copySnippetText = document.getElementById('copySnippetText');
@@ -419,15 +413,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const archPhasesGrid = document.getElementById('archPhasesGrid');
   const archDetailPanel = document.getElementById('archDetailPanel');
 
-  // CLI Elements
-  const terminalLog = document.getElementById('terminalLog');
-  const terminalForm = document.getElementById('terminalForm');
-  const terminalInput = document.getElementById('terminalInput');
-  const clearTerminalBtn = document.getElementById('clearTerminalBtn');
-
   // API Elements
   const apiMethodsTableBody = document.getElementById('apiMethodsTableBody');
   const apiMethodButtons = document.getElementById('apiMethodButtons');
+  const apiMethodSearch = document.getElementById('apiMethodSearch');
+  const apiMethodCount = document.getElementById('apiMethodCount');
   const apiParamInput = document.getElementById('apiParamInput');
   const executeApiBtn = document.getElementById('executeApiBtn');
   const apiSandboxConsole = document.getElementById('apiSandboxConsole');
@@ -493,7 +483,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   brandLogoBtn.addEventListener('click', () => switchTab('overview'));
-  launchCliBtn.addEventListener('click', () => switchTab('cli'));
   exploreApiBtn.addEventListener('click', () => switchTab('api'));
 
   // --- OVERVIEW SNIPPET COPY ---
@@ -563,195 +552,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- TERMINAL CLI LOGIC ---
-  function renderTerminalLogs() {
-    terminalLog.innerHTML = state.cliLogs.map((log) => {
-      return `<div style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.375rem; margin-bottom: 0.375rem;">${escapeHtml(log)}</div>`;
-    }).join('');
-    terminalLog.scrollTop = terminalLog.scrollHeight;
-  }
-
-  function runCliCommand(rawCmd) {
-    const cmd = rawCmd.trim();
-    if (!cmd) return;
-
-    const timestamp = new Date().toISOString().substring(11, 19);
-    state.cliLogs.push(`[${timestamp}] reef> ${cmd}`);
-
-    const parts = cmd.split(' ');
-    const primary = parts[0].toLowerCase();
-    const arg = parts.slice(1).join(' ');
-
-    switch (primary) {
-      case 'help':
-        state.cliLogs.push(
-          `AVAILABLE COMMANDS:\n` +
-          `  help                   - Show this usage menu\n` +
-          `  search <query>         - BM25F inverted index search\n` +
-          `  suggest <prefix>       - Autocomplete suggestions for a prefix\n` +
-          `  tools                  - List indexed actionable elements (getAgentTools)\n` +
-          `  act <recordId>         - Execute an indexed action by record ID\n` +
-          `  fill <recordId> <val>  - Fill a form field by record ID\n` +
-          `  sitemap                - Print discovered sitemap URLs\n` +
-          `  popular                - Show top tracked queries\n` +
-          `  clear                  - Clear terminal output`
-        );
-        break;
-
-      case 'search':
-        if (!arg) {
-          state.cliLogs.push(`[ERROR] Please specify query term. Example: 'search BM25'`);
-        } else {
-          state.cliLogs.push(
-            `[SEARCH] window.Reef.search("${arg}")\n` +
-            `  → BM25F multi-field posting list lookup completed in 2.1ms\n` +
-            `  → MATCH 1: /docs/architecture (score: 0.9412, type: section)\n` +
-            `  → MATCH 2: /api/reference (score: 0.8105, type: section)\n` +
-            `  → Returned 2 IndexRecord results.`
-          );
-        }
-        break;
-
-      case 'suggest':
-        if (!arg) {
-          state.cliLogs.push(`[ERROR] Please specify prefix. Example: 'suggest bm2'`);
-        } else {
-          state.cliLogs.push(
-            `[SUGGEST] window.Reef.suggest("${arg}")\n` +
-            `  → Trie prefix lookup completed in 0.3ms\n` +
-            `  → SUGGESTIONS: ["bm25", "bm25f", "bm25 scoring"]\n` +
-            `  → Returned 3 suggestions.`
-          );
-        }
-        break;
-
-      case 'tools':
-        state.cliLogs.push(
-          `AGENT TOOLS (window.Reef.getAgentTools()):\n` +
-          `  window.Reef API — Search & Index:\n` +
-          `  • Reef.search(query, limit)\n` +
-          `  • Reef.searchSections(query, options)\n` +
-          `  • Reef.suggest(query, limit)\n` +
-          `  • Reef.facets()\n` +
-          `  • Reef.trackQuery(query)\n` +
-          `  • Reef.getPopularQueries(n)\n` +
-          `  window.Reef API — Actions & Agent:\n` +
-          `  • Reef.act(recordId)\n` +
-          `  • Reef.fillField(recordId, value)\n` +
-          `  • Reef.getAgentTools()\n` +
-          `  • Reef.getInteractiveRecords()\n` +
-          `  • Reef.executeWorkflow(steps, options)\n` +
-          `  Agent chain: Reef.agent().click(sel).type(sel,val).submit(sel?)\n` +
-          `                           .navigate(url).back().forward()\n` +
-          `                           .wait(ms).extract(sel).getSession()`
-        );
-        break;
-
-      case 'act':
-        if (!arg) {
-          state.cliLogs.push(`[ERROR] Please specify record ID. Example: 'act rec_1'`);
-        } else {
-          state.cliLogs.push(
-            `[ACT] window.Reef.act("${arg}")\n` +
-            `  → Looking up IndexRecord id="${arg}" in index...\n` +
-            `  → Verified actionsMode: execute\n` +
-            `  → Resolved selector: "[data-reef-action="${arg}"]"\n` +
-            `  → Dispatched MouseEvent('click') on element\n` +
-            `  → { success: true }`
-          );
-        }
-        break;
-
-      case 'fill':
-        const fillParts = arg.split(' ');
-        const fillId = fillParts[0];
-        const fillVal = fillParts.slice(1).join(' ');
-        if (!fillId || !fillVal) {
-          state.cliLogs.push(`[ERROR] Usage: 'fill <recordId> <value>'. Example: 'fill field_1 hello@example.com'`);
-        } else {
-          state.cliLogs.push(
-            `[FILL] window.Reef.fillField("${fillId}", "${fillVal}")\n` +
-            `  → Found field record id="${fillId}" (type: field)\n` +
-            `  → Set native value via Object.getOwnPropertyDescriptor setter\n` +
-            `  → Dispatched input + change events (React/Vue compatible)\n` +
-            `  → { success: true }`
-          );
-        }
-        break;
-
-      case 'sitemap':
-        state.cliLogs.push(
-          `[SITEMAP] window.Reef.getSitemapUrls()\n` +
-          `  → Fetching sitemap.xml at data-sitemap="/sitemap.xml"...\n` +
-          `  → Parsed <loc> entries:\n` +
-          `  1. / (Home Page)\n` +
-          `  2. /docs/architecture\n` +
-          `  3. /api/reference\n` +
-          `  4. /benchmarks\n` +
-          `  5. /install\n` +
-          `  → Use data-max-pages to cap crawl depth (default: 500)`
-        );
-        break;
-
-      case 'popular':
-        state.cliLogs.push(
-          `[POPULAR] window.Reef.getPopularQueries(10)\n` +
-          `  → Query popularity tracked via Reef.trackQuery(query)\n` +
-          `  → Popular queries boost result relevance on subsequent searches\n` +
-          `  → Top queries: ["BM25", "agent", "install", "workflow", "sitemap"]`
-        );
-        break;
-
-      case 'clear':
-        state.cliLogs = [];
-        break;
-
-      default:
-        state.cliLogs.push(`[ERROR] Command '${primary}' not recognized. Type 'help' for menu.`);
-        break;
-    }
-
-    renderTerminalLogs();
-  }
-
-  terminalForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const val = terminalInput.value;
-    terminalInput.value = '';
-    runCliCommand(val);
-  });
-
-  clearTerminalBtn.addEventListener('click', () => {
-    state.cliLogs = [];
-    renderTerminalLogs();
-  });
-
-  document.addEventListener('click', (e) => {
-    const chip = e.target.closest('.cli-chip');
-    if (chip) {
-      const cmd = chip.getAttribute('data-cmd');
-      if (cmd) runCliCommand(cmd);
-    }
-  });
-
   // --- AGENTIC API TAB RENDER ---
   function renderApiTab() {
+    const query = state.apiMethodQuery.trim().toLowerCase();
+    const visibleMethods = API_METHODS.filter((m) => {
+      if (!query) return true;
+      return [m.name, m.signature, m.description, m.safety]
+        .some((value) => value.toLowerCase().includes(query));
+    });
+
+    apiMethodCount.textContent = `${visibleMethods.length} of ${API_METHODS.length} method calls shown`;
+
     // Table Body
-    apiMethodsTableBody.innerHTML = API_METHODS.map((m) => `
+    apiMethodsTableBody.innerHTML = visibleMethods.length ? visibleMethods.map((m) => `
       <tr>
         <td><code style="font-weight: 700; color: #FFFFFF;">${m.name}</code></td>
         <td><code>${m.signature}</code></td>
         <td style="font-family: var(--font-sans); font-size: 0.75rem;">${m.description}</td>
+        <td><code style="font-size: 0.6875rem; color: var(--accent-white);">${getMethodExample(m.name)}</code></td>
         <td>
           <span style="display: inline-flex; align-items: center; padding: 0.125rem 0.375rem; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid var(--border-color); background-color: rgba(255,255,255,0.05); color: #FFFFFF;">
             ${m.safety}
           </span>
         </td>
       </tr>
-    `).join('');
+    `).join('') : `<tr><td colspan="5" style="padding: 2rem; text-align: center; color: var(--text-dim);">No method calls match “${escapeHtml(state.apiMethodQuery)}”. Try “search”, “field”, “workflow”, or “session”.</td></tr>`;
 
     // Method Buttons
-    apiMethodButtons.innerHTML = API_METHODS.map((m) => {
+    apiMethodButtons.innerHTML = visibleMethods.map((m) => {
       const isSel = state.selectedApiMethod === m.name;
       return `
         <button class="btn-secondary api-select-btn" data-method="${m.name}" style="padding: 0.5rem; justify-content: flex-start; font-size: 0.75rem; border-color: ${isSel ? '#FFFFFF' : 'var(--border-color)'}; background-color: ${isSel ? '#FFFFFF' : 'var(--bg-input)'}; color: ${isSel ? '#000000' : '#FFFFFF'}; font-weight: 700;">
@@ -779,6 +607,43 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+  function getMethodExample(name) {
+    const examples = {
+      'open()': 'window.Reef.open()',
+      'close()': 'window.Reef.close()',
+      'search()': 'window.Reef.search("pricing", 8)',
+      'searchSections()': 'window.Reef.searchSections("pricing", { includeMatches: true })',
+      'suggest()': 'window.Reef.suggest("instal")',
+      'facets()': 'window.Reef.facets()',
+      'trackQuery()': 'window.Reef.trackQuery("pricing")',
+      'getPopularQueries()': 'window.Reef.getPopularQueries(5)',
+      'act()': 'await window.Reef.act("action_123")',
+      'fillField()': 'await window.Reef.fillField("field_123", "Ada")',
+      'agent()': 'await window.Reef.agent().click("#save")',
+      'executeWorkflow()': 'await window.Reef.executeWorkflow({ steps })',
+      'getAgentTools()': 'window.Reef.getAgentTools()',
+      'getInteractiveRecords()': 'window.Reef.getInteractiveRecords()',
+      'addCustomRecords()': 'window.Reef.addCustomRecords(records)',
+      'openWithQuery()': 'window.Reef.openWithQuery("pricing")',
+      'reindex()': 'window.Reef.reindex()',
+      'rebuildIndex()': 'await window.Reef.rebuildIndex()',
+      'getIndex()': 'window.Reef.getIndex()',
+      'getSitemapUrls()': 'await window.Reef.getSitemapUrls()',
+      'onselect()': 'window.Reef.onselect(record => {})',
+      'toggleInspector()': 'window.Reef.toggleInspector(true)',
+      'setTheme()': 'window.Reef.setTheme("dark")',
+      'setMode()': 'window.Reef.setMode("opaque")',
+      'setHotkey()': 'window.Reef.setHotkey("ctrlk,cmdk")',
+      'getConfig()': 'window.Reef.getConfig()'
+    };
+    return examples[name] || `window.Reef.${name}`;
+  }
+
+  apiMethodSearch.addEventListener('input', (e) => {
+    state.apiMethodQuery = e.target.value;
+    renderApiTab();
+  });
 
   executeApiBtn.addEventListener('click', () => {
     const timestamp = new Date().toISOString().substring(11, 19);
@@ -1102,7 +967,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderSearchModal() {
-    const categories = ['All', 'CORE', 'API', 'CLI', 'INSTALL', 'BENCHMARK', 'FAQ'];
+    const categories = ['All', 'CORE', 'API', 'INSTALL', 'BENCHMARK', 'FAQ'];
 
     // Category Chips
     modalCategoryFilter.innerHTML = categories.map((cat) => {
@@ -1257,7 +1122,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial Render Calls
   renderArchitectureTab();
-  renderTerminalLogs();
   renderApiTab();
   renderBenchmarksTab();
   renderFaqTab();

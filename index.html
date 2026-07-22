@@ -43,11 +43,10 @@
         <nav class="nav-row no-scrollbar" id="navTabsContainer">
           <button class="tab-btn active" data-tab="overview">01 / Overview</button>
           <button class="tab-btn" data-tab="architecture">02 / Architecture</button>
-          <button class="tab-btn" data-tab="cli">03 / Terminal CLI</button>
-          <button class="tab-btn" data-tab="api">04 / Agentic API</button>
-          <button class="tab-btn" data-tab="benchmarks">05 / Benchmarks</button>
-          <button class="tab-btn" data-tab="install">06 / Install</button>
-          <button class="tab-btn" data-tab="faq">07 / FAQ</button>
+          <button class="tab-btn" data-tab="api">03 / Agentic API</button>
+          <button class="tab-btn" data-tab="benchmarks">04 / Benchmarks</button>
+          <button class="tab-btn" data-tab="install">05 / Install</button>
+          <button class="tab-btn" data-tab="faq">06 / FAQ</button>
         </nav>
       </div>
     </header>
@@ -72,11 +71,6 @@
               </p>
 
               <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem;">
-                <button class="btn-primary" id="launchCliBtn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
-                  <span>Launch Interactive CLI</span>
-                </button>
-
                 <button class="btn-secondary" id="exploreApiBtn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                   <span>Explore Agentic API</span>
@@ -447,63 +441,14 @@ for (const url of urls) {
 
       </section>
 
-      <!-- TAB 3: TERMINAL CLI -->
-      <section id="tab-cli" class="tab-pane" style="display: none; flex-direction: column; gap: 1rem;">
-        <div class="terminal-window">
-          <div class="terminal-header">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <div class="terminal-dots">
-                <span class="terminal-dot"></span>
-                <span class="terminal-dot"></span>
-                <span class="terminal-dot"></span>
-              </div>
-              <span style="font-family: var(--font-mono); font-weight: 700; font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: #FFFFFF;">
-                REEF_CLI v1.4.0 — root@reef-engine:~#
-              </span>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 0.75rem; font-family: var(--font-mono); font-size: 0.625rem; color: var(--text-dim);">
-              <span style="text-transform: uppercase; letter-spacing: 0.1em;">MODE: EXECUTE</span>
-              <button id="clearTerminalBtn" style="background: none; border: none; color: var(--text-dim); cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em;">Clear</button>
-            </div>
-          </div>
-
-          <!-- Terminal Log -->
-          <div class="terminal-output" id="terminalLog">
-            <!-- Terminal logs rendered here -->
-          </div>
-
-          <!-- Terminal Input Form -->
-          <form id="terminalForm" class="terminal-input-bar">
-            <span class="terminal-prompt">reef&gt;</span>
-            <input type="text" id="terminalInput" class="terminal-input" placeholder="type 'help', 'search BM25F', 'tools', 'act rec_1', 'fill field_1 value', 'sitemap', 'popular'..." autocomplete="off" spellcheck="false" />
-            <button type="submit" class="btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.625rem;">
-              <span>Run</span>
-            </button>
-          </form>
-        </div>
-
-        <!-- Quick Chips -->
-        <div class="card-panel" style="padding: 0.75rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.75rem;">
-          <span style="font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">Quick Commands:</span>
-          <button class="btn-secondary cli-chip" data-cmd="help" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">help</button>
-          <button class="btn-secondary cli-chip" data-cmd="search BM25" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">search BM25</button>
-          <button class="btn-secondary cli-chip" data-cmd="suggest bm2" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">suggest bm2</button>
-          <button class="btn-secondary cli-chip" data-cmd="tools" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">tools</button>
-          <button class="btn-secondary cli-chip" data-cmd="act rec_1" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">act rec_1</button>
-          <button class="btn-secondary cli-chip" data-cmd="fill field_1 hello@example.com" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">fill field_1</button>
-          <button class="btn-secondary cli-chip" data-cmd="sitemap" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">sitemap</button>
-          <button class="btn-secondary cli-chip" data-cmd="popular" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">popular</button>
-        </div>
-      </section>
-
-      <!-- TAB 4: AGENTIC API -->
+      <!-- TAB 3: AGENTIC API -->
       <section id="tab-api" class="tab-pane" style="display: none; flex-direction: column; gap: 1.5rem;">
         <div class="card-panel">
           <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
             <div>
               <div class="card-title-badge">PROGRAMMATIC_BROWSER_AUTOMATION</div>
-              <h2 class="card-heading">Agentic API Reference & Sandbox</h2>
+              <h2 class="card-heading">Searchable Agentic API</h2>
+              <p class="card-desc" style="max-width: 48rem; margin-top: 0.75rem;">Search by method name, capability, or intent. Select a call to see its real signature, what it changes, and a copyable example. The sandbox below previews the call shape against Reef’s browser-local runtime.</p>
             </div>
             <div style="padding: 0.25rem 0.75rem; background-color: rgba(255,255,255,0.05); border: 1px solid var(--border-color); font-size: 0.75rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);">
               window.Reef primitives
@@ -514,7 +459,12 @@ for (const url of urls) {
         <!-- Table of Methods -->
         <div class="card-panel" style="padding: 0; overflow-x: auto;">
           <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #FFFFFF;">
-            Available Window.Reef Methods
+            Method calls & capabilities
+          </div>
+          <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);">
+            <label for="apiMethodSearch" style="display: block; font-size: 0.6875rem; font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem;">Search method calls</label>
+            <input type="search" id="apiMethodSearch" placeholder="Try: search, fill, navigate, workflow, session…" autocomplete="off" style="width: 100%; background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem; font-family: var(--font-mono); font-size: 0.75rem; color: #FFFFFF; outline: none;" />
+            <div id="apiMethodCount" style="margin-top: 0.5rem; font-family: var(--font-mono); font-size: 0.6875rem; color: var(--text-dim);"></div>
           </div>
           <table class="custom-table">
             <thead>
@@ -522,6 +472,7 @@ for (const url of urls) {
                 <th>METHOD</th>
                 <th>SIGNATURE</th>
                 <th>DESCRIPTION</th>
+                <th>EXAMPLE</th>
                 <th>SAFETY</th>
               </tr>
             </thead>
@@ -534,9 +485,9 @@ for (const url of urls) {
         <!-- Live Sandbox Execution -->
         <div class="card-panel" style="display: flex; flex-direction: column; gap: 1.5rem;">
           <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
-            <h3 style="font-size: 0.875rem; font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em;">
-              Live Method Execution Sandbox
-            </h3>
+              <h3 style="font-size: 0.875rem; font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em;">
+              Method Call Preview
+              </h3>
             <button id="clearApiLogsBtn" style="background: none; border: none; font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); cursor: pointer;">Clear Logs</button>
           </div>
 
@@ -544,7 +495,7 @@ for (const url of urls) {
             <div style="display: flex; flex-direction: column; gap: 1rem;">
               <div>
                 <label style="display: block; font-size: 0.75rem; font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem;">
-                  Select Method:
+                  Choose a method call:
                 </label>
                 <div class="grid-2" id="apiMethodButtons">
                   <!-- Populated dynamically -->
@@ -553,7 +504,7 @@ for (const url of urls) {
 
               <div>
                 <label style="display: block; font-size: 0.75rem; font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem;">
-                  Test Parameter Value:
+                  Example input:
                 </label>
                 <input type="text" id="apiParamInput" value="BM25 scoring" style="width: 100%; background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.625rem; font-family: var(--font-mono); font-size: 0.75rem; color: #FFFFFF; outline: none;" />
               </div>
