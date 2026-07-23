@@ -466,8 +466,12 @@ document.addEventListener('DOMContentLoaded', () => {
     tabPanes.forEach((pane) => {
       if (pane.id === `tab-${tabId}`) {
         pane.style.display = 'flex';
+        pane.classList.remove('active');
+        // Restart the entrance timeline whenever a tab is selected.
+        requestAnimationFrame(() => pane.classList.add('active'));
       } else {
         pane.style.display = 'none';
+        pane.classList.remove('active');
       }
     });
 
@@ -952,6 +956,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- COMMAND PALETTE SEARCH MODAL LOGIC ---
   function openSearchModal() {
     state.searchModalOpen = true;
+    searchModal.classList.remove('is-closing');
+    searchModal.classList.add('is-visible');
     searchModal.style.display = 'flex';
     modalSearchInput.value = '';
     state.searchQuery = '';
@@ -963,7 +969,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeSearchModal() {
     state.searchModalOpen = false;
-    searchModal.style.display = 'none';
+    searchModal.classList.remove('is-visible');
+    searchModal.classList.add('is-closing');
+    setTimeout(() => {
+      if (!state.searchModalOpen) {
+        searchModal.style.display = 'none';
+        searchModal.classList.remove('is-closing');
+      }
+    }, 180);
   }
 
   function renderSearchModal() {

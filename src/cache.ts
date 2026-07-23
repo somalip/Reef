@@ -4,7 +4,7 @@
  */
 
 import { SearchIndex, serializeIndex, deserializeIndex } from './search-index.js';
-import { CacheMetadata } from './types.js';
+import { CacheMetadata, SiteGraph } from './types.js';
 
 // Feature detection for compression streams
 declare global {
@@ -175,4 +175,16 @@ export async function clearCache(): Promise<void> {
     req.onsuccess = () => resolve(undefined);
     req.onerror = () => reject(req.error);
   });
+}
+
+export async function saveSiteGraph(graph: SiteGraph, key = 'site-graph'): Promise<void> {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  tx.objectStore(STORE_NAME).put({ [CACHE_VERSION_KEY]: `${key}:${graph.startUrl}`, graph, metadata: { versionHash: key, buildTime: Date.now(), pageMetadata: {} } });
+}
+
+export async function loadSiteGraph(startUrl: string, key = 'site-graph'): Promise<SiteGraph | null> {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  return new Promise(resolve => { const req = tx.objectStore(STORE_NAME).get(`${key}:${startUrl}`); req.onsuccess = () => resolve(req.result?.graph ?? null); req.onerror = () => resolve(null); });
 }

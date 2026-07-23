@@ -21,9 +21,15 @@ export {
   facets,
   trackQuery,
   getPopularQueries,
+  searchWithPagination,
+  getTotalResultCount,
   getSnippet,
   type QueryNode,
 } from './search-index.js';
+export { semanticSearch, cosineSimilarity, quantizeEmbedding } from './search/semantic.js';
+export { expandQuery, soundex, phoneticAlternatives } from './search/query-expansion.js';
+export { parseFieldQuery, matchesFieldQuery, applyFieldBoosts } from './search/field-syntax.js';
+export { CompressedTrie } from './search/compressed-trie.js';
 export {
   stripTags,
   generateSelector,
@@ -31,6 +37,8 @@ export {
   hasExplicitId,
   findParentSectionId,
   extractSections,
+  generateStableSelector,
+  extractAccessibilityTree,
   chunkBodyText,
   extractActionName,
   isDestructiveAction,

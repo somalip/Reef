@@ -3,7 +3,7 @@
  * Provides in-memory search indexing with fuzzy matching and result ranking.
  */
 
-import { IndexRecord, SearchOptions, ScoredRecord, MatchSpan, TokenFilter, ReefConfig } from './types.js';
+import { IndexRecord, SearchOptions, ScoredRecord, MatchSpan, TokenFilter, ReefConfig, SearchPage } from './types.js';
 
 // Default stop words for English
 const STOP_WORDS = new Set([
@@ -485,6 +485,31 @@ export function getAllSections(index: SearchIndex): IndexRecord[] {
   return index.allSections;
 }
 
+/** Return a stable cursor page over the current ranking. */
+export function searchWithPagination(
+  query: string,
+  index: SearchIndex,
+  options: SearchOptions & { cursor?: string; pageSize?: number } = {}
+): SearchPage {
+  const pageSize = Math.max(1, options.pageSize ?? options.limit ?? 20);
+  const offset = options.cursor ? Math.max(0, Number.parseInt(options.cursor, 10) || 0) : 0;
+  const ranked = searchSections(query, index, { ...options, limit: Number.MAX_SAFE_INTEGER }) as ScoredRecord[] | IndexRecord[];
+  const results = ranked.slice(offset, offset + pageSize).map((record) =>
+    'score' in record ? record : { record, score: 0 }
+  ) as ScoredRecord[];
+  const nextOffset = offset + results.length;
+  return {
+    results,
+    total: ranked.length,
+    hasMore: nextOffset < ranked.length,
+    ...(nextOffset < ranked.length ? { nextCursor: String(nextOffset) } : {}),
+  };
+}
+
+export function getTotalResultCount(query: string, index: SearchIndex, options: SearchOptions = {}): number {
+  return (searchSections(query, index, { ...options, limit: Number.MAX_SAFE_INTEGER }) as unknown[]).length;
+}
+
 export function levenshteinDistance(a: string, b: string): number {
   const m = a.length;
   const n = b.length;
@@ -641,7 +666,8 @@ function tokenizeExtendedQuery(query: string): Array<{ type: string; value: stri
 
     const wordMatch = rest.match(/^(\S+)/);
     if (wordMatch) {
-      tokens.push({ type: 'term', value: wordMatch[1] });
+      const fieldMatch = wordMatch[1].match(/^([\w-]+):(.+)$/);
+      tokens.push({ type: 'term', value: fieldMatch ? `${fieldMatch[1]}:${fieldMatch[2]}` : wordMatch[1] });
       rest = rest.slice(wordMatch[0].length);
       matched = true;
     }
@@ -704,10 +730,16 @@ function getFuzzyCandidates(query: string, index: SearchIndex, distance: number)
 function matchExtendedNode(node: QueryNode, record: IndexRecord): boolean {
   switch (node.type) {
     case 'term':
-      const searchTerm = node.value.toLowerCase();
-      const headingLower = record.headingText.toLowerCase();
-      const bodyLower = record.bodyText.toLowerCase();
-      return headingLower.includes(searchTerm) || bodyLower.includes(searchTerm);
+      const fieldMatch = node.value.match(/^([\w-]+):(.+)$/);
+      const searchTerm = (fieldMatch ? fieldMatch[2] : node.value).toLowerCase();
+      const field = fieldMatch?.[1].toLowerCase();
+      const values = field === 'title' || field === 'heading' ? [record.headingText]
+        : field === 'body' ? [record.bodyText]
+        : field === 'label' ? [record.label ?? '']
+        : field === 'breadcrumb' ? [record.breadcrumb]
+        : field === 'type' ? [record.type]
+        : [record.headingText, record.bodyText, record.label ?? '', record.breadcrumb];
+      return values.some(value => value.toLowerCase().includes(searchTerm));
 
     case 'exact':
       const exactTerm = node.value.toLowerCase();
@@ -1290,7 +1322,7 @@ export function searchSections(
   }
 
   // Extended query syntax
-  if (options?.extended && scores.size === 0) {
+  if ((options?.extended || /\b(?:title|heading|body|label|breadcrumb|type):\S+/i.test(q)) && scores.size === 0) {
     const parsed = parseExtendedQuery(q);
     for (const record of index.allSections) {
       if (matchExtendedNode(parsed, record)) {

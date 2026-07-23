@@ -57,6 +57,69 @@ export function generateSelector(element: Element): string {
   return path.length > 0 ? path.join(' > ') : element.tagName.toLowerCase();
 }
 
+/** Return resilient selectors from most semantic to least semantic. */
+export function generateStableSelector(element: Element): string[] {
+  const candidates: string[] = [];
+  const push = (value: string) => { if (value && !candidates.includes(value)) candidates.push(value); };
+  const escape = (value: string) => typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(value) : value.replace(/(["\\])/g, '\\$1');
+  for (const attr of ['data-testid', 'data-test', 'id']) {
+    const value = element.getAttribute(attr);
+    if (value) push(attr === 'id' ? `#${escape(value)}` : `[${attr}="${escape(value)}"]`);
+  }
+  const aria = element.getAttribute('aria-label');
+  if (aria) push(`[aria-label="${escape(aria)}"]`);
+  const role = element.getAttribute('role');
+  const name = extractActionName(element);
+  if (role && name) push(`[role="${escape(role)}"][aria-label="${escape(name)}"]`);
+  if (role) push(`[role="${escape(role)}"]`);
+  push(generateSelector(element));
+  // XPath is intentionally last: it survives class churn but is less readable.
+  let sibling = element.previousElementSibling;
+  let position = 1;
+  while (sibling) { if (sibling.tagName === element.tagName) position++; sibling = sibling.previousElementSibling; }
+  push(`xpath=//${element.tagName.toLowerCase()}[${position}]`);
+  return candidates;
+}
+
+function walkComposed(root: Document | Element | ShadowRoot, visit: (element: Element, iframePath: number[]) => void, iframePath: number[] = []): void {
+  const elements = root instanceof Document ? Array.from(root.documentElement ? [root.documentElement] : []) : [root as Element];
+  const walk = (element: Element, path: number[]) => {
+    visit(element, path);
+    if (element.shadowRoot) walkRoot(element.shadowRoot, path);
+    for (const child of Array.from(element.children)) walk(child, path);
+    if (element.tagName.toLowerCase() === 'iframe') {
+      try { const frame = (element as HTMLIFrameElement).contentDocument; if (frame) walkRoot(frame, [...path, Array.from(element.parentElement?.children || []).indexOf(element)]); } catch { /* cross-origin */ }
+    }
+  };
+  const walkRoot = (value: Document | Element | ShadowRoot, path: number[]) => {
+    if (value instanceof Document) { if (value.documentElement) walk(value.documentElement, path); }
+    else if (value instanceof ShadowRoot) for (const child of Array.from(value.children)) walk(child, path);
+    else walk(value, path);
+  };
+  for (const element of elements) walk(element, iframePath);
+}
+
+function isFocusableAction(element: Element): boolean {
+  const tag = element.tagName.toLowerCase();
+  return ['a', 'button', 'input', 'textarea', 'select', 'summary'].includes(tag) ||
+    ['button', 'link', 'tab', 'menuitem', 'checkbox', 'radio', 'combobox', 'option'].includes(element.getAttribute('role') || '') ||
+    element.hasAttribute('contenteditable') || (element.hasAttribute('tabindex') && Number(element.getAttribute('tabindex')) >= 0) ||
+    element.hasAttribute('data-reef-action');
+}
+
+/** Extract actionable custom elements from a live composed DOM, including open shadow roots and same-origin frames. */
+export function extractAccessibilityTree(root: Document | Element | ShadowRoot = document): IndexRecord[] {
+  const records: IndexRecord[] = [];
+  walkComposed(root, (element, iframePath) => {
+    if (!isFocusableAction(element)) return;
+    const label = extractActionName(element);
+    if (!label) return;
+    const selectors = generateStableSelector(element);
+    records.push({ id: `${typeof location !== 'undefined' ? location.href : ''}#accessibility-${records.length}`, url: typeof location !== 'undefined' ? location.href : '', headingText: label, headingId: `accessibility-${records.length}`, breadcrumb: '', bodyText: label, type: element.matches('input,textarea,select,[contenteditable]') ? 'field' : 'action', selector: selectors[0], selectors, iframePath, label, destructive: isDestructiveAction(label) });
+  });
+  return records;
+}
+
 export function extractHeadingId(fullMatch: string, text: string): string {
   const idMatch = fullMatch.match(/\bid=["']([^"']+)['"]/i);
   if (idMatch?.[1]) return idMatch[1];
@@ -227,7 +290,7 @@ export function extractActions(html: string, url: string, excludeSelectors?: str
     const label = extractActionName(element);
     if (!label) continue;
 
-    const selector = generateSelector(element);
+    const selectors = generateStableSelector(element);
 
     actions.push({
       id: `${url}#action-${actions.length}`,
@@ -237,7 +300,7 @@ export function extractActions(html: string, url: string, excludeSelectors?: str
       breadcrumb: '',
       bodyText: label,
       type: 'action',
-      selector,
+      selector: selectors[0], selectors,
       destructive: isDestructiveAction(label),
       label
     });
@@ -301,7 +364,7 @@ export function extractFields(html: string, url: string): IndexRecord[] {
 
       if (!label) continue;
 
-      const selector = generateSelector(input);
+      const selectors = generateStableSelector(input);
       const inputElement = input as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
       fields.push({
@@ -312,7 +375,7 @@ export function extractFields(html: string, url: string): IndexRecord[] {
         breadcrumb,
         bodyText: label,
         type: 'field',
-        selector,
+        selector: selectors[0], selectors,
         label,
         value: inputElement.value
       });
@@ -351,7 +414,7 @@ export function extractLinks(html: string, url: string): IndexRecord[] {
 
     const resolvedUrl = resolveUrl(href, url);
     const isExternal = !resolvedUrl.startsWith(window.location.origin);
-    const selector = generateSelector(anchor);
+    const selectors = generateStableSelector(anchor);
 
     links.push({
       id: `${url}#link-${links.length}`,
@@ -361,7 +424,7 @@ export function extractLinks(html: string, url: string): IndexRecord[] {
       breadcrumb: '',
       bodyText: linkText,
       type: isExternal ? 'link' : 'section',
-      selector
+      selector: selectors[0], selectors
     });
   }
 
@@ -393,7 +456,7 @@ export function extractFiles(html: string, url: string, extensions?: string): In
     if (!linkText) continue;
 
     const resolvedUrl = resolveUrl(href, url);
-    const selector = generateSelector(anchor);
+    const selectors = generateStableSelector(anchor);
 
     files.push({
       id: `${url}#file-${files.length}`,
@@ -403,7 +466,7 @@ export function extractFiles(html: string, url: string, extensions?: string): In
       breadcrumb: '',
       bodyText: linkText,
       type: 'file',
-      selector
+      selector: selectors[0], selectors
     });
   }
 
@@ -431,7 +494,7 @@ export function extractMedia(html: string, url: string): IndexRecord[] {
     const textToIndex = caption ? `${alt} ${caption}` : alt;
     if (!textToIndex.trim()) continue;
 
-    const selector = generateSelector(img);
+    const selectors = generateStableSelector(img);
 
     media.push({
       id: `${url}#media-image-${media.length}`,
@@ -441,7 +504,7 @@ export function extractMedia(html: string, url: string): IndexRecord[] {
       breadcrumb: '',
       bodyText: textToIndex,
       type: 'media',
-      selector
+      selector: selectors[0], selectors
     });
   }
 
@@ -462,7 +525,7 @@ export function extractMedia(html: string, url: string): IndexRecord[] {
     const textToIndex = transcript ? `${title} ${transcript}` : title;
     if (!textToIndex.trim()) continue;
 
-    const selector = generateSelector(element);
+    const selectors = generateStableSelector(element);
 
     media.push({
       id: `${url}#media-${media.length}`,
@@ -472,7 +535,7 @@ export function extractMedia(html: string, url: string): IndexRecord[] {
       breadcrumb: '',
       bodyText: textToIndex,
       type: 'media',
-      selector,
+      selector: selectors[0], selectors,
       transcript: transcript.trim()
     });
   }

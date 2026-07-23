@@ -161,6 +161,21 @@
               100% private local execution. Queries, index data, and browsing activity never leave the browser. Shadow DOM UI keeps styles fully isolated from the host page.
             </p>
           </div>
+
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Universal DOM Grounding</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Semantic selector candidates, ARIA accessibility extraction, fuzzy live-text fallback, open Shadow DOM, and same-origin iframe traversal keep agent actions grounded after re-renders.</p>
+          </div>
+
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Live Observation &amp; Guardrails</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;"><code>observe()</code>, <code>waitForStable()</code>, SPA route awareness, action verification, pagination limits, rate limiting, and destructive-action protection support bounded autonomous exploration.</p>
+          </div>
+
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Site Graph &amp; LLM Tools</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;"><code>crawlAndBuildGraph()</code> maps pages and effects for multi-step planning, while schema-described <code>agentTools</code> connects Reef to tool-use loops.</p>
+          </div>
         </div>
       </section>
 
@@ -324,7 +339,7 @@ for (const url of urls) {
                 <code style="font-size: 0.75rem; color: #FFFFFF;">extraction.ts</code>
                 <span style="font-size: 0.625rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">EXTRACTION</span>
               </div>
-              <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Heading-based section splitting, action/field/link/file/media/structured-data extractors, CSS selector generation, JSON-LD parsing, and hidden-content expansion.</p>
+              <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Heading-based section splitting plus stable semantic selector candidates, accessibility-tree extraction, shadow-root traversal, iframe paths, JSON-LD parsing, and hidden-content expansion.</p>
             </div>
 
             <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
@@ -340,7 +355,7 @@ for (const url of urls) {
                 <code style="font-size: 0.75rem; color: #FFFFFF;">agent.ts</code>
                 <span style="font-size: 0.625rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">AGENT</span>
               </div>
-              <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Fluent <code>Agent</code> class with chainable <code>.click()</code>, <code>.type()</code>, <code>.submit()</code>, <code>.navigate()</code>, <code>.extract()</code>, <code>.wait()</code>, <code>.back()</code>, <code>.forward()</code>. Resolves selectors from the live index.</p>
+              <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Fluent <code>Agent</code> with live <code>.observe()</code>, <code>.waitForStable()</code>, visibility scrolling, SPA route awareness, selector candidates, fuzzy fallback, verification, bounded pagination, and guardrails.</p>
             </div>
 
             <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
@@ -437,6 +452,16 @@ for (const url of urls) {
               <div style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">External and internal hyperlinks that are not file targets. Indexed with link text and target URL for navigation-only result entries.</div>
             </div>
           </div>
+        </div>
+
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="card-title-badge">AUTONOMOUS_EXPLORATION_LAYER</div>
+          <h3 class="card-heading" style="font-size: 1.125rem;">Plan across pages and states</h3>
+          <p class="card-desc">Reef can observe the composed DOM, wait for JavaScript-heavy interfaces to settle, detect SPA route changes, and build a bounded <code>SiteGraph</code> of links, fields, actions, and effects. Exploration respects <code>actionsMode</code>, destructive flags, and per-run action limits.</p>
+          <div class="code-block">const agent = new Agent(index, inspector, { maxActionsPerRun: 25 });
+const actions = await agent.observe();
+await agent.waitForStable({ quietMs: 300 });
+const graph = await crawlAndBuildGraph(location.href, { maxPages: 20, persist: true });</div>
         </div>
 
       </section>

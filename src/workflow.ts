@@ -29,6 +29,9 @@ export function parseYAML(yaml: string): WorkflowDefinition {
       if (trimmed.includes('selector:')) {
         const selectorMatch = trimmed.match(/selector:\s*"?([^"\n]+)"?/);
         if (selectorMatch) currentStep.selector = selectorMatch[1].trim();
+      } else if (trimmed.includes('recordId:')) {
+        const recordMatch = trimmed.match(/recordId:\s*"?([^"\n]+)"?/);
+        if (recordMatch) currentStep.recordId = recordMatch[1].trim();
       } else if (trimmed.includes('value:')) {
         const valueMatch = trimmed.match(/value:\s*"?([^"\n]+)"?/);
         if (valueMatch) currentStep.value = valueMatch[1].trim();

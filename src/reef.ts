@@ -1,4 +1,4 @@
-import { searchSections, addToIndex, createSearchIndex, getAllSections, findClosestWord, suggest, facets, trackQuery, getPopularQueries, type IndexRecord, type ScoredRecord, type SearchOptions } from './search.js';
+import { searchSections, addToIndex, createSearchIndex, getAllSections, findClosestWord, suggest, facets, trackQuery, getPopularQueries, searchWithPagination, getTotalResultCount, type IndexRecord, type ScoredRecord, type SearchOptions } from './search.js';
 import { UIRenderer, VisualInspector } from './ui/index.js';
 import { Indexer } from './indexing/index.js';
 import { ActionExecutor } from './actions/index.js';
@@ -498,6 +498,14 @@ class ReefSearch {
 
   public searchSections(query: string, options?: SearchOptions | number): ScoredRecord[] {
     return searchSections(query, this.index, options ?? 8) as ScoredRecord[];
+  }
+
+  public searchWithPagination(query: string, options: SearchOptions & { cursor?: string; pageSize?: number } = {}) {
+    return searchWithPagination(query, this.index, options);
+  }
+
+  public getTotalResultCount(query: string, options: SearchOptions = {}): number {
+    return getTotalResultCount(query, this.index, options);
   }
 
   public suggest(query: string, limit: number = 10): string[] {

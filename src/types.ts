@@ -15,6 +15,8 @@ export interface SectionDocument {
 export interface IndexRecord extends SectionDocument {
   type: 'section' | 'action' | 'field' | 'link' | 'file' | 'media' | 'structured';
   selector?: string;
+  selectors?: string[];
+  iframePath?: number[];
   destructive?: boolean;
   label?: string;
   value?: string;
@@ -41,6 +43,14 @@ export interface SearchOptions {
   trackPopularity?: boolean;
   popularQueryBoost?: number;
   popularityBoost?: number; // Multiplicative boost factor for popularity ranking
+  fields?: Record<string, string>;
+}
+
+export interface SearchPage<T = ScoredRecord> {
+  results: T[];
+  total: number;
+  nextCursor?: string;
+  hasMore: boolean;
 }
 
 export interface MatchSpan {
@@ -101,6 +111,69 @@ export interface ActionResult {
   success: boolean;
   reason?: string;
   element?: Element;
+  changed?: boolean;
+  url?: string;
+}
+
+export interface ObservationOptions {
+  root?: Document | Element | ShadowRoot;
+  includeHidden?: boolean;
+  inViewport?: boolean;
+}
+
+export interface StableWaitOptions {
+  quietMs?: number;
+  timeout?: number;
+  observeNetwork?: boolean;
+}
+
+export interface PaginationOptions {
+  maxPages?: number;
+  maxActionsPerRun?: number;
+  nextText?: string[];
+  scroll?: boolean;
+}
+
+export interface AgentOptions {
+  actionsMode?: 'execute' | 'navigate-only';
+  maxActionsPerRun?: number;
+  rateLimitMs?: number;
+  destructive?: boolean;
+}
+
+export interface GraphEdge {
+  fromUrl: string;
+  action: string;
+  toUrl?: string;
+  effect?: string;
+  destructive?: boolean;
+}
+
+export interface SiteGraphNode {
+  url: string;
+  records: IndexRecord[];
+}
+
+export interface SiteGraph {
+  startUrl: string;
+  nodes: SiteGraphNode[];
+  edges: GraphEdge[];
+  createdAt: number;
+}
+
+export interface GraphCrawlerOptions {
+  maxPages?: number;
+  maxActionsPerRun?: number;
+  crawlDelay?: number;
+  actionsMode?: 'execute' | 'navigate-only';
+  persist?: boolean;
+  fetch?: typeof globalThis.fetch;
+}
+
+export interface AgentToolDefinition {
+  name: string;
+  description: string;
+  inputSchema: { type: 'object'; properties: Record<string, any>; required?: string[] };
 }
 
 export interface ScoredRecord {
