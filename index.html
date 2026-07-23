@@ -1008,6 +1008,14 @@ const serverReady = JSON.parse(json.textContent);</div>
           </div>
         </div>
 
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 0.75rem; border-color: rgba(141,243,229,0.35);">
+          <div class="card-title-badge">AGENT_ONLY_INSTALL</div>
+          <h3 class="card-heading" style="font-size: 1.125rem;">Make your site agent-ready without search</h3>
+          <p class="card-desc">Paste this standalone script before <code>&lt;/body&gt;</code>. It publishes the live agent manifest and does not install Reef’s search UI or search features.</p>
+          <div class="code-block">&lt;script src="https://reef.js.org/dist/reef-agent-ready.min.js" data-mode="agent-ready" async defer&gt;&lt;/script&gt;</div>
+          <p class="card-desc" style="font-size: 0.75rem;">Use the <strong>agent-ready only</strong> option below to copy this exact snippet.</p>
+        </div>
+
         <!-- Configurator -->
         <div class="card-panel" style="display: flex; flex-direction: column; gap: 1.5rem;">
           <h3 style="font-size: 0.875rem; font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em;">
