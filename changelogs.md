@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- **Agent-Ready Sites** (`reef-agent-ready.js`) — opt-in one-script instrumentation that publishes a live, accessibility-aware page manifest for browser agents, including stable IDs, Shadow DOM/iframe traversal, ARIA backfill, live route updates, exclusions, and rate limits. Includes an optional Playwright export helper for `/.well-known/agent-manifest.json`.
 - **Agentic API - Chainable Methods** (`agent()`)
   - `agent().click(selector)` - Dispatch click events on elements with visual feedback
   - `agent().type(selector, value)` - Fill input/textarea/select values with proper event dispatch (React/Vue compatible)

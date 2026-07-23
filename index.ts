@@ -1,4 +1,5 @@
 export type { ReefConfig, IndexRecord, SectionDocument, SearchOptions, ScoredRecord, MatchSpan, TokenFilter, WorkflowStep, WorkflowOptions, AgentSession, ActionResult, SearchPage, ObservationOptions, StableWaitOptions, PaginationOptions, AgentOptions, GraphEdge, SiteGraphNode, SiteGraph, GraphCrawlerOptions, AgentToolDefinition } from './src/types.js';
+export type { AgentManifest, AgentReadyConfig, AgentReadyController } from './src/agent-ready.js';
 
 export {
   extractSections,
@@ -32,6 +33,7 @@ export {
 } from './src/search.js';
 
 export { Agent } from './src/agent.js';
+export { initAgentReady } from './src/agent-ready.js';
 export { observeDocument, waitForStableDom } from './src/observation.js';
 export { crawlAndBuildGraph } from './src/graph-crawler.js';
 export { agentTools, createAgentTools } from './src/tools.js';

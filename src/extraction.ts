@@ -62,7 +62,7 @@ export function generateStableSelector(element: Element): string[] {
   const candidates: string[] = [];
   const push = (value: string) => { if (value && !candidates.includes(value)) candidates.push(value); };
   const escape = (value: string) => typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(value) : value.replace(/(["\\])/g, '\\$1');
-  for (const attr of ['data-testid', 'data-test', 'id']) {
+  for (const attr of ['data-testid', 'data-test', 'data-agent-id', 'id']) {
     const value = element.getAttribute(attr);
     if (value) push(attr === 'id' ? `#${escape(value)}` : `[${attr}="${escape(value)}"]`);
   }

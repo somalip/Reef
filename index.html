@@ -7,6 +7,18 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
+    <div id="reefLoader" class="reef-loader" role="status" aria-label="Loading Reef">
+      <div class="reef-loader-scene" aria-hidden="true">
+        <div class="reef-loader-ring ring-one"></div>
+        <div class="reef-loader-ring ring-two"></div>
+        <div class="reef-loader-ring ring-three"></div>
+      </div>
+    <div class="reef-loader-copy">
+      <div class="reef-loader-mark">REEF</div>
+      <div class="reef-loader-label">Mapping the deep</div>
+      <div class="reef-loader-progress"><span></span></div>
+    </div>
+  </div>
   <div class="app-container">
     
     <!-- Sticky Header -->
@@ -21,7 +33,7 @@
                 REEF<span class="brand-title-dim">_ENGINE</span>
               </div>
             </button>
-            <span class="badge-version">v1.2.0</span>
+            <span class="badge-version">v0.3.4</span>
           </div>
 
           <!-- Actions -->
@@ -44,9 +56,10 @@
           <button class="tab-btn active" data-tab="overview">01 / Overview</button>
           <button class="tab-btn" data-tab="architecture">02 / Architecture</button>
           <button class="tab-btn" data-tab="api">03 / Agentic API</button>
-          <button class="tab-btn" data-tab="benchmarks">04 / Benchmarks</button>
-          <button class="tab-btn" data-tab="install">05 / Install</button>
-          <button class="tab-btn" data-tab="faq">06 / FAQ</button>
+          <button class="tab-btn" data-tab="agent-ready">04 / Agent-Ready</button>
+          <button class="tab-btn" data-tab="benchmarks">05 / Benchmarks</button>
+          <button class="tab-btn" data-tab="install">06 / Install</button>
+          <button class="tab-btn" data-tab="faq">07 / FAQ</button>
         </nav>
       </div>
     </header>
@@ -175,6 +188,11 @@
           <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
             <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Site Graph &amp; LLM Tools</h3>
             <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;"><code>crawlAndBuildGraph()</code> maps pages and effects for multi-step planning, while schema-described <code>agentTools</code> connects Reef to tool-use loops.</p>
+          </div>
+
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Agent-Ready Sites</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Drop in <code>reef-agent-ready.js</code> to publish a live, guarded manifest that external browser agents can consume without adopting the full Reef UI.</p>
           </div>
         </div>
       </section>
@@ -544,6 +562,49 @@ const graph = await crawlAndBuildGraph(location.href, { maxPages: 20, persist: t
               <!-- Logs populated dynamically -->
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: AGENT-READY SITES -->
+      <section id="tab-agent-ready" class="tab-pane" style="display: none; flex-direction: column; gap: 1.5rem;">
+        <div class="card-panel">
+          <div class="card-title-badge">ONE_SCRIPT_AGENT_INSTRUMENTATION</div>
+          <h2 class="card-heading">Agent-Ready Sites</h2>
+          <p class="card-desc" style="max-width: 52rem; margin-top: 0.75rem;">Make any site discoverable to browser agents with a standalone script. Reef stamps durable targets, fills in accessible names for icon controls, traverses open Shadow DOM and same-origin frames, and republishes a fresh manifest after SPA navigation.</p>
+        </div>
+
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <div class="card-title-badge">GET_STARTED</div>
+          <div class="code-block">&lt;script src="https://reef.js.org/dist/reef-agent-ready.min.js" data-mode="agent-ready" async&gt;&lt;/script&gt;</div>
+          <p class="card-desc">For a static server-side copy, run <code>npm run export-manifest -- https://your-site.example dist/.well-known/agent-manifest.json</code> with Playwright installed, then deploy it at <code>/.well-known/agent-manifest.json</code>.</p>
+        </div>
+
+        <div class="card-panel" style="padding: 0; overflow-x: auto;">
+          <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #FFFFFF;">Configuration attributes</div>
+          <table class="custom-table">
+            <thead><tr><th>ATTRIBUTE</th><th>DEFAULT</th><th>DESCRIPTION</th></tr></thead>
+            <tbody>
+              <tr><td><code>data-exclude</code></td><td>empty</td><td>Comma-separated CSS selectors excluded from the manifest.</td></tr>
+              <tr><td><code>data-mode</code></td><td><code>execute</code></td><td><code>navigate-only</code> marks actions destructive for conservative agents.</td></tr>
+              <tr><td><code>data-disable-aria-backfill</code></td><td><code>false</code></td><td>Disable labels added to unnamed icon controls.</td></tr>
+              <tr><td><code>data-disable-live-updates</code></td><td><code>false</code></td><td>Disable mutation and route-change rescans.</td></tr>
+              <tr><td><code>data-debounce-ms</code></td><td><code>150</code></td><td>Debounce interval for live rescans.</td></tr>
+              <tr><td><code>data-max-rescans-per-minute</code></td><td><code>30</code></td><td>Rate limit protecting pages from runaway updates.</td></tr>
+              <tr><td><code>data-debug</code></td><td><code>false</code></td><td>Log each published manifest to the console.</td></tr>
+              <tr><td><code>data-publish-well-known</code></td><td><code>false</code></td><td>Enable deployment guidance for exporting the manifest to <code>/.well-known/agent-manifest.json</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <div class="card-title-badge">HOW_AGENTS_CONSUME_THIS</div>
+          <div class="code-block">const manifest = window.__reefAgentManifest;
+document.addEventListener('reef:agent-ready', event =&gt; {
+  const records = event.detail.records;
+});
+const json = document.querySelector('script[type="application/agent-manifest+json"]');
+const serverReady = JSON.parse(json.textContent);</div>
+          <div style="padding: 0.75rem; border: 1px solid rgba(234,179,8,0.3); background: rgba(234,179,8,0.08); color: rgba(255,255,255,0.78); font-size: 0.75rem; line-height: 1.6;"><strong style="color: #facc15;">GUARDRAILS:</strong> password, payment-card, SSN/social-security, <code>data-sensitive</code>, and <code>data-reef-agent="off"</code> regions are excluded by default. Add site-specific selectors with <code>data-exclude="#admin, .private-widget"</code>. The manifest never submits forms or executes actions.</div>
         </div>
       </section>
 
@@ -957,22 +1018,31 @@ const graph = await crawlAndBuildGraph(location.href, { maxPages: 20, persist: t
             <div style="display: flex; flex-direction: column; gap: 1rem; font-family: var(--font-mono); font-size: 0.75rem;">
               <div>
                 <label style="display: block; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.375rem;">
-                  data-actions-mode:
+                  Install mode:
                 </label>
+                <div class="grid-2">
+                  <button class="btn-primary" id="modeSearchBtn" style="justify-content: center;">search + actions</button>
+                  <button class="btn-secondary" id="modeAgentReadyBtn" style="justify-content: center;">agent-ready only</button>
+                </div>
+                <div id="agentReadyModeNote" class="install-mode-note" hidden>Agent-ready mode omits Reef search. Use it only when this page needs manifest instrumentation and no search UI.</div>
+              </div>
+
+              <div id="actionsModeSetting">
+                <label style="display: block; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.375rem;">data-actions-mode:</label>
                 <div class="grid-2">
                   <button class="btn-primary" id="modeExecuteBtn" style="justify-content: center;">execute</button>
                   <button class="btn-secondary" id="modeNavigateOnlyBtn" style="justify-content: center;">navigate-only</button>
                 </div>
               </div>
 
-              <div>
+              <div id="sitemapSetting">
                 <label style="display: block; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.375rem;">
                   data-sitemap:
                 </label>
                 <input type="text" id="sitemapInput" value="/sitemap.xml" style="width: 100%; background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.625rem; color: #FFFFFF; font-family: var(--font-mono); font-size: 0.75rem; outline: none;" />
               </div>
 
-              <div>
+              <div id="shortcutSetting">
                 <label style="display: block; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.375rem;">
                   data-hotkey:
                 </label>

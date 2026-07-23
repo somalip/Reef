@@ -47,6 +47,7 @@ This document describes the capabilities currently implemented in `src/`. Public
 - Local agent sessions with cookies/local-storage snapshots where available, selector resolution by selector or index record, action safety checks, and workflow execution.
 - `crawlAndBuildGraph()` produces serializable same-origin `SiteGraph` nodes and action edges for multi-page planning, with optional IndexedDB persistence through `saveSiteGraph()` / `loadSiteGraph()`.
 - `agentTools` and `createAgentTools()` expose JSON-schema tool definitions for observe, click, type, navigate, extract, stability waits, and history back operations.
+- **Agent-Ready Sites**: the standalone `reef-agent-ready.js` entry point instruments any site from one script tag, publishes `window.__reefAgentManifest`, an `application/agent-manifest+json` script, and a `reef:agent-ready` event. It supports stable `data-agent-id` stamps, ARIA backfill, open Shadow DOM and same-origin iframe traversal, live SPA updates, sensitive-field exclusions, and bounded rescans.
 - `createRemoteAgent()` WebSocket transport for server-side execution and state-sync protocols.
 - CMS adapter interface plus a fetch-based endpoint adapter suitable for WordPress, Ghost, Notion, or webhook-backed services.
 - Privacy-by-default analytics tracker: event collection is disabled unless explicitly enabled, with query/click events, export, and clearing.
@@ -69,6 +70,7 @@ This document describes the capabilities currently implemented in `src/`. Public
 | `Agent` / workflow helpers | Execute browser actions and workflows |
 | `crawlAndBuildGraph()` / `SiteGraph` | Build bounded, same-origin traversal graphs |
 | `agentTools` / `createAgentTools()` | Connect Agent methods to LLM tool-use loops |
+| `initAgentReady()` / `reef-agent-ready.js` | Publish a live manifest for external browser agents |
 | `QueryHistory`, `VirtualList`, `RelevanceTuner` | UI and result experience helpers |
 | `DynamicIndexer`, `ContentWatcher`, `mergeIndexes` | Advanced indexing workflows |
 | `AnalyticsTracker`, `PluginManager`, `createCMSAdapter` | Optional integrations |

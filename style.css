@@ -557,42 +557,50 @@ body {
   overflow-x: hidden;
 }
 
-body::before {
-  content: "";
+/* ── Reef loading scene ────────────────────────────────────────── */
+.reef-loader {
   position: fixed;
   inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.22;
-  background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-  background-size: 4rem 4rem;
-  mask-image: linear-gradient(to bottom, black, transparent 72%);
-  animation: grid-drift 24s linear infinite;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #04131f;
+  transition: opacity 700ms ease, visibility 700ms ease;
 }
-
-/* ── Reef water layer ────────────────────────────────────────────
-   A low-contrast, always-on ripple field replaces the old opening blur veil.
-   It lives behind the interface and uses only gradients/transforms so the
-   content stays sharp while the page gets a subtle water-surface identity. */
-body::after {
-  content: "";
-  position: fixed;
-  inset: -18%;
-  z-index: 0;
+.reef-loader-done {
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  opacity: 0.28;
-  background-image:
-    radial-gradient(ellipse at 50% 42%, rgba(0, 174, 190, 0.14), transparent 42%),
-    repeating-radial-gradient(ellipse at 18% 34%, transparent 0 16px, rgba(67, 218, 224, 0.12) 17px 18px, transparent 19px 76px),
-    repeating-radial-gradient(ellipse at 78% 68%, transparent 0 24px, rgba(0, 120, 150, 0.11) 25px 26px, transparent 27px 94px);
-  background-size: 100% 100%, 86% 64%, 112% 82%;
-  background-position: center, 0 0, 100% 100%;
-  filter: none;
-  animation: reef-ripples 22s ease-in-out infinite alternate;
 }
+.reef-loader-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+.reef-loader-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8rem;
+  height: 8rem;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.2);
+  animation: loader-ring 3.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.ring-two { animation-delay: 1.2s; }
+.ring-three { animation-delay: 2.4s; }
+.reef-loader-copy { position: relative; z-index: 1; margin-top: 13rem; text-align: center; color: #fff; }
+.reef-loader-mark { font: 600 0.85rem/1 var(--font-mono); letter-spacing: 0.42em; }
+.reef-loader-label { margin-top: 0.8rem; color: rgba(255,255,255,0.42); font: 0.58rem/1 var(--font-mono); letter-spacing: 0.2em; text-transform: uppercase; }
+.reef-loader-progress { width: 7rem; height: 1px; margin: 1.25rem auto 0; overflow: hidden; background: rgba(255,255,255,0.16); }
+.reef-loader-progress span { display: block; width: 35%; height: 100%; background: #fff; animation: loader-progress 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+.install-mode-note { margin-top: 0.625rem; padding: 0.625rem; border-left: 2px solid #8df3e5; color: var(--text-dim); font-size: 0.6875rem; line-height: 1.5; }
 
 .header-sticky {
-  background-color: rgba(8, 8, 8, 0.88);
+  background-color: var(--bg-card);
 }
 
 .brand-icon-img {
@@ -685,24 +693,12 @@ body::after {
   animation-duration: 2.4s;
 }
 
-@keyframes reef-ripples {
-  0% {
-    background-position: center, 0 0, 100% 100%;
-    background-size: 100% 100%, 86% 64%, 112% 82%;
-  }
-  50% {
-    background-position: center, 4% -3%, 95% 4%;
-    background-size: 105% 100%, 94% 70%, 106% 88%;
-  }
-  100% {
-    background-position: center, -4% 4%, 104% 96%;
-    background-size: 100% 105%, 86% 64%, 112% 82%;
-  }
+@keyframes loader-ring {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+  18% { opacity: 0.5; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(4.2); }
 }
-@keyframes grid-drift {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(4rem, 4rem, 0); }
-}
+@keyframes loader-progress { from { translate: -250% 0; } to { translate: 350% 0; } }
 @keyframes header-settle {
   from { opacity: 0; transform: translateY(-0.75rem); }
   to { opacity: 1; transform: translateY(0); }

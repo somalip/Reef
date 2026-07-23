@@ -4,6 +4,8 @@
  */
 
 export type { IndexRecord, SectionDocument, SearchOptions, ScoredRecord, MatchSpan, TokenFilter, ReefConfig } from './types.js';
+export type { AgentManifest, AgentReadyConfig } from './agent-ready.js';
+export { initAgentReady } from './agent-ready.js';
 export {
   createSearchIndex,
   addToIndex,

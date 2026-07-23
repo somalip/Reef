@@ -1,6 +1,6 @@
 {
   "name": "reef-search",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Fuzzy, keyboard-first search for static sites. No backend, no build step, no account. Works across web pages, and indexes links as well for navigation.",
   "keywords": [
     "js",
@@ -25,17 +25,27 @@
       "import": "./index.ts",
       "types": "./index.ts"
     },
-    "./dist/reef.min.js": "./dist/reef.min.js"
+    "./dist/reef.min.js": "./dist/reef.min.js",
+    "./dist/reef-agent-ready.js": "./dist/reef-agent-ready.js",
+    "./dist/reef-agent-ready.min.js": "./dist/reef-agent-ready.min.js",
+    "./agent-ready": {
+      "import": "./src/agent-ready.ts",
+      "types": "./src/agent-ready.ts"
+    }
   },
   "files": [
     "index.ts",
-    "src"
+    "src",
+    "dist",
+    "scripts"
   ],
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "build": "esbuild src/browser.ts --bundle --format=iife --global-name=ReefSearch --outfile=dist/reef.min.js --minify",
+    "build": "esbuild src/browser.ts --bundle --format=iife --global-name=ReefSearch --outfile=dist/reef.min.js --minify --sourcemap && npm run build:agent-ready",
+    "build:agent-ready": "esbuild src/agent-ready-entry.ts --bundle --format=iife --global-name=ReefAgentReady --outfile=dist/reef-agent-ready.js --sourcemap && esbuild src/agent-ready-entry.ts --bundle --format=iife --global-name=ReefAgentReady --outfile=dist/reef-agent-ready.min.js --minify --sourcemap",
+    "export-manifest": "node scripts/export-agent-manifest.mjs",
     "test": "node --import tsx --test"
   },
   "devDependencies": {

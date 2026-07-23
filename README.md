@@ -4,6 +4,8 @@
 
 Reef is a client-side search and interaction layer for static sites. Add one script to a docs site, blog, portfolio, or GitHub Pages project and get a fast `⌘K` / `Ctrl K` palette that searches pages, headings, links, files, media, structured data, and safe on-page actions.
 
+For external browser agents, Reef also ships an opt-in standalone `reef-agent-ready.js` bundle. Add `<script src="https://reef.js.org/dist/reef-agent-ready.min.js" async></script>` to publish a live `window.__reefAgentManifest`, an `application/agent-manifest+json` script, and a `reef:agent-ready` event. See the Agent-Ready tab on [reef.js.org](https://reef.js.org) for configuration and the optional `npm run export-manifest` deploy-time helper for `/.well-known/agent-manifest.json`.
+
 No backend. No account. No query analytics by default. The index is built and searched in the visitor’s browser.
 
 <br>

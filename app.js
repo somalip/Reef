@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     apiMethodQuery: '',
     apiLogs: [],
     benchmarkVisibleTools: ['Reef', 'Pagefind', 'Stork', 'Algolia', 'Meilisearch'],
+    installMode: 'search',
     installActionsMode: 'execute',
     installSitemap: '/sitemap.xml',
     installShortcut: 'cmdk',
@@ -347,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
       id: '5',
       category: 'Automation',
       question: 'What is data-actions-mode and what values does it accept?',
-      answer: 'data-actions-mode controls whether Reef will execute indexed actions on the page. The two valid values are "execute" (default) — allows act(), fillField(), and agent() to dispatch DOM events — and "navigate-only" — falls back to page navigation for all actionable results. Destructive actions (buttons with destructive labels) are always blocked in navigate-only mode and require actionsMode: "execute" to run.'
+      answer: 'data-actions-mode controls whether the full Reef search bundle executes indexed actions: "execute" (default) or "navigate-only". The separate agent-ready install mode uses reef-agent-ready.min.js with data-mode="agent-ready" and intentionally provides manifest instrumentation without any search features.'
     },
     {
       id: '6',
@@ -431,6 +432,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Install Elements
   const modeExecuteBtn = document.getElementById('modeExecuteBtn');
   const modeNavigateOnlyBtn = document.getElementById('modeNavigateOnlyBtn');
+  const modeSearchBtn = document.getElementById('modeSearchBtn');
+  const modeAgentReadyBtn = document.getElementById('modeAgentReadyBtn');
+  const agentReadyModeNote = document.getElementById('agentReadyModeNote');
+  const actionsModeSetting = document.getElementById('actionsModeSetting');
+  const sitemapSetting = document.getElementById('sitemapSetting');
+  const shortcutSetting = document.getElementById('shortcutSetting');
   const sitemapInput = document.getElementById('sitemapInput');
   const shortcutInput = document.getElementById('shortcutInput');
   const genScriptCodeOutput = document.getElementById('genScriptCodeOutput');
@@ -822,19 +829,43 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- INSTALL TAB LOGIC ---
+  function updateInstallModeUI() {
+    const agentReady = state.installMode === 'agent-ready';
+    modeSearchBtn.className = agentReady ? 'btn-secondary' : 'btn-primary';
+    modeAgentReadyBtn.className = agentReady ? 'btn-primary' : 'btn-secondary';
+    agentReadyModeNote.hidden = !agentReady;
+    actionsModeSetting.hidden = agentReady;
+    sitemapSetting.hidden = agentReady;
+    shortcutSetting.hidden = agentReady;
+  }
+
   function updateInstallScriptTag() {
-    const tag = `<script src="https://reef.js.org/dist/reef.min.js" data-actions-mode="${state.installActionsMode}" data-sitemap="${state.installSitemap}" data-hotkey="${state.installShortcut}" async defer></script>`;
+    const tag = state.installMode === 'agent-ready'
+      ? '<script src="https://reef.js.org/dist/reef-agent-ready.min.js" data-mode="agent-ready" async defer></script>'
+      : `<script src="https://reef.js.org/dist/reef.min.js" data-actions-mode="${state.installActionsMode}" data-sitemap="${state.installSitemap}" data-hotkey="${state.installShortcut}" async defer></script>`;
     genScriptCodeOutput.innerText = tag;
   }
 
-  modeExecuteBtn.addEventListener('click', () => {
+  modeSearchBtn.addEventListener('click', () => {
+    state.installMode = 'search';
+    updateInstallModeUI();
+    updateInstallScriptTag();
+  });
+
+  modeAgentReadyBtn.addEventListener('click', () => {
+    state.installMode = 'agent-ready';
+    updateInstallModeUI();
+    updateInstallScriptTag();
+  });
+
+  modeExecuteBtn?.addEventListener('click', () => {
     state.installActionsMode = 'execute';
     modeExecuteBtn.className = 'btn-primary';
     modeNavigateOnlyBtn.className = 'btn-secondary';
     updateInstallScriptTag();
   });
 
-  modeNavigateOnlyBtn.addEventListener('click', () => {
+  modeNavigateOnlyBtn?.addEventListener('click', () => {
     state.installActionsMode = 'navigate-only';
     modeNavigateOnlyBtn.className = 'btn-primary';
     modeExecuteBtn.className = 'btn-secondary';
@@ -866,6 +897,15 @@ document.addEventListener('DOMContentLoaded', () => {
       copyNpmBtn.innerText = 'Copy';
     }, 2000);
   });
+
+  updateInstallModeUI();
+  updateInstallScriptTag();
+
+  const reefLoader = document.getElementById('reefLoader');
+  window.setTimeout(() => {
+    reefLoader?.classList.add('reef-loader-done');
+    window.setTimeout(() => reefLoader?.remove(), 700);
+  }, 1500);
 
   // --- FAQ TAB RENDER ---
   function renderFaqTab() {
