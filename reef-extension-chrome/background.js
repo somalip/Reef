@@ -2831,6 +2831,34 @@ async function searchOpenTabs(query, limit = 25) {
       autocorrected = true;
     }
   }
+  if (items.length === 0) {
+    try {
+      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (activeTab?.id) {
+        const reefResponse = await chrome.tabs.sendMessage(activeTab.id, {
+          type: "REEF_LOCAL_SEARCH",
+          query,
+          options: { limit: 5 }
+        });
+        if (reefResponse?.success && reefResponse.results?.length > 0) {
+          if (!suggestion && reefResponse.suggestion) suggestion = reefResponse.suggestion;
+          if (reefResponse.autocorrected) {
+            items = reefResponse.results.slice(0, 5).map((r) => ({
+              tabId: activeTab.id,
+              title: activeTab.title || "",
+              url: activeTab.url || "",
+              favIconUrl: activeTab.favIconUrl || "",
+              windowId: activeTab.windowId,
+              score: 5,
+              matchedRecords: [{ headingText: r.headingText, bodyText: (r.bodyText || "").slice(0, 120), selector: r.selector, type: r.type }]
+            }));
+            autocorrected = true;
+          }
+        }
+      }
+    } catch {
+    }
+  }
   const siteResults = searchSiteContent(query, 5);
   const actions = [];
   if (looksLikeUrl(query.trim())) {
@@ -2857,15 +2885,41 @@ if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
             return;
           }
           const options = message.searchOptions || {};
-          const paginated = searchWithPagination(message.query || "", state.index, options);
-          const suggestions = suggest(message.query || "", state.index);
-          const results = paginated.results.map((sr) => sr.record ?? sr);
+          const query = message.query || "";
+          const paginated = searchWithPagination(query, state.index, options);
+          const bgSuggestions = suggest(query, state.index);
+          let results = paginated.results.map((sr) => sr.record ?? sr);
+          let suggestion;
+          let autocorrected = false;
+          let reefSuggestions = [];
+          try {
+            const reefResponse = await chrome.tabs.sendMessage(tabId, {
+              type: "REEF_LOCAL_SEARCH",
+              query,
+              options: { limit: options.pageSize ?? 20 }
+            });
+            if (reefResponse?.success) {
+              reefSuggestions = reefResponse.suggestions || [];
+              if (results.length === 0 && reefResponse.autocorrected && reefResponse.results?.length > 0) {
+                results = reefResponse.results;
+                suggestion = reefResponse.suggestion;
+                autocorrected = true;
+              }
+              if (!suggestion && reefResponse.suggestion) {
+                suggestion = reefResponse.suggestion;
+              }
+            }
+          } catch {
+          }
+          const mergedSuggestions = [...new Set([...bgSuggestions, ...reefSuggestions])].slice(0, 10);
           sendResponse({
             success: true,
             results,
             total: paginated.total,
             hasMore: paginated.hasMore,
-            suggestions,
+            suggestions: mergedSuggestions,
+            suggestion,
+            autocorrected,
             manifest: state.manifest
           });
           return;

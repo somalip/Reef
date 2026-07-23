@@ -1264,6 +1264,7 @@
     let currentSiteResults = [];
     let currentActions = [];
     let currentAutocorrected = false;
+    let currentReefSuggestions = [];
     let selectedIndex = 0;
     let perTabMatchIndex = /* @__PURE__ */ new Map();
     let debounceHandle = null;
@@ -1395,7 +1396,7 @@
         }
       }
     }
-    function renderResults(items, query, suggestion, autocorrected, siteResults, actions) {
+    function renderResults(items, query, suggestion, autocorrected, siteResults, actions, reefSuggestions) {
       if (!results) return;
       currentResults = items;
       unifiedResults = [];
@@ -1420,6 +1421,26 @@
           }
         } else {
           empty.textContent = query ? "No matching tabs found." : "Start typing to search every open tab.";
+        }
+        if (reefSuggestions && reefSuggestions.length > 0) {
+          const chips = document.createElement("div");
+          chips.className = "reef-suggestion-chips";
+          chips.style.cssText = "display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:8px;";
+          for (const s of reefSuggestions) {
+            const chip = document.createElement("button");
+            chip.className = "reef-suggestion-chip";
+            chip.textContent = s;
+            chip.style.cssText = "font-size:11px;padding:3px 10px;border-radius:12px;border:1px solid #e5e7eb;background:#fafafa;color:#6b7280;cursor:pointer;";
+            chip.addEventListener("click", () => {
+              if (input) {
+                input.value = s;
+                currentQuery = s;
+                onInput();
+              }
+            });
+            chips.appendChild(chip);
+          }
+          empty.appendChild(chips);
         }
         if (actions && actions.length > 0) {
           const frag = document.createDocumentFragment();
@@ -1670,7 +1691,8 @@
       currentAutocorrected = !!(res && res.autocorrected);
       currentSiteResults = res && Array.isArray(res.siteResults) ? res.siteResults : [];
       currentActions = res && Array.isArray(res.actions) ? res.actions : [];
-      renderResults(items, key, currentSuggestion, currentAutocorrected, currentSiteResults, currentActions);
+      currentReefSuggestions = items.length === 0 ? reefSuggest(key, 5) : [];
+      renderResults(items, key, currentSuggestion, currentAutocorrected, currentSiteResults, currentActions, currentReefSuggestions);
     }
     async function fetchRecents() {
       try {
@@ -1902,6 +1924,7 @@
           return true;
         }
       });
+      syncRecordsToReef(filteredRecords);
       return {
         ...authoritative,
         records: filteredRecords
@@ -1934,6 +1957,7 @@
         filtered.map((record) => [`${record.type}:${record.headingText}:${record.selector || record.url}`, record])
       ).values()
     ];
+    syncRecordsToReef(deduped);
     return {
       version: 1,
       url,
@@ -1957,6 +1981,47 @@
     currentAgent = new Agent(index, dummyInspector, { actionsMode });
     return currentAgent;
   }
+
+  var reefSynced = false;
+  var reefLastUrl = "";
+  function syncRecordsToReef(records) {
+    if (typeof window === "undefined" || !window.Reef) return;
+    const currentUrl = typeof location !== "undefined" ? location.href : "";
+    if (reefSynced && reefLastUrl === currentUrl) return;
+    try {
+      window.Reef.addCustomRecords(records);
+      reefSynced = true;
+      reefLastUrl = currentUrl;
+    } catch (e) {
+      console.warn("[reef-ext] failed to sync records to Reef index", e);
+    }
+  }
+
+  function reefLocalSearch(query, options) {
+    if (typeof window === "undefined" || !window.Reef) return { results: [], suggestion: void 0, autocorrected: false };
+    if (!query || !query.trim()) return { results: [], suggestion: void 0, autocorrected: false };
+    const limit = options?.limit ?? 20;
+    const results = window.Reef.search(query, { limit, fuzzy: false, includeScore: true });
+    if (results.length > 0) {
+      return { results: results.map((r) => r.record ?? r), suggestion: void 0, autocorrected: false };
+    }
+    const fuzzyResults = window.Reef.search(query, { limit, fuzzy: true, fuzzyDistance: 2, includeScore: true });
+    if (fuzzyResults.length > 0) {
+      const suggestion = fuzzyResults[0]?.record?.headingText ?? void 0;
+      return { results: fuzzyResults.map((r) => r.record ?? r), suggestion, autocorrected: true };
+    }
+    return { results: [], suggestion: void 0, autocorrected: false };
+  }
+
+  function reefSuggest(query, limit) {
+    if (typeof window === "undefined" || !window.Reef) return [];
+    try {
+      return window.Reef.suggest(query, limit ?? 10);
+    } catch {
+      return [];
+    }
+  }
+
   if (typeof document !== "undefined") {
     document.addEventListener("keydown", (e) => {
       const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
@@ -2022,6 +2087,32 @@
               }, 2e3);
             }
             sendResponse({ success: true });
+            return;
+          }
+          if (message.type === "REEF_LOCAL_SEARCH") {
+            const query = message.query || "";
+            const opts = message.options || {};
+            if (!query.trim()) {
+              sendResponse({ success: true, results: [], suggestion: void 0, autocorrected: false });
+              return;
+            }
+            if (!reefSynced) {
+              extractPageManifest(message.options?.exclusionSelectors || []);
+            }
+            const searchResult = reefLocalSearch(query, { limit: opts.limit ?? 20 });
+            const suggestions = reefSuggest(query, 8);
+            sendResponse({
+              success: true,
+              results: searchResult.results,
+              suggestion: searchResult.suggestion,
+              autocorrected: searchResult.autocorrected,
+              suggestions
+            });
+            return;
+          }
+          if (message.type === "REEF_SUGGEST") {
+            const suggestions = reefSuggest(message.query || "", message.limit ?? 10);
+            sendResponse({ success: true, suggestions });
             return;
           }
           if (message.type === "REEF_BOOKMARK_SELECTION" && message.text) {

@@ -85,6 +85,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderPageResults();
     }
   });
+  var pageSuggestion = void 0;
+  var pageAutocorrected = false;
+  var pageSuggestionsList = [];
   async function performPageSearch() {
     if (!activeTabId) return;
     resultsContainer.innerHTML = '<div class="loading-state">Searching page...</div>';
@@ -107,6 +110,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           manifestBadge.classList.remove("authoritative");
         }
         pageResults = response.results || [];
+        pageSuggestion = response.suggestion;
+        pageAutocorrected = !!response.autocorrected;
+        pageSuggestionsList = response.suggestions || [];
         renderPageResults();
       }
     );
@@ -116,11 +122,57 @@ document.addEventListener("DOMContentLoaded", async () => {
     let filtered2 = pageResults;
     if (pageFilter !== "all") filtered2 = pageResults.filter((r) => r.type === pageFilter);
     statsLabel.textContent = `${filtered2.length} items found`;
+    resultsContainer.innerHTML = "";
+    if (pageAutocorrected && pageSuggestion) {
+      const banner = document.createElement("div");
+      banner.className = "autocorrect-banner";
+      const label = document.createElement("span");
+      label.textContent = `Showing fuzzy matches. Did you mean `;
+      const link = document.createElement("a");
+      link.className = "autocorrect-link";
+      link.textContent = pageSuggestion;
+      link.href = "#";
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const searchInput = document.getElementById("search-input");
+        if (searchInput) {
+          searchInput.value = pageSuggestion;
+          pageQuery = pageSuggestion;
+          performPageSearch();
+        }
+      });
+      label.appendChild(link);
+      const q = document.createTextNode("?");
+      label.appendChild(q);
+      banner.appendChild(label);
+      resultsContainer.appendChild(banner);
+    }
+    if (pageSuggestionsList.length > 0 && !pageAutocorrected) {
+      const chips = document.createElement("div");
+      chips.className = "suggestion-chips";
+      for (const s of pageSuggestionsList.slice(0, 5)) {
+        const chip = document.createElement("button");
+        chip.className = "suggestion-chip";
+        chip.textContent = s;
+        chip.addEventListener("click", () => {
+          const searchInput = document.getElementById("search-input");
+          if (searchInput) {
+            searchInput.value = s;
+            pageQuery = s;
+            performPageSearch();
+          }
+        });
+        chips.appendChild(chip);
+      }
+      resultsContainer.appendChild(chips);
+    }
     if (filtered2.length === 0) {
-      resultsContainer.innerHTML = '<div class="empty-state">No matching records found.</div>';
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "No matching records found.";
+      resultsContainer.appendChild(empty);
       return;
     }
-    resultsContainer.innerHTML = "";
     filtered2.forEach((record) => {
       const card = document.createElement("div");
       card.className = "result-card";
