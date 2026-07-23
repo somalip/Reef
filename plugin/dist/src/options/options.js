@@ -1,4 +1,4 @@
-// plugin/src/options/options.ts
+// src/options/options.ts
 var DEFAULTS = {
   actionsMode: "execute",
   confirmDestructive: true,

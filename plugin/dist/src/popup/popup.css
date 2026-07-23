@@ -438,3 +438,143 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--gray-500);
 }
+
+/* ─── MODE TABS ─── */
+.mode-tabs {
+  display: flex;
+  gap: 0;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+}
+
+.mode-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: color .12s, border-color .12s, background .12s;
+}
+
+.mode-tab:hover {
+  color: var(--fg);
+  background: var(--bg-muted);
+}
+
+.mode-tab.active {
+  color: var(--fg);
+  border-bottom-color: var(--fg);
+  background: var(--bg);
+}
+
+.hidden { display: none !important; }
+
+/* ─── MODE PANELS ─── */
+.mode-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ─── MINI BUTTONS ─── */
+.mini-btn {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background .1s, color .1s;
+}
+.mini-btn:hover {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+.mini-btn.danger:hover {
+  background: #b91c1c;
+  color: #fff;
+  border-color: #b91c1c;
+}
+
+/* ─── LIBRARY CARDS ─── */
+.library-card {
+  gap: 6px;
+}
+
+.card-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.card-url {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  padding: 2px 5px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  max-width: 50%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-pre {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow: auto;
+  color: var(--fg);
+  margin: 0;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.tag-chip {
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--bg-muted);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  letter-spacing: 0.02em;
+}
+
+[data-theme="dark"] .tag-chip {
+  background: var(--gray-800);
+  color: var(--gray-300);
+  border-color: var(--gray-700);
+}
+
+/* ─── STATS FLASH ─── */
+#stats-label.flash {
+  color: #047857;
+  font-weight: 700;
+}
+
+[data-theme="dark"] #stats-label.flash {
+  color: #34d399;
+}

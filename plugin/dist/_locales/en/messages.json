@@ -4,7 +4,7 @@
     "description": "The name of the extension"
   },
   "appDescription": {
-    "message": "In-page search, site indexing, and intelligent action automation for any website.",
+    "message": "Search, bookmark, and automate any page. Library of bookmarks, snippets, notes, and a tab-wide finder — all client-side.",
     "description": "Description of the extension"
   }
 }

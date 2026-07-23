@@ -13,7 +13,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// src/search-index.ts
+// ../src/search-index.ts
 var search_index_exports = {};
 __export(search_index_exports, {
   addSectionsToIndex: () => addSectionsToIndex,
@@ -1197,7 +1197,7 @@ function getPopularQueries(index, n = 5) {
 }
 var addSectionsToIndex, DEFAULT_WEIGHTS;
 var init_search_index = __esm({
-  "src/search-index.ts"() {
+  "../src/search-index.ts"() {
     "use strict";
     addSectionsToIndex = addToIndex;
     DEFAULT_WEIGHTS = {
@@ -1209,7 +1209,7 @@ var init_search_index = __esm({
   }
 });
 
-// src/cache.ts
+// ../src/cache.ts
 var cache_exports = {};
 __export(cache_exports, {
   clearCache: () => clearCache,
@@ -1363,7 +1363,7 @@ async function loadSiteGraph(startUrl, key = "site-graph") {
 }
 var DB_NAME, STORE_NAME, CACHE_VERSION_KEY;
 var init_cache = __esm({
-  "src/cache.ts"() {
+  "../src/cache.ts"() {
     "use strict";
     init_search_index();
     DB_NAME = "reef-index";
@@ -1372,10 +1372,10 @@ var init_cache = __esm({
   }
 });
 
-// plugin/src/background.ts
+// src/background.ts
 init_search_index();
 
-// src/extraction.ts
+// ../src/extraction.ts
 function stripTags(value) {
   let result = "";
   let inTag = false;
@@ -1880,7 +1880,7 @@ function resolveUrl(value, base) {
   }
 }
 
-// src/indexing/indexer.ts
+// ../src/indexing/indexer.ts
 init_search_index();
 var Indexer = class {
   constructor(config) {
@@ -2353,7 +2353,154 @@ var Indexer = class {
   }
 };
 
-// plugin/src/background.ts
+// src/storage.ts
+var KEY = {
+  bookmarks: "reef.bookmarks",
+  snippets: "reef.snippets",
+  pageNotes: "reef.pageNotes",
+  recents: "reef.recents"
+};
+function genId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+function storageApi() {
+  if (typeof chrome !== "undefined" && chrome.storage?.local) {
+    return chrome.storage.local;
+  }
+  return null;
+}
+async function getArray(key) {
+  const api = storageApi();
+  if (!api) return [];
+  const data = await api.get([key]);
+  return data[key] || [];
+}
+async function setArray(key, value) {
+  const api = storageApi();
+  if (!api) return;
+  await api.set({ [key]: value });
+}
+async function listBookmarks(query = "", tags = []) {
+  const all = await getArray(KEY.bookmarks);
+  return filterItems(all, query, tags);
+}
+async function createBookmark(input) {
+  const now = Date.now();
+  const bookmark = { ...input, id: genId(), createdAt: now, updatedAt: now };
+  const all = await getArray(KEY.bookmarks);
+  all.unshift(bookmark);
+  await setArray(KEY.bookmarks, all);
+  return bookmark;
+}
+async function updateBookmark(id, patch) {
+  const all = await getArray(KEY.bookmarks);
+  const idx = all.findIndex((b) => b.id === id);
+  if (idx < 0) return null;
+  all[idx] = { ...all[idx], ...patch, id, updatedAt: Date.now() };
+  await setArray(KEY.bookmarks, all);
+  return all[idx];
+}
+async function deleteBookmark(id) {
+  const all = await getArray(KEY.bookmarks);
+  const next = all.filter((b) => b.id !== id);
+  if (next.length === all.length) return false;
+  await setArray(KEY.bookmarks, next);
+  return true;
+}
+async function listSnippets(query = "", tags = []) {
+  const all = await getArray(KEY.snippets);
+  return filterItems(all, query, tags);
+}
+async function createSnippet(input) {
+  const now = Date.now();
+  const snippet = { ...input, id: genId(), createdAt: now, updatedAt: now };
+  const all = await getArray(KEY.snippets);
+  all.unshift(snippet);
+  await setArray(KEY.snippets, all);
+  return snippet;
+}
+async function updateSnippet(id, patch) {
+  const all = await getArray(KEY.snippets);
+  const idx = all.findIndex((s) => s.id === id);
+  if (idx < 0) return null;
+  all[idx] = { ...all[idx], ...patch, id, updatedAt: Date.now() };
+  await setArray(KEY.snippets, all);
+  return all[idx];
+}
+async function deleteSnippet(id) {
+  const all = await getArray(KEY.snippets);
+  const next = all.filter((s) => s.id !== id);
+  if (next.length === all.length) return false;
+  await setArray(KEY.snippets, next);
+  return true;
+}
+async function getPageNote(url) {
+  const all = await getArray(KEY.pageNotes);
+  return all.find((n) => n.url === url) || null;
+}
+async function listPageNotes(query = "") {
+  const all = await getArray(KEY.pageNotes);
+  if (!query) return all;
+  const q = query.toLowerCase();
+  return all.filter(
+    (n) => n.text.toLowerCase().includes(q) || n.title.toLowerCase().includes(q) || n.url.toLowerCase().includes(q)
+  );
+}
+async function setPageNote(url, text, title) {
+  const all = await getArray(KEY.pageNotes);
+  const existing = all.findIndex((n) => n.url === url);
+  const note = { url, text, title, updatedAt: Date.now() };
+  if (existing >= 0) all[existing] = note;
+  else all.unshift(note);
+  await setArray(KEY.pageNotes, all);
+  return note;
+}
+async function deletePageNote(url) {
+  const all = await getArray(KEY.pageNotes);
+  const next = all.filter((n) => n.url !== url);
+  if (next.length === all.length) return false;
+  await setArray(KEY.pageNotes, next);
+  return true;
+}
+var RECENT_MAX = 30;
+async function listRecents() {
+  return getArray(KEY.recents);
+}
+async function recordRecent(page) {
+  const all = await getArray(KEY.recents);
+  const next = [{ ...page, visitedAt: Date.now() }, ...all.filter((p) => p.url !== page.url)].slice(0, RECENT_MAX);
+  await setArray(KEY.recents, next);
+}
+async function clearRecents() {
+  await setArray(KEY.recents, []);
+}
+async function allBookmarkTags() {
+  return collectTags(await getArray(KEY.bookmarks));
+}
+async function allSnippetTags() {
+  return collectTags(await getArray(KEY.snippets));
+}
+function filterItems(items, query, tags) {
+  let out = items;
+  if (tags.length) {
+    out = out.filter((item) => tags.every((t) => item.tags.includes(t)));
+  }
+  if (query) {
+    const q = query.toLowerCase();
+    out = out.filter((item) => {
+      const hay = JSON.stringify(item).toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  return out;
+}
+function collectTags(items) {
+  const set = /* @__PURE__ */ new Set();
+  for (const item of items) for (const tag of item.tags) set.add(tag);
+  return Array.from(set).sort();
+}
+
+// src/background.ts
 var tabIndices = /* @__PURE__ */ new Map();
 var siteIndices = /* @__PURE__ */ new Map();
 async function getOptions() {
@@ -2410,12 +2557,81 @@ async function getOrFetchTabIndex(tabId, forceRefresh = false) {
         } catch {
         }
       }
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        if (tab.url && tab.title) {
+          await recordRecent({
+            url: tab.url,
+            title: tab.title,
+            favicon: tab.favIconUrl,
+            recordCount: response.manifest.records.length
+          });
+        }
+      } catch {
+      }
       return state;
     }
   } catch (err) {
     console.warn(`[Reef Background] Failed to fetch manifest from tab ${tabId}:`, err);
   }
   return null;
+}
+function ensureContextMenus() {
+  if (typeof chrome === "undefined" || !chrome.contextMenus) return;
+  const api = chrome.contextMenus;
+  if (!api) return;
+  const create = (id, title, contexts) => {
+    try {
+      api.create({ id, title, contexts }, () => {
+        void chrome.runtime.lastError;
+      });
+    } catch {
+    }
+  };
+  create("reef-bookmark-selection", "Bookmark selection in Reef", ["selection"]);
+  create("reef-snippet-selection", "Save selection as snippet", ["selection"]);
+  create("reef-search-selection", 'Search "%s" in Reef', ["selection"]);
+  create("reef-note-page", "Add note to this page", ["page", "selection"]);
+  create("reef-bookmark-page", "Bookmark this page in Reef", ["page"]);
+}
+if (typeof chrome !== "undefined") {
+  if (chrome.runtime?.onInstalled) {
+    chrome.runtime.onInstalled.addListener(() => ensureContextMenus());
+  }
+  if (chrome.runtime?.onStartup) {
+    chrome.runtime.onStartup.addListener(() => ensureContextMenus());
+  }
+  ensureContextMenus();
+}
+if (typeof chrome !== "undefined" && chrome.contextMenus?.onClicked) {
+  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    try {
+      if (info.menuItemId === "reef-bookmark-selection" && info.selectionText && tab?.id !== void 0) {
+        await chrome.tabs.sendMessage(tab.id, { type: "REEF_BOOKMARK_SELECTION", text: info.selectionText });
+        return;
+      }
+      if (info.menuItemId === "reef-snippet-selection" && info.selectionText && tab?.id !== void 0) {
+        await chrome.tabs.sendMessage(tab.id, { type: "REEF_SNIPPET_SELECTION", text: info.selectionText });
+        return;
+      }
+      if (info.menuItemId === "reef-search-selection" && info.selectionText && tab?.id !== void 0) {
+        await chrome.tabs.sendMessage(tab.id, { type: "REEF_OPEN_POPUP_QUERY", query: info.selectionText });
+        chrome.action?.openPopup?.();
+        return;
+      }
+      if (info.menuItemId === "reef-note-page" && tab?.id !== void 0) {
+        await chrome.tabs.sendMessage(tab.id, { type: "REEF_OPEN_NOTE_FOR_PAGE" });
+        chrome.action?.openPopup?.();
+        return;
+      }
+      if (info.menuItemId === "reef-bookmark-page" && tab?.id !== void 0) {
+        await chrome.tabs.sendMessage(tab.id, { type: "REEF_BOOKMARK_PAGE" });
+        return;
+      }
+    } catch (err) {
+      console.warn("[Reef Background] Context menu action failed:", err);
+    }
+  });
 }
 if (typeof chrome !== "undefined" && chrome.omnibox) {
   chrome.omnibox.onInputChanged.addListener(async (text, suggestCallback) => {
@@ -2463,6 +2679,53 @@ function escapeXml(str) {
         return c;
     }
   });
+}
+async function searchOpenTabs(query, limit = 25) {
+  if (!query.trim() || typeof chrome === "undefined" || !chrome.tabs) return [];
+  const q = query.toLowerCase();
+  const tabs = await chrome.tabs.query({});
+  const matches = [];
+  for (const tab of tabs) {
+    if (!tab.id || !tab.url || !tab.title) continue;
+    if (tab.url.startsWith("chrome://") || tab.url.startsWith("about:") || tab.url.startsWith("moz-extension:")) continue;
+    let score = 0;
+    const matchedRecords = [];
+    const title = tab.title.toLowerCase();
+    const url = tab.url.toLowerCase();
+    if (title.includes(q)) score += 10;
+    if (url.includes(q)) score += 5;
+    const state = tabIndices.get(tab.id);
+    if (state) {
+      try {
+        const hits = searchSections(query, state.index, { limit: 3 });
+        if (hits.length) {
+          score += 8;
+          matchedRecords.push(...hits);
+        }
+      } catch {
+      }
+    } else if (score === 0) {
+      continue;
+    }
+    if (score > 0) {
+      matches.push({ tab, score, matchedRecords });
+    }
+  }
+  matches.sort((a, b) => b.score - a.score);
+  return matches.slice(0, limit).map((m) => ({
+    tabId: m.tab.id,
+    title: m.tab.title,
+    url: m.tab.url,
+    favIconUrl: m.tab.favIconUrl,
+    windowId: m.tab.windowId,
+    score: m.score,
+    matchedRecords: m.matchedRecords.map((r) => ({
+      headingText: r.headingText,
+      bodyText: (r.bodyText || "").slice(0, 120),
+      selector: r.selector,
+      type: r.type
+    }))
+  }));
 }
 if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -2530,6 +2793,92 @@ if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
             siteIndices.set(new URL(tab.url).origin, crawledIndex);
             sendResponse({ success: true });
           });
+          return;
+        }
+        if (message.type === "LIBRARY_BOOKMARK_LIST") {
+          sendResponse({ success: true, items: await listBookmarks(message.query || "", message.tags || []) });
+          return;
+        }
+        if (message.type === "LIBRARY_BOOKMARK_CREATE") {
+          const bookmark = await createBookmark(message.data);
+          sendResponse({ success: true, item: bookmark });
+          return;
+        }
+        if (message.type === "LIBRARY_BOOKMARK_UPDATE") {
+          const item = await updateBookmark(message.id, message.data || {});
+          sendResponse({ success: !!item, item });
+          return;
+        }
+        if (message.type === "LIBRARY_BOOKMARK_DELETE") {
+          sendResponse({ success: await deleteBookmark(message.id) });
+          return;
+        }
+        if (message.type === "LIBRARY_SNIPPET_LIST") {
+          sendResponse({ success: true, items: await listSnippets(message.query || "", message.tags || []) });
+          return;
+        }
+        if (message.type === "LIBRARY_SNIPPET_CREATE") {
+          const snippet = await createSnippet(message.data);
+          sendResponse({ success: true, item: snippet });
+          return;
+        }
+        if (message.type === "LIBRARY_SNIPPET_UPDATE") {
+          const item = await updateSnippet(message.id, message.data || {});
+          sendResponse({ success: !!item, item });
+          return;
+        }
+        if (message.type === "LIBRARY_SNIPPET_DELETE") {
+          sendResponse({ success: await deleteSnippet(message.id) });
+          return;
+        }
+        if (message.type === "LIBRARY_NOTE_GET") {
+          sendResponse({ success: true, item: await getPageNote(message.url) });
+          return;
+        }
+        if (message.type === "LIBRARY_NOTE_LIST") {
+          sendResponse({ success: true, items: await listPageNotes(message.query || "") });
+          return;
+        }
+        if (message.type === "LIBRARY_NOTE_SET") {
+          const note = await setPageNote(message.url, message.text, message.title || "");
+          sendResponse({ success: true, item: note });
+          return;
+        }
+        if (message.type === "LIBRARY_NOTE_DELETE") {
+          sendResponse({ success: await deletePageNote(message.url) });
+          return;
+        }
+        if (message.type === "LIBRARY_RECENTS_LIST") {
+          sendResponse({ success: true, items: await listRecents() });
+          return;
+        }
+        if (message.type === "LIBRARY_RECENTS_CLEAR") {
+          await clearRecents();
+          sendResponse({ success: true });
+          return;
+        }
+        if (message.type === "LIBRARY_TAGS") {
+          sendResponse({
+            success: true,
+            bookmarkTags: await allBookmarkTags(),
+            snippetTags: await allSnippetTags()
+          });
+          return;
+        }
+        if (message.type === "TAB_SEARCH") {
+          sendResponse({ success: true, items: await searchOpenTabs(message.query || "", message.limit || 25) });
+          return;
+        }
+        if (message.type === "TAB_SWITCH") {
+          if (typeof message.tabId === "number" && chrome.tabs) {
+            await chrome.tabs.update(message.tabId, { active: true });
+            if (typeof message.windowId === "number" && chrome.windows) {
+              await chrome.windows.update(message.windowId, { focused: true });
+            }
+            sendResponse({ success: true });
+          } else {
+            sendResponse({ success: false, error: "invalid-tab-id" });
+          }
           return;
         }
         sendResponse({ success: false, error: "unsupported-background-message" });
