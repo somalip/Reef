@@ -901,12 +901,6 @@ document.addEventListener('DOMContentLoaded', () => {
   updateInstallModeUI();
   updateInstallScriptTag();
 
-  const reefLoader = document.getElementById('reefLoader');
-  window.setTimeout(() => {
-    reefLoader?.classList.add('reef-loader-done');
-    window.setTimeout(() => reefLoader?.remove(), 700);
-  }, 1500);
-
   // --- FAQ TAB RENDER ---
   function renderFaqTab() {
     const categories = ['All', 'Architecture', 'Automation', 'Privacy', 'Performance'];
