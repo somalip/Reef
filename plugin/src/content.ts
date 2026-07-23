@@ -18,12 +18,14 @@ import { Agent } from '../../src/agent.ts';
 import { createSearchIndex, addToIndex } from '../../src/search-index.js';
 import type { IndexRecord } from '../../src/types.js';
 import type { AgentManifest } from '../../src/agent-ready.js';
+import { createSpotlight, type SpotlightHandle } from './spotlight.js';
 
 export interface ExtensionMessage {
   type:
     | 'PING' | 'GET_MANIFEST' | 'RESCAN' | 'EXECUTE_ACTION' | 'HIGHLIGHT_RECORD'
     | 'REEF_BOOKMARK_SELECTION' | 'REEF_SNIPPET_SELECTION' | 'REEF_BOOKMARK_PAGE'
-    | 'REEF_OPEN_POPUP_QUERY' | 'REEF_OPEN_NOTE_FOR_PAGE' | 'REEF_SHOW_TOAST';
+    | 'REEF_OPEN_POPUP_QUERY' | 'REEF_OPEN_NOTE_FOR_PAGE' | 'REEF_SHOW_TOAST'
+    | 'SHOW_SPOTLIGHT' | 'HIDE_SPOTLIGHT';
   record?: IndexRecord;
   actionType?: 'click' | 'type' | 'navigate';
   value?: string;
@@ -151,6 +153,28 @@ function getOrCreateAgent(actionsMode: 'execute' | 'navigate-only' = 'execute'):
   return currentAgent;
 }
 
+// ─── SPOTLIGHT HOTKEY (Cmd+Shift+L / Meta+Shift+L) ───────
+// Chrome manifest commands cannot bind to the Meta (Cmd) key,
+// so we listen at the content-script level for Cmd+Shift+L.
+if (typeof document !== 'undefined') {
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+    if (!isMac) return;
+    if (e.metaKey && e.shiftKey && (e.key === 'l' || e.key === 'L') && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      ensureSpotlight().show();
+    }
+  }, true);
+}
+
+// ─── SPOTLIGHT (lazy) ─────────────────────────────────────
+let spotlightHandle: SpotlightHandle | null = null;
+function ensureSpotlight(): SpotlightHandle {
+  if (!spotlightHandle) spotlightHandle = createSpotlight();
+  return spotlightHandle;
+}
+
 // Global message listener for Chrome extension runtime
 if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {
@@ -237,6 +261,22 @@ if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
         }
         if (message.type === 'REEF_OPEN_POPUP_QUERY' || message.type === 'REEF_OPEN_NOTE_FOR_PAGE') {
           // Background opens popup; nothing extra to do here
+          sendResponse({ success: true });
+          return;
+        }
+
+        // Spotlight overlay
+        if (message.type === 'SHOW_SPOTLIGHT') {
+          try {
+            await ensureSpotlight().show();
+            sendResponse({ success: true });
+          } catch (err: any) {
+            sendResponse({ success: false, error: err?.message || String(err) });
+          }
+          return;
+        }
+        if (message.type === 'HIDE_SPOTLIGHT') {
+          spotlightHandle?.hide();
           sendResponse({ success: true });
           return;
         }

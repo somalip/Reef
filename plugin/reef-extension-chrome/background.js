@@ -2680,24 +2680,86 @@ function escapeXml(str) {
     }
   });
 }
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function scoreTitle(title, q) {
+  if (!q) return 0;
+  const t = title.toLowerCase();
+  if (t === q) return 60;
+  if (t.startsWith(q)) return 35;
+  const idx = t.indexOf(q);
+  if (idx >= 0) return 15 + Math.max(0, 10 - Math.floor(idx / 8));
+  if (new RegExp(`\\b${escapeRegex(q)}`, "i").test(title)) return 12;
+  return 0;
+}
+function searchSiteContent(query, limit = 10) {
+  const results = [];
+  for (const [origin, index] of siteIndices) {
+    try {
+      const hits = searchSections(query, index, { limit: 3, fuzzy: true });
+      for (const hit of hits) {
+        results.push({
+          url: hit.url || origin,
+          headingText: hit.headingText,
+          bodyText: (hit.bodyText || "").slice(0, 120),
+          selector: hit.selector,
+          type: hit.type,
+          score: 5,
+          sourceOrigin: origin
+        });
+      }
+    } catch {
+    }
+  }
+  results.sort((a, b) => b.score - a.score);
+  return results.slice(0, limit);
+}
+function looksLikeUrl(q) {
+  return /^(https?:\/\/|www\.)/i.test(q) || /^[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(q) && q.includes(".");
+}
 async function searchOpenTabs(query, limit = 25) {
-  if (!query.trim() || typeof chrome === "undefined" || !chrome.tabs) return [];
+  if (!query.trim() || typeof chrome === "undefined" || !chrome.tabs) return { items: [] };
   const q = query.toLowerCase();
   const tabs = await chrome.tabs.query({});
+  let currentWindowId;
+  try {
+    const [cw] = await chrome.windows.getCurrent();
+    currentWindowId = cw?.id;
+  } catch {
+  }
+  const fetchPromises = [];
+  for (const tab of tabs) {
+    if (!tab.id || !tab.url || !tab.title) continue;
+    if (tab.url.startsWith("chrome://") || tab.url.startsWith("about:") || tab.url.startsWith("moz-extension:")) continue;
+    if (!tabIndices.has(tab.id)) {
+      fetchPromises.push(
+        getOrFetchTabIndex(tab.id).then(() => {
+        })
+      );
+    }
+  }
+  if (fetchPromises.length > 0) {
+    await Promise.race([
+      Promise.allSettled(fetchPromises),
+      new Promise((resolve) => setTimeout(resolve, 3e3))
+    ]);
+  }
   const matches = [];
   for (const tab of tabs) {
     if (!tab.id || !tab.url || !tab.title) continue;
     if (tab.url.startsWith("chrome://") || tab.url.startsWith("about:") || tab.url.startsWith("moz-extension:")) continue;
     let score = 0;
     const matchedRecords = [];
-    const title = tab.title.toLowerCase();
-    const url = tab.url.toLowerCase();
-    if (title.includes(q)) score += 10;
-    if (url.includes(q)) score += 5;
+    const title = tab.title;
+    const url = tab.url;
+    score += scoreTitle(title, q);
+    if (url.toLowerCase().includes(q)) score += 5;
+    if (typeof currentWindowId === "number" && tab.windowId === currentWindowId) score += 3;
     const state = tabIndices.get(tab.id);
     if (state) {
       try {
-        const hits = searchSections(query, state.index, { limit: 3 });
+        const hits = searchSections(query, state.index, { limit: 3, fuzzy: true });
         if (hits.length) {
           score += 8;
           matchedRecords.push(...hits);
@@ -2712,7 +2774,7 @@ async function searchOpenTabs(query, limit = 25) {
     }
   }
   matches.sort((a, b) => b.score - a.score);
-  return matches.slice(0, limit).map((m) => ({
+  let items = matches.slice(0, limit).map((m) => ({
     tabId: m.tab.id,
     title: m.tab.title,
     url: m.tab.url,
@@ -2726,6 +2788,58 @@ async function searchOpenTabs(query, limit = 25) {
       type: r.type
     }))
   }));
+  let suggestion;
+  for (const [, state] of tabIndices) {
+    const word = findClosestWord(query, state.index, 2);
+    if (word && word !== query.toLowerCase()) {
+      suggestion = word;
+      break;
+    }
+  }
+  let autocorrected = false;
+  if (items.length === 0 && suggestion) {
+    const correctedMatches = [];
+    for (const tab of tabs) {
+      if (!tab.id || !tab.url || !tab.title) continue;
+      if (tab.url.startsWith("chrome://") || tab.url.startsWith("about:") || tab.url.startsWith("moz-extension:")) continue;
+      const state = tabIndices.get(tab.id);
+      if (!state) continue;
+      try {
+        const hits = searchSections(suggestion, state.index, { limit: 3, fuzzy: true });
+        if (hits.length) {
+          correctedMatches.push({ tab, score: 6 + hits.length, matchedRecords: hits });
+        }
+      } catch {
+      }
+    }
+    if (correctedMatches.length > 0) {
+      correctedMatches.sort((a, b) => b.score - a.score);
+      items = correctedMatches.slice(0, limit).map((m) => ({
+        tabId: m.tab.id,
+        title: m.tab.title,
+        url: m.tab.url,
+        favIconUrl: m.tab.favIconUrl,
+        windowId: m.tab.windowId,
+        score: m.score,
+        matchedRecords: m.matchedRecords.map((r) => ({
+          headingText: r.headingText,
+          bodyText: (r.bodyText || "").slice(0, 120),
+          selector: r.selector,
+          type: r.type
+        }))
+      }));
+      autocorrected = true;
+    }
+  }
+  const siteResults = searchSiteContent(query, 5);
+  const actions = [];
+  if (looksLikeUrl(query.trim())) {
+    let navUrl = query.trim();
+    if (!/^https?:\/\//i.test(navUrl)) navUrl = "https://" + navUrl;
+    actions.push({ type: "open-url", title: `Open ${navUrl}`, url: navUrl });
+  }
+  actions.push({ type: "search-web", title: `Search the web for "${query}"`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}` });
+  return { items, suggestion, autocorrected, siteResults, actions };
 }
 if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -2865,8 +2979,16 @@ if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
           });
           return;
         }
-        if (message.type === "TAB_SEARCH") {
-          sendResponse({ success: true, items: await searchOpenTabs(message.query || "", message.limit || 25) });
+        if (message.type === "TAB_SEARCH" || message.type === "SPOTLIGHT_SEARCH") {
+          const result = await searchOpenTabs(message.query || "", message.limit || 50);
+          sendResponse({
+            success: true,
+            items: result.items,
+            suggestion: result.suggestion,
+            autocorrected: result.autocorrected,
+            siteResults: result.siteResults,
+            actions: result.actions
+          });
           return;
         }
         if (message.type === "TAB_SWITCH") {
@@ -2881,6 +3003,69 @@ if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
           }
           return;
         }
+        if (message.type === "SPOTLIGHT_OPEN_RECORD") {
+          if (typeof message.tabId === "number" && message.record && chrome.tabs) {
+            try {
+              await chrome.tabs.sendMessage(message.tabId, {
+                type: "HIGHLIGHT_RECORD",
+                record: message.record
+              });
+              sendResponse({ success: true });
+            } catch {
+              sendResponse({ success: false, error: "failed-to-highlight" });
+            }
+          } else {
+            sendResponse({ success: false, error: "invalid-spotlight-open-record" });
+          }
+          return;
+        }
+        if (message.type === "SPOTLIGHT_OPEN_NEW_TAB") {
+          if (message.url && chrome.tabs?.create) {
+            await chrome.tabs.create({ url: message.url });
+            sendResponse({ success: true });
+          } else {
+            sendResponse({ success: false, error: "invalid-url" });
+          }
+          return;
+        }
+        if (message.type === "SPOTLIGHT_CRAWL_SITE") {
+          if (!message.origin) {
+            sendResponse({ success: false, error: "no-origin" });
+            return;
+          }
+          try {
+            const allTabs = await chrome.tabs.query({});
+            const seedTab = allTabs.find((t) => t.url && t.id && new URL(t.url).origin === message.origin);
+            if (seedTab?.id) {
+              const resp = await chrome.tabs.sendMessage(seedTab.id, { type: "GET_MANIFEST" });
+              if (resp?.success?.manifest) {
+                let siteIndex = siteIndices.get(message.origin);
+                if (!siteIndex) {
+                  siteIndex = createSearchIndex();
+                  siteIndices.set(message.origin, siteIndex);
+                }
+                addToIndex(siteIndex, resp.manifest.records);
+                sendResponse({ success: true, recordCount: resp.manifest.records.length });
+              } else {
+                sendResponse({ success: false, error: "no-manifest" });
+              }
+            } else {
+              sendResponse({ success: false, error: "no-tab-for-origin" });
+            }
+          } catch (err) {
+            sendResponse({ success: false, error: err?.message || String(err) });
+          }
+          return;
+        }
+        if (message.type === "LIBRARY_OPEN_RECENT") {
+          if (message.url && chrome.tabs?.create) {
+            await chrome.tabs.create({ url: message.url });
+            sendResponse({ success: true });
+          } else {
+            sendResponse({ success: false, error: "invalid-url" });
+          }
+          return;
+        }
         sendResponse({ success: false, error: "unsupported-background-message" });
       } catch (err) {
         sendResponse({ success: false, error: err?.message || String(err) });
@@ -2892,6 +3077,18 @@ if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
 if (typeof chrome !== "undefined" && chrome.tabs?.onRemoved) {
   chrome.tabs.onRemoved.addListener((tabId) => {
     tabIndices.delete(tabId);
+  });
+}
+if (typeof chrome !== "undefined" && chrome.commands?.onCommand) {
+  chrome.commands.onCommand.addListener(async (command) => {
+    if (command !== "open-spotlight") return;
+    if (!chrome.tabs?.query) return;
+    try {
+      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!activeTab?.id) return;
+      await chrome.tabs.sendMessage(activeTab.id, { type: "SHOW_SPOTLIGHT" });
+    } catch {
+    }
   });
 }
 //# sourceMappingURL=background.js.map

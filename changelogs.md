@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- **Spotlight: cross-tab search overlay** (Reef for Browsers) — Press `Ctrl+Shift+L` (or `Cmd+Shift+L` on macOS) from any page to open a Spotlight-style modal that ranks every open tab by title (exact > starts-with > contains, position-weighted), URL, and indexed page content. Keyboard-first: arrow keys to navigate, Enter to switch, Esc to close, Tab to cycle matches, Ctrl/⌘+1..9 to jump. Tabs in the current window get a small recency boost. Lazy-mounts on first invocation, 80 ms debounce, 50-row cap.
 - **Agent-Ready Sites** (`reef-agent-ready.js`) — opt-in one-script instrumentation that publishes a live, accessibility-aware page manifest for browser agents, including stable IDs, Shadow DOM/iframe traversal, ARIA backfill, live route updates, exclusions, and rate limits. Includes an optional Playwright export helper for `/.well-known/agent-manifest.json`.
 - **Agentic API - Chainable Methods** (`agent()`)
   - `agent().click(selector)` - Dispatch click events on elements with visual feedback
@@ -36,6 +37,7 @@
 ### Changed
 - New `actionsMode: 'execute' | 'navigate-only'` configuration option in `ReefConfig`
 - `data-index-actions="true"` and `data-index-fields="true"` script attributes to enable action/field indexing
+- **Reef for Browsers**: Popup shortcut moved from `Ctrl+Shift+L` to `Ctrl+Shift+R` (`Cmd+Shift+R` on macOS) so `Ctrl+Shift+L` (`Cmd+Shift+L`) can launch Spotlight
 
 ### Fixed
 - Fixed `addToIndex` bug where label indexing only fired for labels of length exactly 2 (changed to `labelLower.length >= 2`)

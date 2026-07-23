@@ -5,7 +5,7 @@
  * (bookmarks / snippets / notes / recents) plus tab search.
  */
 
-import { createSearchIndex, addToIndex, searchSections, searchWithPagination, suggest } from '../../src/search-index.js';
+import { createSearchIndex, addToIndex, searchSections, searchWithPagination, suggest, findClosestWord } from '../../src/search-index.js';
 import type { SearchIndex } from '../../src/search-index.js';
 import type { IndexRecord, SearchOptions } from '../../src/types.js';
 import type { AgentManifest } from '../../src/agent-ready.js';
@@ -226,11 +226,108 @@ function escapeXml(str: string): string {
   });
 }
 
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Title scoring for Spotlight-style ranking. Higher is more relevant.
+function scoreTitle(title: string, q: string): number {
+  if (!q) return 0;
+  const t = title.toLowerCase();
+  if (t === q) return 60;                            // exact match
+  if (t.startsWith(q)) return 35;                    // title starts with query
+  const idx = t.indexOf(q);
+  if (idx >= 0) return 15 + Math.max(0, 10 - Math.floor(idx / 8)); // contains, earlier = better
+  if (new RegExp(`\\b${escapeRegex(q)}`, 'i').test(title)) return 12; // word boundary
+  return 0;
+}
+
+// ─── SITE CONTENT SEARCH ──────────────────────────────────
+function searchSiteContent(query: string, limit = 10): Array<{
+  url: string;
+  headingText: string;
+  bodyText: string;
+  selector?: string;
+  type: string;
+  score: number;
+  sourceOrigin: string;
+}> {
+  const results: Array<{
+    url: string;
+    headingText: string;
+    bodyText: string;
+    selector?: string;
+    type: string;
+    score: number;
+    sourceOrigin: string;
+  }> = [];
+
+  for (const [origin, index] of siteIndices) {
+    try {
+      const hits = searchSections(query, index, { limit: 3, fuzzy: true }) as IndexRecord[];
+      for (const hit of hits) {
+        results.push({
+          url: hit.url || origin,
+          headingText: hit.headingText,
+          bodyText: (hit.bodyText || '').slice(0, 120),
+          selector: hit.selector,
+          type: hit.type,
+          score: 5,
+          sourceOrigin: origin,
+        });
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  results.sort((a, b) => b.score - a.score);
+  return results.slice(0, limit);
+}
+
+// Check if a string looks like a URL the user wants to navigate to
+function looksLikeUrl(q: string): boolean {
+  return /^(https?:\/\/|www\.)/i.test(q) ||
+    (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(q) && q.includes('.'));
+}
+
 // ─── TAB SEARCH ───────────────────────────────────────────
-async function searchOpenTabs(query: string, limit = 25): Promise<any[]> {
-  if (!query.trim() || typeof chrome === 'undefined' || !chrome.tabs) return [];
+async function searchOpenTabs(query: string, limit = 25): Promise<{
+  items: any[];
+  suggestion?: string;
+  autocorrected?: boolean;
+  siteResults?: any[];
+  actions?: any[];
+}> {
+  if (!query.trim() || typeof chrome === 'undefined' || !chrome.tabs) return { items: [] };
   const q = query.toLowerCase();
   const tabs = await chrome.tabs.query({});
+
+  let currentWindowId: number | undefined;
+  try {
+    const [cw] = await chrome.windows.getCurrent();
+    currentWindowId = cw?.id;
+  } catch {
+    /* ignore */
+  }
+
+  // Proactively fetch manifests from tabs that aren't indexed yet
+  const fetchPromises: Promise<void>[] = [];
+  for (const tab of tabs) {
+    if (!tab.id || !tab.url || !tab.title) continue;
+    if (tab.url.startsWith('chrome://') || tab.url.startsWith('about:') || tab.url.startsWith('moz-extension:')) continue;
+    if (!tabIndices.has(tab.id)) {
+      fetchPromises.push(
+        getOrFetchTabIndex(tab.id).then(() => { /* indexed or failed */ })
+      );
+    }
+  }
+  if (fetchPromises.length > 0) {
+    await Promise.race([
+      Promise.allSettled(fetchPromises),
+      new Promise(resolve => setTimeout(resolve, 3000)),
+    ]);
+  }
 
   const matches: { tab: chrome.tabs.Tab; score: number; matchedRecords: IndexRecord[] }[] = [];
 
@@ -240,26 +337,25 @@ async function searchOpenTabs(query: string, limit = 25): Promise<any[]> {
 
     let score = 0;
     const matchedRecords: IndexRecord[] = [];
-    const title = tab.title.toLowerCase();
-    const url = tab.url.toLowerCase();
+    const title = tab.title;
+    const url = tab.url;
 
-    if (title.includes(q)) score += 10;
-    if (url.includes(q)) score += 5;
+    score += scoreTitle(title, q);
+    if (url.toLowerCase().includes(q)) score += 5;
+    if (typeof currentWindowId === 'number' && tab.windowId === currentWindowId) score += 3;
 
-    // Search cached index for tab
     const state = tabIndices.get(tab.id);
     if (state) {
       try {
-        const hits = searchSections(query, state.index, { limit: 3 }) as IndexRecord[];
+        const hits = searchSections(query, state.index, { limit: 3, fuzzy: true }) as IndexRecord[];
         if (hits.length) {
           score += 8;
           matchedRecords.push(...hits);
         }
       } catch {
-        // ignore search errors
+        // ignore
       }
     } else if (score === 0) {
-      // Skip if we have no signal at all
       continue;
     }
 
@@ -270,7 +366,7 @@ async function searchOpenTabs(query: string, limit = 25): Promise<any[]> {
 
   matches.sort((a, b) => b.score - a.score);
 
-  return matches.slice(0, limit).map(m => ({
+  let items = matches.slice(0, limit).map(m => ({
     tabId: m.tab.id,
     title: m.tab.title,
     url: m.tab.url,
@@ -284,6 +380,66 @@ async function searchOpenTabs(query: string, limit = 25): Promise<any[]> {
       type: r.type,
     })),
   }));
+
+  // Generate "did you mean" suggestion from all available indices
+  let suggestion: string | undefined;
+  for (const [, state] of tabIndices) {
+    const word = findClosestWord(query, state.index, 2);
+    if (word && word !== query.toLowerCase()) {
+      suggestion = word;
+      break;
+    }
+  }
+
+  // Autocorrect: if no tab results but we have a suggestion, re-search with corrected query
+  let autocorrected = false;
+  if (items.length === 0 && suggestion) {
+    const correctedMatches: { tab: chrome.tabs.Tab; score: number; matchedRecords: IndexRecord[] }[] = [];
+    for (const tab of tabs) {
+      if (!tab.id || !tab.url || !tab.title) continue;
+      if (tab.url.startsWith('chrome://') || tab.url.startsWith('about:') || tab.url.startsWith('moz-extension:')) continue;
+      const state = tabIndices.get(tab.id);
+      if (!state) continue;
+      try {
+        const hits = searchSections(suggestion, state.index, { limit: 3, fuzzy: true }) as IndexRecord[];
+        if (hits.length) {
+          correctedMatches.push({ tab, score: 6 + hits.length, matchedRecords: hits });
+        }
+      } catch { /* ignore */ }
+    }
+    if (correctedMatches.length > 0) {
+      correctedMatches.sort((a, b) => b.score - a.score);
+      items = correctedMatches.slice(0, limit).map(m => ({
+        tabId: m.tab.id,
+        title: m.tab.title,
+        url: m.tab.url,
+        favIconUrl: m.tab.favIconUrl,
+        windowId: m.tab.windowId,
+        score: m.score,
+        matchedRecords: m.matchedRecords.map(r => ({
+          headingText: r.headingText,
+          bodyText: (r.bodyText || '').slice(0, 120),
+          selector: r.selector,
+          type: r.type,
+        })),
+      }));
+      autocorrected = true;
+    }
+  }
+
+  // Search site content across crawled site indices
+  const siteResults = searchSiteContent(query, 5);
+
+  // Build action items (new tab actions)
+  const actions: any[] = [];
+  if (looksLikeUrl(query.trim())) {
+    let navUrl = query.trim();
+    if (!/^https?:\/\//i.test(navUrl)) navUrl = 'https://' + navUrl;
+    actions.push({ type: 'open-url', title: `Open ${navUrl}`, url: navUrl });
+  }
+  actions.push({ type: 'search-web', title: `Search the web for "${query}"`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}` });
+
+  return { items, suggestion, autocorrected, siteResults, actions };
 }
 
 // ─── MESSAGE ROUTER ───────────────────────────────────────
@@ -428,8 +584,16 @@ if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
         }
 
         // Tab search
-        if (message.type === 'TAB_SEARCH') {
-          sendResponse({ success: true, items: await searchOpenTabs(message.query || '', message.limit || 25) });
+        if (message.type === 'TAB_SEARCH' || message.type === 'SPOTLIGHT_SEARCH') {
+          const result = await searchOpenTabs(message.query || '', message.limit || 50);
+          sendResponse({
+            success: true,
+            items: result.items,
+            suggestion: result.suggestion,
+            autocorrected: result.autocorrected,
+            siteResults: result.siteResults,
+            actions: result.actions,
+          });
           return;
         }
 
@@ -447,6 +611,74 @@ if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
           return;
         }
 
+        // Spotlight: forward a HIGHLIGHT_RECORD to the target tab (called after TAB_SWITCH)
+        if (message.type === 'SPOTLIGHT_OPEN_RECORD') {
+          if (typeof message.tabId === 'number' && message.record && chrome.tabs) {
+            try {
+              await chrome.tabs.sendMessage(message.tabId, {
+                type: 'HIGHLIGHT_RECORD',
+                record: message.record,
+              });
+              sendResponse({ success: true });
+            } catch {
+              sendResponse({ success: false, error: 'failed-to-highlight' });
+            }
+          } else {
+            sendResponse({ success: false, error: 'invalid-spotlight-open-record' });
+          }
+          return;
+        }
+
+        // Spotlight: open a URL in a new tab (action items)
+        if (message.type === 'SPOTLIGHT_OPEN_NEW_TAB') {
+          if (message.url && chrome.tabs?.create) {
+            await chrome.tabs.create({ url: message.url });
+            sendResponse({ success: true });
+          } else {
+            sendResponse({ success: false, error: 'invalid-url' });
+          }
+          return;
+        }
+
+        // Spotlight: crawl a site's content for cross-site search
+        if (message.type === 'SPOTLIGHT_CRAWL_SITE') {
+          if (!message.origin) { sendResponse({ success: false, error: 'no-origin' }); return; }
+          try {
+            const allTabs = await chrome.tabs.query({});
+            const seedTab = allTabs.find(t => t.url && t.id && new URL(t.url).origin === message.origin);
+            if (seedTab?.id) {
+              const resp: any = await chrome.tabs.sendMessage(seedTab.id, { type: 'GET_MANIFEST' });
+              if (resp?.success?.manifest) {
+                let siteIndex = siteIndices.get(message.origin);
+                if (!siteIndex) {
+                  siteIndex = createSearchIndex();
+                  siteIndices.set(message.origin, siteIndex);
+                }
+                addToIndex(siteIndex, resp.manifest.records);
+                sendResponse({ success: true, recordCount: resp.manifest.records.length });
+              } else {
+                sendResponse({ success: false, error: 'no-manifest' });
+              }
+            } else {
+              sendResponse({ success: false, error: 'no-tab-for-origin' });
+            }
+          } catch (err: any) {
+            sendResponse({ success: false, error: err?.message || String(err) });
+          }
+          return;
+        }
+
+        // Library: open a recent page
+        if (message.type === 'LIBRARY_OPEN_RECENT') {
+          if (message.url && chrome.tabs?.create) {
+            await chrome.tabs.create({ url: message.url });
+            sendResponse({ success: true });
+          } else {
+            sendResponse({ success: false, error: 'invalid-url' });
+          }
+          return;
+        }
+
         sendResponse({ success: false, error: 'unsupported-background-message' });
       } catch (err: any) {
         sendResponse({ success: false, error: err?.message || String(err) });
@@ -460,5 +692,21 @@ if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
 if (typeof chrome !== 'undefined' && chrome.tabs?.onRemoved) {
   chrome.tabs.onRemoved.addListener(tabId => {
     tabIndices.delete(tabId);
+  });
+}
+
+// ─── COMMANDS (Spotlight shortcut) ────────────────────────
+if (typeof chrome !== 'undefined' && chrome.commands?.onCommand) {
+  chrome.commands.onCommand.addListener(async (command) => {
+    if (command !== 'open-spotlight') return;
+    if (!chrome.tabs?.query) return;
+    try {
+      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!activeTab?.id) return;
+      // Pages without a content script (chrome://, file:// without permission, etc.) will throw — fail silently
+      await chrome.tabs.sendMessage(activeTab.id, { type: 'SHOW_SPOTLIGHT' });
+    } catch {
+      /* no content script on this page */
+    }
   });
 }
