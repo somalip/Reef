@@ -1,0 +1,15 @@
+{
+  "name": "@reef/extension",
+  "version": "0.1.0",
+  "description": "Reef for Browsers — Cross-browser MV3 search & agent extension",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch",
+    "test": "node --import tsx --test tests/extension-contracts.test.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1",
+    "tsx": "^4.20.0"
+  }
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reef for Browsers — Options</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-container">
+    <header class="options-header">
+      <h1>Reef for Browsers Options</h1>
+      <p class="subtitle">Configure site-specific automation guardrails, privacy, and preferences.</p>
+    </header>
+
+    <main class="options-body">
+      <section class="option-section">
+        <h2>Action Execution Mode</h2>
+        <p class="section-desc">Control whether Reef can execute clicks & form submits, or navigate only.</p>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="actionsMode" value="execute" checked>
+            <span><strong>Execute actions</strong> (Allow clicking buttons and filling non-sensitive inputs)</span>
+          </label>
+          <label>
+            <input type="radio" name="actionsMode" value="navigate-only">
+            <span><strong>Navigate-only</strong> (Block click/submit execution; only navigate to links/sections)</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="option-section">
+        <h2>Exclusion Selectors</h2>
+        <p class="section-desc">CSS selectors for elements Reef must never index or touch (comma-separated). Sensitive inputs (passwords, cards, SSN) are hard-excluded by default.</p>
+        <textarea id="exclusion-selectors" rows="3" placeholder=".no-agent, #private-area, [data-sensitive]"></textarea>
+      </section>
+
+      <section class="option-section">
+        <h2>Opt-In Features</h2>
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" id="enable-cross-tab-crawl">
+            <span><strong>Enable same-origin cross-tab indexing</strong> (Opt-in to index visited same-origin pages via sitemap/crawl)</span>
+          </label>
+          <label>
+            <input type="checkbox" id="telemetry-enabled">
+            <span><strong>Enable anonymous telemetry</strong> (Disabled by default; no page content leaves the browser)</span>
+          </label>
+        </div>
+      </section>
+
+      <div class="actions-bar">
+        <button id="btn-save" class="btn-primary">Save Settings</button>
+        <span id="save-status" class="status-text hidden">Settings saved!</span>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>
