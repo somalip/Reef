@@ -690,6 +690,218 @@ body {
   to { opacity: 1; transform: scaleY(1); }
 }
 
+/* Extension Launch Notification Button */
+.ext-launch-wrapper {
+  position: relative;
+}
+
+.ext-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+.ext-launch-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--accent-white);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.ext-launch-btn[aria-expanded="true"] {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--accent-white);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.ext-launch-link {
+  text-decoration: none;
+  color: var(--text-muted);
+}
+.ext-launch-link:hover {
+  color: var(--accent-white);
+}
+
+.ext-launch-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ext-launch-dot-ping {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  opacity: 0.75;
+  animation: ext-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.ext-launch-dot-core {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  border: 1px solid #0A0A0A;
+}
+
+@keyframes ext-ping {
+  75%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.ext-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 320px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  animation: ext-dropdown-in 0.15s ease-out;
+}
+.ext-dropdown[hidden] {
+  display: none;
+}
+
+@keyframes ext-dropdown-in {
+  from { opacity: 0; transform: translateY(-0.375rem) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ext-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ext-dropdown-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background-color: #3b82f6;
+  color: #FFFFFF;
+  border-radius: 2px;
+}
+
+.ext-dropdown-desc {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  border-bottom: 1px solid var(--border-color-subtle);
+}
+
+.ext-dropdown-features {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.ext-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.1s ease;
+}
+.ext-feature-item:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+.ext-feature-item svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--text-dim);
+}
+
+.ext-feature-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  font-family: var(--font-mono);
+  margin-bottom: 0.125rem;
+}
+
+.ext-feature-desc {
+  font-size: 0.6875rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.ext-feature-desc code {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  padding: 0.0625rem 0.25rem;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+.ext-dropdown-actions {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.ext-dropdown-install-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background-color: var(--accent-white);
+  color: #000000;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.ext-dropdown-install-btn:hover {
+  background-color: #E0E0E0;
+}
+
+@media (max-width: 480px) {
+  .ext-dropdown {
+    position: fixed;
+    top: auto;
+    right: 0.5rem;
+    left: 0.5rem;
+    width: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
