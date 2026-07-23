@@ -1,5 +1,7 @@
 # Reef
 
+> Web plugin under active development. Try it at your own risk!
+
 ### Search the whole site. Find the exact thing. Keep the browser in control.
 
 Reef is a client-side search and interaction layer for static sites. Add one script to a docs site, blog, portfolio, or GitHub Pages project and get a fast `⌘K` / `Ctrl K` palette that searches pages, headings, links, files, media, structured data, and safe on-page actions.
