@@ -441,6 +441,197 @@
         gap: 6px;
       }
     }
+
+    /* ---------- NAVIGATION ---------- */
+    .nav-bar {
+      display: flex;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg);
+    }
+
+    .nav-tab {
+      padding: 12px 24px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--gray);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.1s ease, border-color 0.1s ease;
+    }
+
+    .nav-tab:hover {
+      color: var(--fg);
+    }
+
+    .nav-tab.active {
+      color: var(--fg);
+      border-bottom-color: var(--fg);
+    }
+
+    .tab-panels {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-panel {
+      display: none;
+      flex-direction: column;
+    }
+
+    .tab-panel.active {
+      display: flex;
+    }
+
+    /* ---------- SECURITY PAGE ---------- */
+    .security-page {
+      padding: 48px 40px;
+    }
+
+    .security-page .eyebrow {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 16px;
+    }
+
+    .security-page>h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 12px;
+    }
+
+    .security-page>p {
+      color: var(--gray);
+      font-size: 0.9rem;
+      max-width: 70ch;
+      margin-bottom: 16px;
+    }
+
+    .security-section {
+      padding: 32px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .security-section:last-child {
+      border-bottom: none;
+    }
+
+    .security-section h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .security-section p {
+      color: var(--gray);
+      font-size: 0.9rem;
+      max-width: 70ch;
+      margin-bottom: 12px;
+    }
+
+    .security-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .security-item {
+      padding: 20px;
+      border: 1px solid var(--line);
+      background: var(--gray-fill);
+    }
+
+    .security-item h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .security-item p {
+      font-size: 0.85rem;
+      color: var(--gray);
+      margin-bottom: 0;
+    }
+
+    .security-item code {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 0.8rem;
+      background: var(--bg);
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+    }
+
+    .security-list {
+      list-style: none;
+      padding: 0;
+      margin-top: 12px;
+    }
+
+    .security-list li {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.9rem;
+    }
+
+    .security-list li:last-child {
+      border-bottom: none;
+    }
+
+    .security-list li strong {
+      display: inline-block;
+      width: 180px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .security-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      background: var(--gray-fill);
+      margin-top: 16px;
+    }
+
+    .security-notice .notice-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      background: var(--fg);
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .security-notice p {
+      margin-bottom: 0;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 860px) {
+      .security-grid {
+        grid-template-columns: 1fr;
+      }
+      .nav-tab {
+        padding: 10px 16px;
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -454,7 +645,14 @@
       <!-- <div class="badge">raw html / css / js</div> -->
     </header>
 
-    <main>
+    <nav class="nav-bar">
+      <button class="nav-tab active" data-tab="home">Home</button>
+      <button class="nav-tab" data-tab="security">Security &amp; Privacy</button>
+    </nav>
+
+    <div class="tab-panels">
+      <div id="tab-home" class="tab-panel active">
+        <main>
       <div class="hero">
         <div class="hero-copy">
           <div>
@@ -534,7 +732,150 @@
           </div>
         </div>
       </div>
-    </main>
+      </div>
+    </div>
+
+    <div id="tab-security" class="tab-panel">
+      <div class="security-page">
+        <div class="eyebrow">Extension internals — v2.4.0</div>
+        <h2>Security &amp; Privacy</h2>
+        <p>
+          Reef for Browsers is designed with privacy and security in mind. 
+          All data processing happens locally on your device. 
+          Nothing is uploaded to external servers.
+        </p>
+
+        <div class="security-notice">
+          <div class="notice-icon">i</div>
+          <p>
+            <strong>No telemetry, no external APIs.</strong> 
+            Reef does not send any page content, search queries, or usage data to external servers. 
+            All indexing, search, and storage happens entirely within your browser.
+          </p>
+        </div>
+
+        <div class="security-section">
+          <h3>Data Collection</h3>
+          <p>The extension collects and indexes the following data from pages you visit:</p>
+          <div class="security-grid">
+            <div class="security-item">
+              <h4>Page Structure</h4>
+              <p>Headings (h1–h6), section text, breadcrumbs, and HTML selectors. Scripts, styles, and noscript tags are stripped before indexing.</p>
+            </div>
+            <div class="security-item">
+              <h4>Actions &amp; Form Fields</h4>
+              <p>Buttons, links, form inputs, and their labels. Field values may be captured and stored to support fill workflows.</p>
+            </div>
+            <div class="security-item">
+              <h4>Media</h4>
+              <p>Image alt text, captions, video/audio titles, and transcript availability. Actual media files are not downloaded.</p>
+            </div>
+            <div class="security-item">
+              <h4>Structured Data</h4>
+              <p>JSON-LD FAQ pages, article metadata, and descriptions parsed from structured markup.</p>
+            </div>
+          </div>
+          <p style="margin-top: 16px; font-size: 0.85rem; color: var(--gray);">
+            <strong>Always excluded:</strong> Password inputs, payment fields, SSN fields, and elements matching your configured exclusion selectors.
+          </p>
+        </div>
+
+        <div class="security-section">
+          <h3>Data Storage</h3>
+          <p>All data is stored locally using browser storage APIs:</p>
+          <ul class="security-list">
+            <li><strong>IndexedDB</strong> — Compressed (gzip) search indices, cached page data, and site graphs. Stored under the extension's private origin.</li>
+            <li><strong>chrome.storage.local</strong> — Settings, query history, popular queries, bookmarks, snippets, and notes. Up to 5MB+ with unlimitedStorage permission.</li>
+            <li><strong>Memory</strong> — Active tab indexes, spotlight results, and cache (cleared on browser restart).</li>
+          </ul>
+        </div>
+
+        <div class="security-section">
+          <h3>Permissions</h3>
+          <p>The extension requests the following permissions and their justifications:</p>
+          <ul class="security-list">
+            <li><strong>activeTab</strong> — Allows temporary access to the active tab to index content and execute user-initiated actions.</li>
+            <li><strong>scripting</strong> — Allows injection of the content script to extract page content and interact with the DOM.</li>
+            <li><strong>storage</strong> — Persists search indices, settings, and library data between sessions.</li>
+            <li><strong>tabs</strong> — Lists open tabs and switches between them for the Spotlight search feature.</li>
+            <li><strong>contextMenus</strong> — Adds right-click options for bookmarking, saving snippets, and adding notes.</li>
+            <li><strong>unlimitedStorage</strong> — Allows storing large search indices without the standard 5MB quota.</li>
+            <li><strong>host: &lt;all_urls&gt;</strong> — Injects content scripts on every website so pages can be indexed when activated by the user.</li>
+          </ul>
+        </div>
+
+        <div class="security-section">
+          <h3>Privacy Controls</h3>
+          <p>You have full control over what Reef accesses and indexes:</p>
+          <div class="security-grid">
+            <div class="security-item">
+              <h4>Exclusion Selectors</h4>
+              <p>Define CSS selectors for elements Reef must never index or interact with. For example: <code>.private, #secret-area</code>.</p>
+            </div>
+            <div class="security-item">
+              <h4>Blocked Domains</h4>
+              <p>Completely disable Reef on specific domains. One domain per line. Useful for banking, healthcare, or internal sites.</p>
+            </div>
+            <div class="security-item">
+              <h4>Destructive Action Confirmation</h4>
+              <p>Require explicit confirmation before executing actions like delete, remove, checkout, or submit order.</p>
+            </div>
+            <div class="security-item">
+              <h4>Action Mode</h4>
+              <p>Set to "Navigate Only" to prevent Reef from clicking buttons or typing into fields. Only link navigation is allowed.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="security-section">
+          <h3>How to Remove Your Data</h3>
+          <p>You can permanently delete all data stored by Reef:</p>
+          <div class="security-grid">
+            <div class="security-item">
+              <h4>Clear Cache</h4>
+              <p>Removes all indexed page data from IndexedDB. Pages will be re-indexed on next visit if requested.</p>
+            </div>
+            <div class="security-item">
+              <h4>Clear History</h4>
+              <p>Deletes all tracked search queries and popularity data from chrome.storage.local.</p>
+            </div>
+            <div class="security-item">
+              <h4>Reset to Defaults</h4>
+              <p>Clears all settings, cached data, and library items. This cannot be undone.</p>
+            </div>
+            <div class="security-item">
+              <h4>Uninstall</h4>
+              <p>Removing the extension from Chrome deletes all stored data including IndexedDB and chrome.storage.local entries.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="security-section">
+          <h3>Security Considerations</h3>
+          <p>Be aware of the following security characteristics:</p>
+          <ul class="security-list">
+            <li><strong>DOM Access</strong> — Content scripts run in the context of every webpage and can read/modify the DOM.</li>
+            <li><strong>Form Values</strong> — Input field values may be captured and stored to enable autofill-type workflows.</li>
+            <li><strong>Cookie Access</strong> — The extension's Agent layer can read cookies via the document API for session snapshots.</li>
+            <li><strong>History Access</strong> — Tab titles and URLs are read to build the cross-tab search index.</li>
+            <li><strong>Local Storage</strong> — The extension can read localStorage and make snapshots for session restoration.</li>
+            <li><strong>History API Override</strong> — The extension overrides history.pushState/replaceState to observe route changes.</li>
+            <li><strong>Cross-Origin Context</strong> — Content scripts inherit the origin of the page they run on within the extension's isolated world.</li>
+          </ul>
+        </div>
+
+        <div class="security-section">
+          <h3>Data Retention</h3>
+          <ul class="security-list">
+            <li><strong>Indexed Cache</strong> — Cached pages persist indefinitely until manually cleared or overwritten by newer versions.</li>
+            <li><strong>Query History</strong> — Last 100 unique queries are retained for suggestion features.</li>
+            <li><strong>Popularity Data</strong> — Per-query popularity counts are retained persistently.</li>
+            <li><strong>Library Items</strong> — Bookmarks, snippets, notes, and recents persist until manually deleted.</li>
+            <li><strong>Settings</strong> — Persist indefinitely in chrome.storage.local.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
     <div class="features">
       <div class="feature">
@@ -560,5 +901,22 @@
     </footer>
   </div>
 
+  <script>
+    document.querySelectorAll('.nav-tab').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.nav-tab').forEach(function(t) {
+          t.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-panel').forEach(function(p) {
+          p.classList.remove('active');
+        });
+        tab.classList.add('active');
+        var target = document.getElementById('tab-' + tab.dataset.tab);
+        if (target) {
+          target.classList.add('active');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
