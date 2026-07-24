@@ -17,8 +17,10 @@
         <a href="#execution" class="nav-item active" data-section="execution">Execution</a>
         <a href="#privacy" class="nav-item" data-section="privacy">Privacy &amp; Security</a>
         <a href="#search" class="nav-item" data-section="search">Search</a>
+        <a href="#shortcuts" class="nav-item" data-section="shortcuts">Shortcuts</a>
         <a href="#appearance" class="nav-item" data-section="appearance">Appearance</a>
         <a href="#data" class="nav-item" data-section="data">Data Management</a>
+        <a href="#bookmarks" class="nav-item" data-section="bookmarks">Bookmarks</a>
         <a href="#about" class="nav-item" data-section="about">About</a>
       </nav>
     </aside>
@@ -194,6 +196,70 @@
             </label>
           </div>
         </div>
+
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-name">Search engine</span>
+            <span class="setting-hint">Choose which search engine to use for web searches from Spotlight and popup.</span>
+          </div>
+          <div class="setting-control">
+            <select id="search-engine" class="select-input">
+              <option value="google">Google</option>
+              <option value="bing">Bing</option>
+              <option value="duckduckgo">DuckDuckGo</option>
+              <option value="brave">Brave</option>
+              <option value="ecosia">Ecosia</option>
+              <option value="kagi">Kagi</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-name">Custom search URL</span>
+            <span class="setting-hint">URL template for custom search engine. Use {query} as placeholder. Only used when "Custom" is selected above.</span>
+          </div>
+          <div class="setting-control">
+            <input type="text" id="custom-search-url" class="text-input" placeholder="https://example.com/search?q={query}" spellcheck="false">
+          </div>
+        </div>
+      </section>
+
+      <!-- SHORTCUTS -->
+      <section id="section-shortcuts" class="settings-section">
+        <div class="section-header">
+          <h2>Shortcuts</h2>
+          <p class="section-desc">Customize keyboard shortcuts for quick access.</p>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-name">Spotlight shortcut</span>
+            <span class="setting-hint">Keyboard shortcut to open the Spotlight search overlay. Press the desired key combination in the input field.</span>
+          </div>
+          <div class="setting-control">
+            <input type="text" id="shortcut-spotlight" class="text-input" placeholder="Ctrl+Shift+L" readonly>
+            <span id="shortcut-status" class="shortcut-status"></span>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-name">Popup shortcut</span>
+            <span class="setting-hint">Keyboard shortcut to open the popup window. Press the desired key combination in the input field.</span>
+          </div>
+          <div class="setting-control">
+            <input type="text" id="shortcut-popup" class="text-input" placeholder="Ctrl+Shift+R" readonly>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-name">Note</span>
+            <span class="setting-hint">Shortcut changes may require reloading the extension or updating manually at chrome://extensions/shortcuts if runtime updates are not supported.</span>
+          </div>
+        </div>
       </section>
 
       <!-- APPEARANCE -->
@@ -269,6 +335,27 @@
         </div>
       </section>
 
+      <!-- BOOKMARKS -->
+      <section id="section-bookmarks" class="settings-section">
+        <div class="section-header">
+          <h2>Bookmarks</h2>
+          <p class="section-desc">Configure where bookmarks created via Reef are stored.</p>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-label">
+            <span class="setting-name">Bookmark storage</span>
+            <span class="setting-hint">Choose whether bookmarks are saved in Reef's local storage or in the browser's native bookmark manager. "Browser" requires the bookmarks permission and shows them in your browser's built-in bookmarks bar/folder.</span>
+          </div>
+          <div class="setting-control">
+            <div class="segmented-control" id="bookmark-storage-control">
+              <button class="seg-btn active" data-value="reef">Reef (Local)</button>
+              <button class="seg-btn" data-value="native">Browser Native</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ABOUT -->
       <section id="section-about" class="settings-section">
         <div class="section-header">
@@ -295,7 +382,7 @@
           </div>
           <div class="about-item">
             <span class="about-key">Popup shortcut</span>
-            <span class="about-value">Ctrl+Shift+R / Cmd+Shift+R</span>
+            <span class="about-value">Ctrl+Shift+R / Ctrl+Shift+K / Cmd+Shift+R / Cmd+Shift+K</span>
           </div>
         </div>
       </section>

@@ -21,6 +21,21 @@ This document describes the capabilities currently implemented in `src/`. Public
 - Visual inspector overlay for identifying indexed actions and fields on the current page.
 - Offline-ready cache helpers for service-worker registration, URL caching, cache clearing, and background-sync integration points.
 
+## Browser extension capabilities (Reef for Browsers)
+
+- **Spotlight search overlay** with unified results across open tabs, site content, browser actions, native bookmarks, history, and downloads. Keyboard-first navigation with arrow keys, Enter, Esc, Tab to cycle matches, and Ctrl/⌘+1..9 to jump.
+- **Browser-level actions** executable from Spotlight: mute/unmute tab, pin/unpin tab, duplicate tab, reload, close other tabs, focus mode, save session, bookmark page, new tab/window/incognito window, zoom in/out/reset, print page, save page.
+- **Native browser data integration**: search Chrome bookmarks via `chrome.bookmarks.search`, surface recent history (last 30 days), and show recent downloads with open/show actions.
+- **Site content search**: automatic indexing of active tab content into per-origin search indices with results displayed in dedicated "Site Content" section.
+- **Search engine selection**: choose default search engine (Google, Bing, DuckDuckGo, Brave, Ecosia, Kagi, or custom URL template) for web searches from Spotlight and popup.
+- **Customizable shortcuts**: user-configurable keyboard shortcuts for Spotlight and popup with interactive recorder and real-time validation in settings. Attempts runtime update via `chrome.commands.update` with fallback to manual instructions.
+- **Search previews**: when local results are empty, show configurable "Search with [Engine]" action row instead of immediately opening the search engine.
+- **Cross-tab indexing**: index pages from the same origin across multiple open tabs for unified search.
+- **Session management**: save and restore tab sessions with one-click restore.
+- **Library system**: bookmarks, snippets, page notes, and recent pages with tags, search, and export.
+- **Theme support**: light, dark, and system themes across popup, options, and Spotlight.
+- **Privacy-first**: all data stored locally via `chrome.storage.local`; no telemetry by default.
+
 ## Technical capabilities
 
 ### Indexing and extraction

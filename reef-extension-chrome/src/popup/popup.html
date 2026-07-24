@@ -23,6 +23,7 @@
       <button class="mode-tab active" data-mode="page" role="tab" aria-selected="true">Page</button>
       <button class="mode-tab" data-mode="tabs" role="tab" aria-selected="false">Tabs</button>
       <button class="mode-tab" data-mode="library" role="tab" aria-selected="false">Library</button>
+      <button class="mode-tab" data-mode="browser" role="tab" aria-selected="false">Browser</button>
     </nav>
 
     <!-- ─── PAGE MODE ─── -->
@@ -41,7 +42,7 @@
         <button class="tab-btn" data-type="file">Files</button>
       </div>
 
-      <main id="results-container" class="results-container">
+      <main id="results-container" class="results-container" role="listbox" aria-label="Page search results">
         <div class="loading-state">Indexing current page...</div>
       </main>
     </section>
@@ -49,20 +50,21 @@
     <!-- ─── TABS MODE ─── -->
     <section class="mode-panel hidden" data-panel="tabs">
       <div class="search-box-wrapper">
-        <input type="text" id="tab-search-input" placeholder="Search across all open tabs..." autocomplete="off" />
+        <input type="text" id="tab-search-input" placeholder="Search tabs and page content..." autocomplete="off" />
         <button id="tab-search-clear" class="clear-btn hidden">&times;</button>
       </div>
 
-      <main id="tabs-container" class="results-container">
+      <main id="tabs-container" class="results-container" role="listbox" aria-label="Tab search results">
         <div class="empty-state">Type to search all open tabs by title and content.</div>
       </main>
     </section>
 
     <!-- ─── LIBRARY MODE ─── -->
     <section class="mode-panel hidden" data-panel="library">
-      <div class="search-box-wrapper">
+      <div class="search-box-wrapper search-box-with-action">
         <input type="text" id="library-search-input" placeholder="Search your library..." autocomplete="off" />
         <button id="library-search-clear" class="clear-btn hidden">&times;</button>
+        <button id="btn-bookmark-tab" class="search-action-btn" title="Bookmark current tab">+</button>
       </div>
 
       <div id="library-tabs" class="filter-tabs">
@@ -72,14 +74,67 @@
         <button class="tab-btn" data-lib="recents">Recent</button>
       </div>
 
-      <main id="library-container" class="results-container">
+      <main id="library-container" class="results-container" role="listbox" aria-label="Library results">
         <div class="empty-state">Loading library…</div>
+      </main>
+    </section>
+
+    <!-- ─── BROWSER MODE ─── -->
+    <section class="mode-panel hidden" data-panel="browser">
+      <div class="search-box-wrapper">
+        <input type="text" id="browser-search-input" placeholder="Search history, downloads..." autocomplete="off" />
+        <button id="browser-search-clear" class="clear-btn hidden">&times;</button>
+      </div>
+
+      <div id="browser-tools" class="browser-tools-grid">
+        <button class="tool-btn" data-action="mute-tab" title="Mute/unmute current tab">
+          <span class="tool-icon">🔇</span>
+          <span class="tool-label">Mute Tab</span>
+        </button>
+        <button class="tool-btn" data-action="pin-tab" title="Pin/unpin current tab">
+          <span class="tool-icon">📌</span>
+          <span class="tool-label">Pin Tab</span>
+        </button>
+        <button class="tool-btn" data-action="duplicate-tab" title="Duplicate current tab">
+          <span class="tool-icon">⧉</span>
+          <span class="tool-label">Duplicate</span>
+        </button>
+        <button class="tool-btn" data-action="close-other-tabs" title="Close all other tabs">
+          <span class="tool-icon">✕</span>
+          <span class="tool-label">Close Others</span>
+        </button>
+        <button class="tool-btn" data-action="new-tab" title="Open new tab">
+          <span class="tool-icon">+</span>
+          <span class="tool-label">New Tab</span>
+        </button>
+        <button class="tool-btn" data-action="save-session" title="Save all open tabs as session">
+          <span class="tool-icon">💾</span>
+          <span class="tool-label">Save Session</span>
+        </button>
+        <button class="tool-btn" data-action="focus-mode" title="Close all tabs except current">
+          <span class="tool-icon">🎯</span>
+          <span class="tool-label">Focus Mode</span>
+        </button>
+        <button class="tool-btn" data-action="reload-tab" title="Reload current tab">
+          <span class="tool-icon">↺</span>
+          <span class="tool-label">Reload</span>
+        </button>
+      </div>
+
+      <div id="browser-sub-tabs" class="filter-tabs">
+        <button class="tab-btn active" data-browser="history">History</button>
+        <button class="tab-btn" data-browser="downloads">Downloads</button>
+        <button class="tab-btn" data-browser="sessions">Sessions</button>
+      </div>
+
+      <main id="browser-container" class="results-container" role="listbox" aria-label="Browser results">
+        <div class="empty-state">Search history or use tools above.</div>
       </main>
     </section>
 
     <footer class="popup-footer">
       <span id="stats-label">0 items found</span>
-      <span class="shortcut-tip">Cmd+Shift+R</span>
+      <span class="shortcut-tip" id="footer-hint">↑↓ navigate · ↵ open · ⌘⇧K</span>
     </footer>
   </div>
 

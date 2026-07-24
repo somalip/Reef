@@ -1,4 +1,4 @@
-// src/options/options.ts
+// plugin/src/options/options.ts
 var DEFAULTS = {
   actionsMode: "execute",
   confirmDestructive: true,
@@ -12,7 +12,12 @@ var DEFAULTS = {
   fuzzyEnabled: true,
   diversifyResults: false,
   theme: "light",
-  compactMode: false
+  compactMode: false,
+  bookmarkStorageMode: "reef",
+  searchEngine: "google",
+  customSearchUrl: "",
+  shortcutSpotlight: "Ctrl+Shift+L",
+  shortcutPopup: "Ctrl+Shift+R"
 };
 document.addEventListener("DOMContentLoaded", async () => {
   const navItems = document.querySelectorAll(".nav-item");
@@ -42,6 +47,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const compactMode = document.getElementById("compact-mode");
   const fuzzyEnabled = document.getElementById("fuzzy-enabled");
   const diversifyResults = document.getElementById("diversify-results");
+  const bookmarkStorageControl = document.getElementById("bookmark-storage-control");
+  const searchEngineSelect = document.getElementById("search-engine");
+  const customSearchUrlInput = document.getElementById("custom-search-url");
+  const shortcutSpotlightInput = document.getElementById("shortcut-spotlight");
+  const shortcutPopupInput = document.getElementById("shortcut-popup");
+  const shortcutStatus = document.getElementById("shortcut-status");
   const saveBtn = document.getElementById("btn-save");
   const exportBtn = document.getElementById("btn-export");
   const importBtn = document.getElementById("btn-import");
@@ -62,6 +73,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let selectedActionsMode = DEFAULTS.actionsMode;
   let selectedScoring = DEFAULTS.scoringAlgorithm;
   let selectedTheme = DEFAULTS.theme;
+  let selectedBookmarkStorageMode = DEFAULTS.bookmarkStorageMode;
   setupSegmented(actionsModeControl, (value) => {
     selectedActionsMode = value;
   });
@@ -72,9 +84,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     selectedTheme = value;
     applyTheme(selectedTheme);
   });
+  setupSegmented(bookmarkStorageControl, (value) => {
+    selectedBookmarkStorageMode = value;
+  });
   function applyTheme(theme) {
     document.body.setAttribute("data-theme", theme);
   }
+  searchEngineSelect.addEventListener("change", () => {
+    customSearchUrlInput.style.display = searchEngineSelect.value === "custom" ? "" : "none";
+  });
+  function validateShortcut(shortcut) {
+    const pattern = /^(Ctrl|Alt|Command|MacCtrl)(\+(Shift|Alt))?(\+[A-Z0-9])$/i;
+    return pattern.test(shortcut);
+  }
+  function setupShortcutInput(input, statusEl) {
+    input.addEventListener("keydown", (e) => {
+      e.preventDefault();
+      const parts = [];
+      if (e.ctrlKey) parts.push("Ctrl");
+      if (e.altKey) parts.push("Alt");
+      if (e.shiftKey) parts.push("Shift");
+      if (e.metaKey) parts.push("Command");
+      if (e.key && !["Control", "Alt", "Shift", "Meta"].includes(e.key)) {
+        parts.push(e.key.toUpperCase());
+      }
+      input.value = parts.join("+");
+      const valid = validateShortcut(input.value);
+      statusEl.textContent = valid ? "Valid" : "Invalid format";
+      statusEl.style.color = valid ? "#16a34a" : "#dc2626";
+    });
+  }
+  setupShortcutInput(shortcutSpotlightInput, shortcutStatus);
+  setupShortcutInput(shortcutPopupInput, shortcutStatus);
   if (typeof chrome !== "undefined" && chrome.storage?.local) {
     const data = await chrome.storage.local.get(Object.keys(DEFAULTS));
     selectedActionsMode = data.actionsMode || DEFAULTS.actionsMode;
@@ -100,6 +141,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     applyTheme(selectedTheme);
     compactMode.checked = data.compactMode ?? DEFAULTS.compactMode;
+    selectedBookmarkStorageMode = data.bookmarkStorageMode || DEFAULTS.bookmarkStorageMode;
+    bookmarkStorageControl.querySelectorAll(".seg-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.value === selectedBookmarkStorageMode);
+    });
+    searchEngineSelect.value = data.searchEngine || DEFAULTS.searchEngine;
+    customSearchUrlInput.value = data.customSearchUrl || DEFAULTS.customSearchUrl;
+    customSearchUrlInput.style.display = searchEngineSelect.value === "custom" ? "" : "none";
+    shortcutSpotlightInput.value = data.shortcutSpotlight || DEFAULTS.shortcutSpotlight;
+    shortcutPopupInput.value = data.shortcutPopup || DEFAULTS.shortcutPopup;
   }
   async function saveSettings() {
     const settings = {
@@ -115,10 +165,35 @@ document.addEventListener("DOMContentLoaded", async () => {
       fuzzyEnabled: fuzzyEnabled.checked,
       diversifyResults: diversifyResults.checked,
       theme: selectedTheme,
-      compactMode: compactMode.checked
+      compactMode: compactMode.checked,
+      bookmarkStorageMode: selectedBookmarkStorageMode,
+      searchEngine: searchEngineSelect.value,
+      customSearchUrl: customSearchUrlInput.value,
+      shortcutSpotlight: shortcutSpotlightInput.value,
+      shortcutPopup: shortcutPopupInput.value
     };
     if (typeof chrome !== "undefined" && chrome.storage?.local) {
       await chrome.storage.local.set(settings);
+      if (validateShortcut(shortcutSpotlightInput.value)) {
+        try {
+          await chrome.runtime.sendMessage({
+            type: "UPDATE_SHORTCUT",
+            command: "open-spotlight",
+            shortcut: shortcutSpotlightInput.value
+          });
+        } catch {
+        }
+      }
+      if (validateShortcut(shortcutPopupInput.value)) {
+        try {
+          await chrome.runtime.sendMessage({
+            type: "UPDATE_SHORTCUT",
+            command: "open-popup",
+            shortcut: shortcutPopupInput.value
+          });
+        } catch {
+        }
+      }
       showSaveStatus("Settings saved");
     }
   }
