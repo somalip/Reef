@@ -35,6 +35,37 @@ export function getSnippet(text: string, query: string): string {
   return (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
 }
 
+export function appendHighlightedText(parent: HTMLElement, text: string, query: string): void {
+  const trimmed = query.trim();
+  if (!trimmed) {
+    parent.appendChild(document.createTextNode(text));
+    return;
+  }
+  const lowerText = text.toLowerCase();
+  const lowerQuery = trimmed.toLowerCase();
+  const idx = lowerText.indexOf(lowerQuery);
+  if (idx === -1) {
+    parent.appendChild(document.createTextNode(text));
+    return;
+  }
+  const before = text.slice(0, idx);
+  const match = text.slice(idx, idx + trimmed.length);
+  const after = text.slice(idx + trimmed.length);
+
+  if (before) parent.appendChild(document.createTextNode(before));
+  const mark = document.createElement('mark');
+  mark.textContent = match;
+  parent.appendChild(mark);
+  if (after) parent.appendChild(document.createTextNode(after));
+}
+
+export function getResultTypeIconNode(type: string): Node {
+  const svgString = getResultTypeIcon(type);
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgString, 'image/svg+xml');
+  return doc.documentElement;
+}
+
 export function getResultTypeIcon(type: string): string {
   switch (type) {
     case 'section':
@@ -68,3 +99,4 @@ export function getResultTypeLabel(type: string): string {
     default:           return 'Section';
   }
 }
+
