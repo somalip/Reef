@@ -1,0 +1,3 @@
+export async function cacheUrls(urls: string[], cacheName = 'reef-v1'): Promise<void> { if (typeof caches === 'undefined') return; const cache = await caches.open(cacheName); await cache.addAll(urls); }
+export async function clearCache(cacheName = 'reef-v1'): Promise<boolean> { return typeof caches !== 'undefined' ? caches.delete(cacheName) : false; }
+export function registerServiceWorker(url: string, scope?: string): Promise<ServiceWorkerRegistration | undefined> { return typeof navigator !== 'undefined' && 'serviceWorker' in navigator ? navigator.serviceWorker.register(url, scope ? { scope } : undefined) : Promise.resolve(undefined); }

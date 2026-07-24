@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reef for Browsers — Extension</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/extension.css" />
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Sticky Header -->
+    <header class="header-sticky">
+      <div class="header-inner">
+        <div class="header-top">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <a href="/" class="brand-logo" style="text-decoration: none;">
+              <div class="brand-icon"><img src="web/reef_logo_updated.png" class="brand-icon-img" alt="Reef Logo"></div>
+              <div class="brand-title">
+                REEF<span class="brand-title-dim">_ENGINE</span>
+              </div>
+            </a>
+            <span class="badge-version">v0.1.0</span>
+            <span class="ext-page-badge">EXTENSION</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <a href="/" class="ext-nav-link">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              <span>Back to Engine</span>
+            </a>
+            <a href="https://github.com/somalip/Reef" target="_blank" rel="noopener noreferrer" class="github-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+              <span>GitHub</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Nav Tabs Row -->
+        <nav class="nav-row no-scrollbar" id="extNavTabs">
+          <button class="tab-btn active" data-ext-tab="overview">01 / Overview</button>
+          <button class="tab-btn" data-ext-tab="search">02 / Search</button>
+          <button class="tab-btn" data-ext-tab="library">03 / Library</button>
+          <button class="tab-btn" data-ext-tab="agent">04 / Agent</button>
+          <button class="tab-btn" data-ext-tab="integrations">05 / Integrations</button>
+          <button class="tab-btn" data-ext-tab="settings">06 / Settings</button>
+          <button class="tab-btn" data-ext-tab="install">07 / Install</button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- TAB 1: OVERVIEW -->
+      <section id="ext-tab-overview" class="tab-pane active" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="card-panel" style="position: relative; overflow: hidden;">
+          <img src="plugin/icons/icon-128.png" alt="" aria-hidden="true" style="position: absolute; top: 50%; right: -0.5rem; transform: translateY(-50%); width: 220px; height: 220px; object-fit: contain; opacity: 0.04; pointer-events: none; user-select: none; filter: grayscale(1);" />
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; position: relative; z-index: 1;">
+            <div style="max-width: 42rem; display: flex; flex-direction: column; gap: 0.75rem;">
+              <div>
+                <span class="card-title-badge">Browser Extension — Chrome / Firefox / Edge</span>
+              </div>
+              <h1 class="card-heading" style="font-size: 1.875rem;">Reef for Browsers</h1>
+              <p class="card-desc">
+                A cross-browser extension that turns any website into a searchable, automatable workspace. Everything runs 100% locally in your browser — zero server costs, zero accounts, zero telemetry.
+              </p>
+              <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem;">
+                <a href="#ext-tab-install" class="btn-primary" style="text-decoration: none;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                  <span>Install Extension</span>
+                </a>
+                <a href="https://github.com/somalip/Reef/tree/main/plugin" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="text-decoration: none;">
+                  <span>View Source</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="grid-2" style="width: 100%; max-width: 18rem;">
+              <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem;">
+                <div style="font-family: var(--font-mono); font-weight: 700; font-size: 1.25rem; color: #FFFFFF;">MV3</div>
+                <div style="font-size: 0.625rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em;">Manifest</div>
+                <div style="font-size: 0.625rem; color: rgba(255,255,255,0.3);">Chrome / Edge / Firefox</div>
+              </div>
+              <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem;">
+                <div style="font-family: var(--font-mono); font-weight: 700; font-size: 1.25rem; color: #FFFFFF;">100%</div>
+                <div style="font-size: 0.625rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em;">Local</div>
+                <div style="font-size: 0.625rem; color: rgba(255,255,255,0.3);">Zero Telemetry</div>
+              </div>
+              <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem;">
+                <div style="font-family: var(--font-mono); font-weight: 700; font-size: 1.25rem; color: #FFFFFF;">7</div>
+                <div style="font-size: 0.625rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em;">Record Types</div>
+                <div style="font-size: 0.625rem; color: rgba(255,255,255,0.3);">Sections to Structured</div>
+              </div>
+              <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem;">
+                <div style="font-family: var(--font-mono); font-weight: 700; font-size: 1.25rem; color: #FFFFFF;">3</div>
+                <div style="font-size: 0.625rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em;">Popup Modes</div>
+                <div style="font-size: 0.625rem; color: rgba(255,255,255,0.3);">Page / Tabs / Library</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Capability Cards -->
+        <div class="grid-4">
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Keyboard-First Search</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Ctrl+Shift+K opens a 380px popup to search the current page, all open tabs, or your saved library — all without touching the mouse.</p>
+          </div>
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Local Library</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Bookmarks, snippets, page notes, and recent pages persisted in <code>chrome.storage.local</code> with tag-based filtering and full-text search.</p>
+          </div>
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Agent Automation</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5">Click buttons, fill forms, and execute multi-step workflows directly from the extension popup on any site.</p>
+          </div>
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Deep Integrations</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Omnibox suggestions, five context menu actions, selection toolbar, and element highlighting — all native browser surfaces.</p>
+          </div>
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Sensitive Guardrails</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Hard-excludes password fields, credit card inputs, SSN fields, and <code>data-reef-agent="off"</code> regions from indexing.</p>
+          </div>
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Cross-Tab Crawl</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Optional mode indexes pages from the same origin across multiple open tabs into a shared site-level search index.</p>
+          </div>
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Theme Support</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Light, Dark, and System theme modes across the popup, options page, and in-page UI with CSS custom properties throughout.</p>
+          </div>
+          <div class="card-panel" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono);">Agent-Ready Sites</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Sites publishing <code>window.__reefAgentManifest</code> get authoritative records — no dynamic extraction needed.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: SEARCH -->
+      <section id="ext-tab-search" class="tab-pane" style="display: none; flex-direction: column; gap: 1.5rem;">
+        <div class="card-panel">
+          <div class="card-title-badge">KEYBOARD_FIRST_SEARCH_POPUP</div>
+          <h2 class="card-heading">Page &amp; Tab Search</h2>
+          <p class="card-desc" style="max-width: 52rem; margin-top: 0.75rem;">
+            Press <kbd class="kbd-badge">Ctrl</kbd>+<kbd class="kbd-badge">Shift</kbd>+<kbd class="kbd-badge">K</kbd> to open the search popup. Three modes let you search the current page, all open tabs, or your saved library — all from a single keyboard-first interface.
+          </p>
+        </div>
+
+        <!-- Three modes breakdown -->
+        <div class="grid-3">
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #FFFFFF;">01</span>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">PAGE MODE</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Current Page Index</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.6;">
+              Searches the live DOM of the active tab. Extracts sections, actions, fields, links, files, media, and structured data. Filter results by type with tab chips.
+            </p>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>6 filter tabs: All, Sections, Actions, Fields, Links, Files</li>
+              <li>Each result shows type pill, heading, body snippet</li>
+              <li>Execute / Fill / View action button per result</li>
+              <li>Bookmark star to save individual results</li>
+              <li>Click highlights the element in-page with teal outline</li>
+            </ul>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #FFFFFF;">02</span>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">TABS MODE</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Cross-Tab Search</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.6;">
+              Searches all open browser tabs by title, URL, and cached index content. Weighted scoring: title match (+10), URL match (+5), index content match (+8).
+            </p>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>Shows matched records from each tab's index</li>
+              <li>"Switch to tab" button for cross-window focus</li>
+              <li>Finds content across dozens of open tabs instantly</li>
+              <li>No server needed — all data is in-browser</li>
+            </ul>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #FFFFFF;">03</span>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">LIBRARY MODE</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Saved Content Search</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.6;">
+              Full-text search across bookmarks, snippets, notes, and recent pages. Filter by tags aggregated from all saved items.
+            </p>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>4 library tabs: Bookmarks, Snippets, Notes, Recent</li>
+              <li>Tag-based filtering across all content types</li>
+              <li>Copy-to-clipboard for snippets</li>
+              <li>Inline edit and delete for all items</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Extraction pipeline -->
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="card-title-badge">DYNAMIC_EXTRACTION_PIPELINE</div>
+          <h3 class="card-heading" style="font-size: 1.125rem;">How pages are indexed</h3>
+          <p class="card-desc">The content script extracts records from the live DOM on every search. If the site publishes an authoritative manifest via <code>window.__reefAgentManifest</code>, Reef uses that directly. Otherwise it falls back to dynamic extraction with deduplication.</p>
+          <div class="code-block">// Extraction priority order:
+// 1. Authoritative manifest (window.__reefAgentManifest)
+// 2. Static &lt;script type="application/agent-manifest+json"&gt;
+// 3. Dynamic DOM extraction with dedup by type:headingText:selector|url
+
+// Record types extracted:
+// section  — heading-bounded page content with anchor URL
+// action   — buttons and clickable controls with CSS selectors
+// field    — form inputs, textareas, and selects
+// file     — downloadable links classified by extension
+// media    — images, audio, video with alt text and captions
+// structured — JSON-LD schema.org records (FAQ, breadcrumbs)
+// link     — internal and external hyperlinks</div>
+        </div>
+
+        <!-- Selection Toolbar -->
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="card-title-badge">SELECTION_TOOLBAR</div>
+          <h3 class="card-heading" style="font-size: 1.125rem;">In-page selection toolbar</h3>
+          <p class="card-desc">Select any text on a page and a floating toolbar appears with four actions: Bookmark, Snippet, Search, and Copy. The toolbar positions above the selection and dismisses on Escape, outside click, scroll, or resize.</p>
+          <div class="grid-4">
+            <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.375rem;">
+              <div style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #FFFFFF;">Bookmark</div>
+              <div style="font-size: 0.6875rem; color: var(--text-dim);">Save selected text with surrounding context, selector, and optional note.</div>
+            </div>
+            <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.375rem;">
+              <div style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #FFFFFF;">Snippet</div>
+              <div style="font-size: 0.6875rem; color: var(--text-dim);">Save as a reusable snippet with title and tags. Copy to clipboard from the library.</div>
+            </div>
+            <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.375rem;">
+              <div style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #FFFFFF;">Search</div>
+              <div style="font-size: 0.6875rem; color: var(--text-dim);">Open the popup pre-filled with the selected text as the search query.</div>
+            </div>
+            <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.375rem;">
+              <div style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #FFFFFF;">Copy</div>
+              <div style="font-size: 0.6875rem; color: var(--text-dim);">Copy the selected text to clipboard with a toast confirmation.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: LIBRARY -->
+      <section id="ext-tab-library" class="tab-pane" style="display: none; flex-direction: column; gap: 1.5rem;">
+        <div class="card-panel">
+          <div class="card-title-badge">LOCAL_PERSISTENCE_LIBRARY</div>
+          <h2 class="card-heading">Bookmarks, Snippets &amp; Notes</h2>
+          <p class="card-desc" style="max-width: 52rem; margin-top: 0.75rem;">
+            All library data is persisted in <code>chrome.storage.local</code> under namespaced keys. Nothing leaves the browser. CRUD operations for every content type with tag-based filtering.
+          </p>
+        </div>
+
+        <div class="grid-4">
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-dim);"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">BOOKMARKS</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Page &amp; Selection Bookmarks</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.6;">
+              URL, title, selected text, CSS selector, surrounding context (before/after), note, tags, and favicon. Full CRUD with search.
+            </p>
+            <div class="code-block" style="font-size: 0.6875rem;">LIBRARY_BOOKMARK_CREATE
+LIBRARY_BOOKMARK_LIST
+LIBRARY_BOOKMARK_UPDATE
+LIBRARY_BOOKMARK_DELETE</div>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-dim);"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">SNIPPETS</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Reusable Text Snippets</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.6;">
+              Text content with title, tags, source URL, and source title. Copy-to-clipboard support. Created from the selection toolbar or context menu.
+            </p>
+            <div class="code-block" style="font-size: 0.6875rem;">LIBRARY_SNIPPET_CREATE
+LIBRARY_SNIPPET_LIST
+LIBRARY_SNIPPET_UPDATE
+LIBRARY_SNIPPET_DELETE</div>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-dim);"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">NOTES</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Per-Page Notes</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.6;">
+              One note per URL with title. Created from context menu or the popup. Get/set/list/delete via message passing to the background service worker.
+            </p>
+            <div class="code-block" style="font-size: 0.6875rem;">LIBRARY_NOTE_GET
+LIBRARY_NOTE_LIST
+LIBRARY_NOTE_SET
+LIBRARY_NOTE_DELETE</div>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-dim);"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">RECENTS</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Recent Page History</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.6;">
+              Auto-recorded on each page visit. Capped at 30 entries. Shows URL, title, favicon, record count, and visit timestamp.
+            </p>
+            <div class="code-block" style="font-size: 0.6875rem;">LIBRARY_RECENTS_LIST
+LIBRARY_RECENTS_CLEAR
+LIBRARY_TAGS</div>
+          </div>
+        </div>
+
+        <!-- Toast notifications -->
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="card-title-badge">IN_PAGE_TOAST_SYSTEM</div>
+          <h3 class="card-heading" style="font-size: 1.125rem;">Shadow DOM toast notifications</h3>
+          <p class="card-desc">A Shadow DOM-based toast system renders fixed-position notifications in the top-right corner. Three types: <code>info</code> (dark), <code>success</code> (green), <code>error</code> (red). Auto-dismiss after 2.2 seconds with a fade-out transition.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+            <div style="padding: 0.5rem 1rem; background: #1a1a1a; border: 1px solid var(--border-color); font-size: 0.75rem; font-family: var(--font-mono); color: rgba(255,255,255,0.8);">INFO — Indexing complete</div>
+            <div style="padding: 0.5rem 1rem; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); font-size: 0.75rem; font-family: var(--font-mono); color: #4ade80;">SUCCESS — Bookmarked in Reef</div>
+            <div style="padding: 0.5rem 1rem; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); font-size: 0.75rem; font-family: var(--font-mono); color: #f87171;">ERROR — Bookmark failed</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: AGENT -->
+      <section id="ext-tab-agent" class="tab-pane" style="display: none; flex-direction: column; gap: 1.5rem;">
+        <div class="card-panel">
+          <div class="card-title-badge">IN_PAGE_BROWSER_AUTOMATION</div>
+          <h2 class="card-heading">Agent Automation Layer</h2>
+          <p class="card-desc" style="max-width: 52rem; margin-top: 0.75rem;">
+            The extension hosts an <code>Agent</code> instance in every page's content script. Execute clicks, fill forms, and chain multi-step workflows directly from the popup — all grounded to the live DOM with semantic selector candidates and fuzzy fallback.
+          </p>
+        </div>
+
+        <!-- Action modes -->
+        <div class="grid-2">
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; border-color: rgba(34,197,94,0.3);">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #4ade80;">EXECUTE</span>
+              <span style="font-size: 0.625rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">FULL INTERACTION</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Full Action Mode</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.6;">
+              All indexed actions are executable. Click buttons, follow links, fill form fields, and trigger multi-step workflows. Destructive actions prompt for confirmation if the guardrail toggle is enabled.
+            </p>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>Click any indexed button or link</li>
+              <li>Fill text inputs, textareas, and selects</li>
+              <li>Native property setters for React/Vue compat</li>
+              <li>Multi-step workflow execution with retry</li>
+            </ul>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; border-color: rgba(234,179,8,0.3);">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #facc15;">NAVIGATE-ONLY</span>
+              <span style="font-size: 0.625rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">CONSERVATIVE</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Safe Navigation Mode</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.6;">
+              Only navigation actions are allowed. Destructive verbs (delete, remove, submit, etc.) are excluded from the index. Form fields are not fillable. Safe for automated exploration.
+            </p>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>Only links and navigation buttons indexed</li>
+              <li>Destructive verbs filtered at extraction</li>
+              <li>No form field interaction</li>
+              <li>Ideal for read-only agent workflows</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Agent grounding -->
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="card-title-badge">DOM_GROUNDING_STRATEGY</div>
+          <h3 class="card-heading" style="font-size: 1.125rem;">Selector resolution &amp; fallback</h3>
+          <p class="card-desc">Agent actions are grounded to live DOM elements using a multi-layer strategy. If the primary CSS selector fails after a re-render, the agent falls back through semantic candidates, ARIA labels, fuzzy live-text matching, open Shadow DOM traversal, and same-origin iframe paths.</p>
+          <div class="code-block">// Agent action execution pipeline:
+const agent = new Agent(index, inspector, { maxActionsPerRun: 25 });
+
+// 1. Primary: semantic CSS selector from extraction
+// 2. Fallback: ARIA accessibility tree candidates
+// 3. Fuzzy: live-text content matching
+// 4. Shadow DOM: open root traversal
+// 5. Iframe: same-origin frame traversal
+
+await agent.observe();
+await agent.waitForStable({ quietMs: 300 });
+await agent.click('[data-action="submit"]');
+await agent.type('#email-field', 'user@example.com');</div>
+        </div>
+
+        <!-- Cross-tab crawl -->
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="card-title-badge">CROSS_TAB_SITE_CRAWL</div>
+          <h3 class="card-heading" style="font-size: 1.125rem;">Multi-tab site indexing</h3>
+          <p class="card-desc">When enabled in settings, the extension indexes pages from the same origin across all open tabs into a shared site-level index. Uses the core <code>Indexer</code> class with sitemap discovery and breadth-first fallback crawl.</p>
+          <div class="code-block">// Triggered via background service worker:
+CRAWL_SITE_CROSS_TAB → background.ts
+// Uses Indexer class with:
+//   - sitemap.xml parsing
+//   - Same-origin crawl capped by maxPages
+//   - Incremental ETag diffing
+//   - Shared site-level index across tabs</div>
+        </div>
+      </section>
+
+      <!-- TAB 5: INTEGRATIONS -->
+      <section id="ext-tab-integrations" class="tab-pane" style="display: none; flex-direction: column; gap: 1.5rem;">
+        <div class="card-panel">
+          <div class="card-title-badge">NATIVE_BROWSER_SURFACES</div>
+          <h2 class="card-heading">Browser Integrations</h2>
+          <p class="card-desc" style="max-width: 52rem; margin-top: 0.75rem;">
+            Reef hooks into five native browser surfaces: the omnibox, context menus, selection toolbar, element highlighting, and the keyboard shortcut system.
+          </p>
+        </div>
+
+        <!-- Omnibox -->
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="card-title-badge">OMNIBOX</span>
+            <span style="font-size: 0.625rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">ADDRESS BAR</span>
+          </div>
+          <h3 style="font-size: 1rem; font-weight: 700; color: #FFFFFF;">Type <code style="font-size: 0.875rem;">reef</code> in the address bar</h3>
+          <p class="card-desc">The omnibox integration provides up to 5 suggestions from the current page's index. Press Enter to execute the top result — click for actions and links, type for fields.</p>
+          <div class="code-block">// Address bar workflow:
+// 1. Type "reef" + space in the address bar
+// 2. Up to 5 suggestions appear from the page index
+// 3. Press Enter to execute the top result
+// 4. Actions click, links navigate, fields receive focus</div>
+        </div>
+
+        <!-- Context Menus -->
+        <div class="card-panel" style="padding: 0; overflow-x: auto;">
+          <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #FFFFFF;">
+            Right-Click Context Menu Actions
+          </div>
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>MENU ITEM</th>
+                <th>TRIGGER</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-family: var(--font-mono); font-weight: 700;">01</td>
+                <td style="font-weight: 600;">Bookmark selection in Reef</td>
+                <td>Text selected</td>
+                <td style="color: var(--text-dim);">Creates a bookmark from the selected text with surrounding context and CSS selector.</td>
+              </tr>
+              <tr>
+                <td style="font-family: var(--font-mono); font-weight: 700;">02</td>
+                <td style="font-weight: 600;">Save selection as snippet</td>
+                <td>Text selected</td>
+                <td style="color: var(--text-dim);">Saves selected text as a reusable snippet with title and tags.</td>
+              </tr>
+              <tr>
+                <td style="font-family: var(--font-mono); font-weight: 700;">03</td>
+                <td style="font-weight: 600;">Search "%s" in Reef</td>
+                <td>Text selected</td>
+                <td style="color: var(--text-dim);">Opens the popup with the selection pre-filled as the search query.</td>
+              </tr>
+              <tr>
+                <td style="font-family: var(--font-mono); font-weight: 700;">04</td>
+                <td style="font-weight: 600;">Add note to this page</td>
+                <td>Any context</td>
+                <td style="color: var(--text-dim);">Opens the note editor for the current page URL.</td>
+              </tr>
+              <tr>
+                <td style="font-family: var(--font-mono); font-weight: 700;">05</td>
+                <td style="font-weight: 600;">Bookmark this page in Reef</td>
+                <td>Any context</td>
+                <td style="color: var(--text-dim);">Bookmarks the entire current page with title and favicon.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Element Highlighting -->
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="card-title-badge">ELEMENT_HIGHLIGHTING</div>
+          <h3 class="card-heading" style="font-size: 1.125rem;">Visual result grounding</h3>
+          <p class="card-desc">When a search result card is clicked in the popup, the corresponding DOM element is scrolled into view and highlighted with a <code>3px solid #00a8b5</code> (teal) outline for 2 seconds. This provides immediate visual confirmation of which element a search result refers to.</p>
+        </div>
+
+        <!-- Permissions -->
+        <div class="card-panel" style="padding: 0; overflow-x: auto;">
+          <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #FFFFFF;">
+            Required Permissions
+          </div>
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>PERMISSION</th>
+                <th>PURPOSE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="font-family: var(--font-mono); font-weight: 600;">activeTab</td><td style="color: var(--text-dim);">Inspect current tab DOM for extraction</td></tr>
+              <tr><td style="font-family: var(--font-mono); font-weight: 600;">scripting</td><td style="color: var(--text-dim);">Execute in-page agent actions (click/type)</td></tr>
+              <tr><td style="font-family: var(--font-mono); font-weight: 600;">storage</td><td style="color: var(--text-dim);">Persist settings and library data locally</td></tr>
+              <tr><td style="font-family: var(--font-mono); font-weight: 600;">tabs</td><td style="color: var(--text-dim);">Query and manage open browser tabs</td></tr>
+              <tr><td style="font-family: var(--font-mono); font-weight: 600;">contextMenus</td><td style="color: var(--text-dim);">Right-click menu items for bookmark, snippet, search, note</td></tr>
+              <tr><td style="font-family: var(--font-mono); font-weight: 600;">unlimitedStorage</td><td style="color: var(--text-dim);">Library data persistence without quota limits</td></tr>
+              <tr><td style="font-family: var(--font-mono); font-weight: 600;">&lt;all_urls&gt;</td><td style="color: var(--text-dim);">Content script injection on any site for indexing and automation</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 6: SETTINGS -->
+      <section id="ext-tab-settings" class="tab-pane" style="display: none; flex-direction: column; gap: 1.5rem;">
+        <div class="card-panel">
+          <div class="card-title-badge">EXTENSION_CONFIGURATION</div>
+          <h2 class="card-heading">Settings &amp; Options</h2>
+          <p class="card-desc" style="max-width: 52rem; margin-top: 0.75rem;">
+            A full options page with sidebar navigation and six configuration sections. Import/export settings as JSON. Keyboard shortcut <kbd class="kbd-badge">Ctrl</kbd>+<kbd class="kbd-badge">S</kbd> to save.
+          </p>
+        </div>
+
+        <div class="grid-3">
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #FFFFFF;">01</span>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">EXECUTION</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Action Execution</h3>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>Action mode: Execute / Navigate Only</li>
+              <li>Destructive action confirmation toggle</li>
+              <li>Auto-execute on Enter toggle</li>
+            </ul>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #FFFFFF;">02</span>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">PRIVACY</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Privacy &amp; Security</h3>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>Custom exclusion selectors (CSS)</li>
+              <li>Blocked domains list</li>
+              <li>Telemetry opt-in toggle (off by default)</li>
+            </ul>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #FFFFFF;">03</span>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">SEARCH</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Search Configuration</h3>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>Results per page: 5–100</li>
+              <li>Scoring: Default / BM25 / BM25F</li>
+              <li>Fuzzy matching toggle</li>
+              <li>MMR result diversity toggle</li>
+              <li>Cross-tab indexing toggle</li>
+            </ul>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #FFFFFF;">04</span>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">APPEARANCE</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Theme &amp; Display</h3>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>Theme: Light / Dark / System</li>
+              <li>Compact mode toggle</li>
+              <li>CSS custom properties throughout</li>
+            </ul>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #FFFFFF;">05</span>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">DATA</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Data Management</h3>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>Clear cache</li>
+              <li>Clear browsing history</li>
+              <li>Reset all settings to defaults</li>
+            </ul>
+          </div>
+
+          <div class="card-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.875rem; color: #FFFFFF;">06</span>
+              <span style="font-family: var(--font-mono); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim);">ABOUT</span>
+            </div>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Version &amp; Info</h3>
+            <ul style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); padding-left: 1rem;">
+              <li>Extension version</li>
+              <li>Manifest version (MV3)</li>
+              <li>Runtime type detection</li>
+              <li>Configured shortcut key</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Import / Export -->
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="card-title-badge">SETTINGS_PORTABILITY</div>
+          <h3 class="card-heading" style="font-size: 1.125rem;">Import &amp; Export</h3>
+          <p class="card-desc">Export all settings as a JSON file for backup or migration. Import a previously exported JSON to restore configuration. Available from the options page header.</p>
+          <div class="grid-2">
+            <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.375rem;">
+              <div style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #FFFFFF;">Export Settings</div>
+              <div style="font-size: 0.6875rem; color: var(--text-dim);">Downloads a JSON file with all configuration values. Share across machines or back up before changes.</div>
+            </div>
+            <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.375rem;">
+              <div style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #FFFFFF;">Import Settings</div>
+              <div style="font-size: 0.6875rem; color: var(--text-dim);">Upload a JSON file to restore configuration. Validates the schema before applying.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: INSTALL -->
+      <section id="ext-tab-install" class="tab-pane" style="display: none; flex-direction: column; gap: 1.5rem;">
+        <div class="card-panel" style="position: relative; overflow: hidden;">
+          <img src="plugin/icons/icon-128.png" alt="" aria-hidden="true" style="position: absolute; top: 50%; right: 1.5rem; transform: translateY(-50%); width: 100px; height: 100px; object-fit: contain; opacity: 0.06; pointer-events: none; user-select: none; filter: grayscale(1);" />
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; position: relative; z-index: 1;">
+            <div>
+              <div class="card-title-badge">INSTALL_REEF_EXTENSION</div>
+              <h2 class="card-heading">Install the Extension</h2>
+            </div>
+            <div style="padding: 0.25rem 0.75rem; background-color: rgba(255,255,255,0.05); border: 1px solid var(--border-color); font-size: 0.75rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);">
+              Chrome / Firefox / Edge
+            </div>
+          </div>
+        </div>
+
+        <!-- Browser install cards -->
+        <div class="grid-3">
+          <div class="card-panel" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; text-align: center;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); align-self: center;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" x2="12" y1="8" y2="12"/><line x1="3.95" x2="12" y1="6.06" y2="12"/><line x1="1.09" x2="12" y1="12.97" y2="12.97"/></svg>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Google Chrome</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Install from the Chrome Web Store or load the unpacked extension from <code>plugin/dist/</code>.</p>
+            <a href="https://github.com/somalip/Reef" target="_blank" rel="noopener noreferrer" class="btn-primary" style="justify-content: center; text-decoration: none;">
+              <span>Chrome Web Store - coming soon</span>
+            </a>
+          </div>
+
+          <div class="card-panel" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; text-align: center;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); align-self: center;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Mozilla Firefox</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Install from Firefox Add-ons or load the temporary add-on from <code>plugin/dist/</code> via <code>about:debugging</code>.</p>
+            <a href="https://github.com/somalip/Reef" target="_blank" rel="noopener noreferrer" class="btn-primary" style="justify-content: center; text-decoration: none;">
+              <span>Firefox Add-ons - coming soon</span>
+            </a>
+          </div>
+
+          <div class="card-panel" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; text-align: center;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); align-self: center;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: #FFFFFF;">Microsoft Edge</h3>
+            <p style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.5;">Compatible with Chrome builds. Install from Edge Add-ons or load unpacked from <code>plugin/dist/</code>.</p>
+            <a href="https://github.com/somalip/Reef" target="_blank" rel="noopener noreferrer" class="btn-primary" style="justify-content: center; text-decoration: none;">
+              <span>Edge Add-ons - coming soon</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Dev install -->
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="card-title-badge">DEVELOPER_INSTALL</div>
+          <h3 class="card-heading" style="font-size: 1.125rem;">Load from source</h3>
+          <p class="card-desc">Clone the repository, build the extension, and load it as an unpacked extension for development.</p>
+          <div class="code-block"># Clone the repository
+git clone https://github.com/somalip/Reef.git
+cd Reef/plugin
+
+# Install dependencies and build
+npm install
+npm run build
+
+# Chrome / Edge:
+# 1. Open chrome://extensions
+# 2. Enable "Developer mode"
+# 3. Click "Load unpacked"
+# 4. Select the plugin/dist/ directory
+
+# Firefox:
+# 1. Open about:debugging#/runtime/this-firefox
+# 2. Click "Load Temporary Add-on"
+# 3. Select any file in plugin/dist/</div>
+        </div>
+
+        <!-- Keyboard shortcut -->
+        <div class="card-panel" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <div class="card-title-badge">QUICK_START</div>
+          <h3 style="font-size: 1rem; font-weight: 700; color: #FFFFFF;">Keyboard shortcut</h3>
+          <p class="card-desc">After installing, press <kbd class="kbd-badge">Ctrl</kbd>+<kbd class="kbd-badge">Shift</kbd>+<kbd class="kbd-badge">K</kbd> (or <kbd class="kbd-badge">Cmd</kbd>+<kbd class="kbd-badge">Shift</kbd>+<kbd class="kbd-badge">K</kbd> on Mac) to open the search popup. You can customize this in <code>chrome://extensions/shortcuts</code>.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-bar">
+      <div class="footer-inner">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;">
+          <img src="web/reef_logo_500.png" alt="Reef" style="width: 20px; height: 20px; object-fit: contain; opacity: 0.55; filter: grayscale(1) brightness(1.8);" />
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="status-dot">
+              <span class="status-dot-ping"></span>
+              <span class="status-dot-core"></span>
+            </span>
+            <span style="color: #FFFFFF; font-weight: 700;">EXTENSION: v0.1.0</span>
+          </div>
+
+          <span style="color: rgba(255,255,255,0.2);">|</span>
+
+          <div style="display: flex; align-items: center; gap: 0.375rem; color: var(--text-muted);">
+            <span>MANIFEST: MV3</span>
+          </div>
+
+          <span style="color: rgba(255,255,255,0.2);">|</span>
+
+          <div style="display: flex; align-items: center; gap: 0.375rem; color: var(--text-muted);">
+            <span>MODE: 100% LOCAL</span>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 1rem; color: var(--text-dim);">
+          <a href="/" style="color: inherit; text-decoration: none; font-family: var(--font-mono); font-size: 0.625rem; text-transform: uppercase;">
+            Reef Engine
+          </a>
+
+          <span style="color: rgba(255,255,255,0.2);">|</span>
+
+          <a href="https://github.com/somalip/Reef" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
+            MIT License
+          </a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="/extension.js"></script>
+</body>
+</html>

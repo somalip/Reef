@@ -1,0 +1,3 @@
+import { createSearchIndex, addToIndex, type SearchIndex } from '../search-index.js'; import type { IndexRecord } from '../types.js';
+export function createMockIndex(records: Partial<IndexRecord>[] = []): SearchIndex { const index = createSearchIndex(); addToIndex(index, records.map((r, i) => ({ id: r.id ?? `mock-${i}`, url: r.url ?? '/', headingText: r.headingText ?? '', headingId: r.headingId ?? `mock-${i}`, breadcrumb: r.breadcrumb ?? '', bodyText: r.bodyText ?? '', type: r.type ?? 'section', ...r })) as IndexRecord[]); return index; }
+export async function replay<T>(actions: Array<() => T | Promise<T>>): Promise<T[]> { const results: T[] = []; for (const action of actions) results.push(await action()); return results; }
