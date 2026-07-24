@@ -1281,6 +1281,142 @@ async function handleUpdateShortcut(message) {
     return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
+async function handleSearchCurrentTab(message, sender) {
+  try {
+    const query = query.trim().toLowerCase();
+    if (!query) return { success: true, results: [], manifest: { url: null, title: null, records: [] } };
+    
+    // Search across all available tab indices
+    const allResults = [];
+    for (const tabIndex of tabIndices.values()) {
+      const results = searchSections(message.query, tabIndex.index, { 
+        limit: message.limit || 50, 
+        filter: message.filter ? (r) => r.type === message.filter || message.filter === "all" : void 0 
+      });
+      allResults.push(...results.map((r) => r.record));
+    }
+    
+    return { 
+      success: true, 
+      results: allResults, 
+      manifest: { 
+        url: null, 
+        title: null, 
+        records: [] 
+      } 
+    };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+async function handleTabSearch(message) {
+  try {
+    const query = message.query.trim().toLowerCase();
+    if (!query) return { success: true, items: [] };
+    const tabs = await chrome.tabs.query({});
+    const items = [];
+    for (const tab of tabs) {
+      if (!tab.id || !tab.url) continue;
+      if (tab.url.startsWith("chrome://") || tab.url.startsWith("chrome-extension://")) continue;
+      const tabIndex = tabIndices.get(tab.id);
+      let matchedRecords = [];
+      if (tabIndex) {
+        matchedRecords = searchSections(tabIndex.index, query, { limit: 5 }).map((r) => r.record);
+      }
+      items.push({
+        tab: { id: tab.id, windowId: tab.windowId, title: tab.title || tab.url, url: tab.url, favIconUrl: tab.favIconUrl },
+        matchedRecords
+      });
+    }
+    items.sort((a, b) => b.matchedRecords.length - a.matchedRecords.length);
+    return { success: true, items };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+async function handleLibraryBookmarksList(message) {
+  try {
+    const all = await getArray(KEY.bookmarks);
+    let items = all;
+    if (message.query) {
+      const q = message.query.toLowerCase();
+      items = items.filter((b) => (b.title || "").toLowerCase().includes(q) || (b.url || "").toLowerCase().includes(q));
+    }
+    return { success: true, items };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+async function handleLibrarySnippetsList(message) {
+  try {
+    const all = await getArray(KEY.snippets);
+    let items = all;
+    if (message.query) {
+      const q = message.query.toLowerCase();
+      items = items.filter((s) => (s.title || "").toLowerCase().includes(q) || (s.text || "").toLowerCase().includes(q));
+    }
+    return { success: true, items };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+async function handleBrowserHistorySearch(message) {
+  try {
+    if (!globalThis.chrome?.history?.search) return { success: true, items: [] };
+    const results = await new Promise((resolve) => {
+      chrome.history.search({ text: message.query, maxResults: 50, startTime: Date.now() - 30 * 864e5 }, (r) => resolve(r || []));
+    });
+    const items = results.map((h) => ({ title: h.title || h.url, url: h.url, favIconUrl: h.favIconUrl, visitCount: h.visitCount, lastVisitTime: h.lastVisitTime }));
+    return { success: true, items };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+async function handleBrowserDownloadsSearch(message) {
+  try {
+    if (!globalThis.chrome?.downloads?.search) return { success: true, items: [] };
+    const results = await new Promise((resolve) => {
+      chrome.downloads.search({ query: [message.query], limit: 50 }, (r) => resolve(r || []));
+    });
+    const items = results.map((d) => ({ title: d.filename || "Unknown", url: d.url || "", filename: d.filename, state: d.state, totalBytes: d.totalBytes, startTime: d.startTime }));
+    return { success: true, items };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+async function handleExecuteTabAction(message, sender) {
+  try {
+    const tabId = message.tabId;
+    if (!tabId) {
+      return { success: false, error: "no-tab-id" };
+    }
+    const record = message.record;
+    if (record.selector) {
+      const result = await chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        func: (selector) => {
+          const el = document.querySelector(selector);
+          if (!el) return { success: false, reason: "element-not-found" };
+          if (el instanceof HTMLAnchorElement || el instanceof HTMLButtonElement || el instanceof HTMLInputElement) {
+            el.click();
+            return { success: true };
+          }
+          if (el instanceof HTMLElement) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            el.focus();
+            return { success: true };
+          }
+          return { success: false, reason: "unsupported-element" };
+        },
+        args: [record.selector]
+      });
+      return result?.[0]?.result ?? { success: false, error: "no-result" };
+    }
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
 if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     (async () => {
@@ -1324,6 +1460,27 @@ if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
             break;
           case "UPDATE_SHORTCUT":
             sendResponse(await handleUpdateShortcut(message));
+            break;
+          case "SEARCH_CURRENT_TAB":
+            sendResponse(await handleSearchCurrentTab(message, sender));
+            break;
+          case "TAB_SEARCH":
+            sendResponse(await handleTabSearch(message));
+            break;
+          case "LIBRARY_BOOKMARKS_LIST":
+            sendResponse(await handleLibraryBookmarksList(message));
+            break;
+          case "LIBRARY_SNIPPETS_LIST":
+            sendResponse(await handleLibrarySnippetsList(message));
+            break;
+          case "BROWSER_HISTORY_SEARCH":
+            sendResponse(await handleBrowserHistorySearch(message));
+            break;
+          case "BROWSER_DOWNLOADS_SEARCH":
+            sendResponse(await handleBrowserDownloadsSearch(message));
+            break;
+          case "EXECUTE_TAB_ACTION":
+            sendResponse(await handleExecuteTabAction(message, sender));
             break;
           default:
             sendResponse({ success: false, error: "unsupported-message-type" });

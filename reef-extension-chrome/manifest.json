@@ -53,13 +53,6 @@
     "keyword": "reef"
   },
   "commands": {
-    "_execute_action": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+R",
-        "mac": "Command+Shift+R"
-      },
-      "description": "Open Reef for Browsers popup"
-    },
     "open-popup": {
       "suggested_key": {
         "default": "Ctrl+Shift+K",
@@ -73,41 +66,6 @@
         "mac": "Command+Shift+L"
       },
       "description": "Open Reef Spotlight (search across all tabs)"
-    },
-    "close-tab": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+W",
-        "mac": "Command+Shift+W"
-      },
-      "description": "Close current tab"
-    },
-    "reopen-closed-tab": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+T",
-        "mac": "Command+Shift+T"
-      },
-      "description": "Reopen last closed tab"
-    },
-    "go-back": {
-      "suggested_key": {
-        "default": "Ctrl+Left",
-        "mac": "Command+Left"
-      },
-      "description": "Go back in history"
-    },
-    "go-forward": {
-      "suggested_key": {
-        "default": "Ctrl+Right",
-        "mac": "Command+Right"
-      },
-      "description": "Go forward in history"
-    },
-    "toggle-fullscreen": {
-      "suggested_key": {
-        "default": "Ctrl+F11",
-        "mac": "Command+F11"
-      },
-      "description": "Toggle fullscreen"
     }
   }
 }
