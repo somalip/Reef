@@ -273,9 +273,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   function runTabSearch() {
     if (currentMode !== "tabs") return;
     if (!tabQuery.trim()) {
-      tabResults = [];
-      tabsContainer.innerHTML = '<div class="empty-state">Type to search all open tabs by title and content.</div>';
-      statsLabel.textContent = "0 tabs";
+      fetchOpenTabs();
       return;
     }
     chrome.runtime.sendMessage({ type: "TAB_SEARCH", query: tabQuery, limit: 30 }, (res) => {
@@ -331,6 +329,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       actionsRow.appendChild(switchBtn);
       card.appendChild(actionsRow);
       tabsContainer.appendChild(card);
+    });
+  }
+  async function fetchOpenTabs() {
+    tabsContainer.innerHTML = '<div class="loading-state">Loading tabs...</div>';
+    chrome.runtime.sendMessage({ type: "LIST_OPEN_TABS" }, (res) => {
+      if (!res?.success) {
+        tabsContainer.innerHTML = '<div class="empty-state">Tab list unavailable.</div>';
+        return;
+      }
+      tabResults = res.items || [];
+      renderTabResults();
     });
   }
   let libDebounce = null;

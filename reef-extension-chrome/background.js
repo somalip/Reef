@@ -2869,6 +2869,25 @@ async function searchOpenTabs(query, limit = 25) {
   actions.push({ type: "search-web", title: `Search the web for "${query}"`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}` });
   return { items, suggestion, autocorrected, siteResults, actions };
 }
+async function listOpenTabs() {
+  if (typeof chrome === "undefined" || !chrome.tabs) return { items: [] };
+  const tabs = await chrome.tabs.query({});
+  const items = [];
+  for (const tab of tabs) {
+    if (!tab.id || !tab.url || !tab.title) continue;
+    if (tab.url.startsWith("chrome://") || tab.url.startsWith("about:") || tab.url.startsWith("moz-extension:")) continue;
+    items.push({
+      tabId: tab.id,
+      title: tab.title,
+      url: tab.url,
+      favIconUrl: tab.favIconUrl || "",
+      windowId: tab.windowId,
+      score: 0,
+      matchedRecords: []
+    });
+  }
+  return { items };
+}
 if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     (async () => {
@@ -3118,6 +3137,14 @@ if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
           } else {
             sendResponse({ success: false, error: "invalid-url" });
           }
+          return;
+        }
+        if (message.type === "LIST_OPEN_TABS") {
+          const result = await listOpenTabs();
+          sendResponse({
+            success: true,
+            items: result.items
+          });
           return;
         }
         sendResponse({ success: false, error: "unsupported-background-message" });
