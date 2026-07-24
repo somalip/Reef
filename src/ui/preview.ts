@@ -1,3 +1,0 @@
-import type { IndexRecord } from '../types.js';
-export interface Preview { record: IndexRecord; html: string; }
-export async function previewRecord(record: IndexRecord, options: { fetch?: typeof fetch; maxLength?: number } = {}): Promise<Preview> { const max = options.maxLength ?? 1200; if (record.bodyText) return { record, html: record.bodyText.slice(0, max) }; if (record.url && (options.fetch ?? globalThis.fetch)) { try { const response = await (options.fetch ?? globalThis.fetch)(record.url); const text = await response.text(); return { record, html: text.replace(/<script[\s\S]*?<\/script>/gi, '').slice(0, max) }; } catch { /* preview is best effort */ } } return { record, html: '' }; }

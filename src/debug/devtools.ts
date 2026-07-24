@@ -1,3 +1,0 @@
-import type { SearchIndex } from '../search-index.js';
-export function inspectIndex(index: SearchIndex): { documents: number; terms: number; trieNodes: number; version: number } { const count = (node: any): number => 1 + [...node.children.values()].reduce((n: number, child: any) => n + count(child), 0); return { documents: index.allSections.length, terms: index.bodyIndex.size + index.headingIndex.size, trieNodes: count(index.headingTrie), version: index.version }; }
-export function profileSearch<T>(query: string, search: () => T): { query: string; duration: number; result: T } { const start = performance.now(); const result = search(); return { query, duration: performance.now() - start, result }; }
