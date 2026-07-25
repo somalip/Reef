@@ -1,7 +1,3 @@
-if (typeof chrome !== 'undefined' && chrome.action && chrome.action.openPopup) {
-  const _openPopup = chrome.action.openPopup.bind(chrome.action);
-  chrome.action.openPopup = () => _openPopup().catch(() => {});
-}
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __esm = (fn, res, err) => function __init() {
@@ -2697,33 +2693,20 @@ function scoreTitle(title, q) {
   if (new RegExp(`\\b${escapeRegex(q)}`, "i").test(title)) return 12;
   return 0;
 }
-function searchSiteContent(query, limit = 10, excludeTabIds = []) {
+function searchSiteContent(query, limit = 10) {
   const results = [];
-  const exclude = new Set(excludeTabIds);
-  const seen = /* @__PURE__ */ new Set();
-  for (const [tabId, state] of tabIndices) {
-    if (exclude.has(tabId)) continue;
-    if (!state?.index) continue;
+  for (const [origin, index] of siteIndices) {
     try {
-      const hits = searchSections(query, state.index, { limit: 3, fuzzy: true });
+      const hits = searchSections(query, index, { limit: 3, fuzzy: true });
       for (const hit of hits) {
-        const key = `${hit.url || ""}|${hit.selector || ""}|${hit.headingText || ""}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        let origin;
-        try {
-          origin = state.manifest?.url ? new URL(state.manifest.url).origin : void 0;
-        } catch {
-        }
         results.push({
-          url: hit.url || state.manifest?.url || "",
+          url: hit.url || origin,
           headingText: hit.headingText,
           bodyText: (hit.bodyText || "").slice(0, 120),
           selector: hit.selector,
           type: hit.type,
           score: 5,
-          sourceOrigin: origin,
-          sourceTabId: tabId
+          sourceOrigin: origin
         });
       }
     } catch {
@@ -2876,7 +2859,7 @@ async function searchOpenTabs(query, limit = 25) {
     } catch {
     }
   }
-  const siteResults = searchSiteContent(query, 5, matches.map((m) => m.tab.id));
+  const siteResults = searchSiteContent(query, 5);
   const actions = [];
   if (looksLikeUrl(query.trim())) {
     let navUrl = query.trim();
@@ -2928,46 +2911,6 @@ if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
           let suggestion;
           let autocorrected = false;
           let reefSuggestions = [];
-          let crossTabResults = [];
-          try {
-            const crawlOptions = await getOptions();
-            if (crawlOptions.enableCrossTabCrawl && state.manifest?.url && query.trim()) {
-              const origin = new URL(state.manifest.url).origin;
-              try {
-                const sameOriginTabs = await chrome.tabs.query({ url: `${origin}/*` });
-                const fetchPromises = sameOriginTabs.filter((t) => t.id && t.id !== tabId && !tabIndices.has(t.id)).map((t) => getOrFetchTabIndex(t.id));
-                if (fetchPromises.length > 0) {
-                  await Promise.race([
-                    Promise.allSettled(fetchPromises),
-                    new Promise((resolve) => setTimeout(resolve, 1500))
-                  ]);
-                }
-              } catch {
-              }
-              const seenSelectors = new Set(
-                results.map((r) => `${r.url || ""}|${r.selector || ""}|${r.headingText || ""}`)
-              );
-              for (const [otherTabId, otherState] of tabIndices) {
-                if (otherTabId === tabId) continue;
-                if (!otherState?.manifest?.url) continue;
-                let otherOrigin;
-                try {
-                  otherOrigin = new URL(otherState.manifest.url).origin;
-                } catch {
-                  continue;
-                }
-                if (otherOrigin !== origin) continue;
-                const siteHits = searchSections(query, otherState.index, { limit: 10, fuzzy: true });
-                for (const hit of siteHits) {
-                  const key = `${hit.url || ""}|${hit.selector || ""}|${hit.headingText || ""}`;
-                  if (seenSelectors.has(key)) continue;
-                  seenSelectors.add(key);
-                  crossTabResults.push({ ...hit, crossTab: true, sourceOrigin: origin, sourceTabId: otherTabId });
-                }
-              }
-            }
-          } catch {
-          }
           try {
             const reefResponse = await chrome.tabs.sendMessage(tabId, {
               type: "REEF_LOCAL_SEARCH",
@@ -2991,7 +2934,6 @@ if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
           sendResponse({
             success: true,
             results,
-            crossTabResults,
             total: paginated.total,
             hasMore: paginated.hasMore,
             suggestions: mergedSuggestions,

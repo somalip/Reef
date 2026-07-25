@@ -4,7 +4,6 @@ var currentMode = "page";
 var pageFilter = "all";
 var pageQuery = "";
 var pageResults = [];
-var crossTabResults = [];
 var tabQuery = "";
 var tabResults = [];
 var libFilter = "bookmarks";
@@ -63,11 +62,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     activeTabId = tab.id;
     await performPageSearch();
   } else {
-    resultsContainer.replaceChildren();
-    const noTab = document.createElement("div");
-    noTab.className = "empty-state";
-    noTab.textContent = "No active tab accessible.";
-    resultsContainer.appendChild(noTab);
+    resultsContainer.innerHTML = '<div class="empty-state">No active tab accessible.</div>';
   }
   searchInput.addEventListener("input", () => {
     pageQuery = searchInput.value;
@@ -95,11 +90,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   var pageSuggestionsList = [];
   async function performPageSearch() {
     if (!activeTabId) return;
-    resultsContainer.replaceChildren();
-    const loading = document.createElement("div");
-    loading.className = "loading-state";
-    loading.textContent = "Searching page...";
-    resultsContainer.appendChild(loading);
+    resultsContainer.innerHTML = '<div class="loading-state">Searching page...</div>';
     chrome.runtime.sendMessage(
       { type: "SEARCH_CURRENT_TAB", tabId: activeTabId, query: pageQuery },
       (response) => {
@@ -119,7 +110,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           manifestBadge.classList.remove("authoritative");
         }
         pageResults = response.results || [];
-        crossTabResults = response.crossTabResults || [];
         pageSuggestion = response.suggestion;
         pageAutocorrected = !!response.autocorrected;
         pageSuggestionsList = response.suggestions || [];
@@ -132,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let filtered2 = pageResults;
     if (pageFilter !== "all") filtered2 = pageResults.filter((r) => r.type === pageFilter);
     statsLabel.textContent = `${filtered2.length} items found`;
-    resultsContainer.replaceChildren();
+    resultsContainer.innerHTML = "";
     if (pageAutocorrected && pageSuggestion) {
       const banner = document.createElement("div");
       banner.className = "autocorrect-banner";
@@ -230,51 +220,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
       resultsContainer.appendChild(card);
     });
-    if (crossTabResults.length > 0) {
-      const header = document.createElement("div");
-      header.className = "section-header-inline";
-      header.textContent = "From other tabs on this site";
-      header.style.padding = "8px 14px";
-      header.style.fontSize = "11px";
-      header.style.fontWeight = "600";
-      header.style.textTransform = "uppercase";
-      header.style.letterSpacing = "0.04em";
-      header.style.color = "var(--text-muted)";
-      resultsContainer.appendChild(header);
-      crossTabResults.forEach((record) => {
-        const card = document.createElement("div");
-        card.className = "result-card";
-        const topRow = document.createElement("div");
-        topRow.className = "card-top";
-        const title = document.createElement("span");
-        title.className = "card-title";
-        title.textContent = record.headingText || record.label || record.url;
-        const typePill = document.createElement("span");
-        typePill.className = `type-pill ${record.type || "link"}`;
-        typePill.textContent = record.type || "link";
-        topRow.appendChild(title);
-        topRow.appendChild(typePill);
-        card.appendChild(topRow);
-        if (record.bodyText) {
-          const snippet = document.createElement("div");
-          snippet.className = "card-snippet";
-          snippet.textContent = record.bodyText;
-          card.appendChild(snippet);
-        }
-        const actionsRow = document.createElement("div");
-        actionsRow.className = "card-actions";
-        const openBtn = document.createElement("button");
-        openBtn.className = "run-btn";
-        openBtn.textContent = "Open in Tab";
-        openBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          if (record.url) chrome.tabs.create({ url: record.url });
-        });
-        actionsRow.appendChild(openBtn);
-        card.appendChild(actionsRow);
-        resultsContainer.appendChild(card);
-      });
-    }
   }
   function executePageAction(record) {
     if (!activeTabId) return;
@@ -333,21 +278,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     chrome.runtime.sendMessage({ type: "TAB_SEARCH", query: tabQuery, limit: 30 }, (res) => {
       if (!res?.success) {
-        tabsContainer.replaceChildren();
-        const noTabs = document.createElement("div");
-        noTabs.className = "empty-state";
-        noTabs.textContent = "Tab search unavailable.";
-        tabsContainer.appendChild(noTabs);
+        tabsContainer.innerHTML = '<div class="empty-state">Tab search unavailable.</div>';
         return;
       }
-      const openTabItems = res.items || [];
-      const siteItems = (res.siteResults || []).map((r) => ({
-        title: r.headingText || r.url,
-        url: r.url,
-        isSiteMatch: true,
-        matchedRecords: [{ headingText: r.headingText, bodyText: r.bodyText }]
-      }));
-      tabResults = [...openTabItems, ...siteItems];
+      tabResults = res.items || [];
       renderTabResults();
     });
   }
@@ -355,14 +289,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (currentMode !== "tabs") return;
     statsLabel.textContent = `${tabResults.length} tab${tabResults.length === 1 ? "" : "s"}`;
     if (tabResults.length === 0) {
-      tabsContainer.replaceChildren();
-      const noMatch = document.createElement("div");
-      noMatch.className = "empty-state";
-      noMatch.textContent = "No matching tabs.";
-      tabsContainer.appendChild(noMatch);
+      tabsContainer.innerHTML = '<div class="empty-state">No matching tabs.</div>';
       return;
     }
-    tabsContainer.replaceChildren();
+    tabsContainer.innerHTML = "";
     tabResults.forEach((item) => {
       const card = document.createElement("div");
       card.className = "result-card";
@@ -385,50 +315,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       const actionsRow = document.createElement("div");
       actionsRow.className = "card-actions";
-      if (item.isSiteMatch) {
-        const siteTag = document.createElement("span");
-        siteTag.className = "type-pill link";
-        siteTag.textContent = "same site";
-        actionsRow.appendChild(siteTag);
-        const openBtn = document.createElement("button");
-        openBtn.className = "run-btn";
-        openBtn.textContent = "Open in Tab";
-        openBtn.addEventListener("click", () => {
-          if (item.url) chrome.tabs.create({ url: item.url });
-          window.close();
+      const switchBtn = document.createElement("button");
+      switchBtn.className = "run-btn";
+      switchBtn.textContent = "Switch to tab";
+      switchBtn.addEventListener("click", () => {
+        chrome.runtime.sendMessage({
+          type: "TAB_SWITCH",
+          tabId: item.tabId,
+          windowId: item.windowId
         });
-        actionsRow.appendChild(openBtn);
-      } else {
-        const switchBtn = document.createElement("button");
-        switchBtn.className = "run-btn";
-        switchBtn.textContent = "Switch to tab";
-        switchBtn.addEventListener("click", () => {
-          chrome.runtime.sendMessage({
-            type: "TAB_SWITCH",
-            tabId: item.tabId,
-            windowId: item.windowId
-          });
-          window.close();
-        });
-        actionsRow.appendChild(switchBtn);
-      }
+        window.close();
+      });
+      actionsRow.appendChild(switchBtn);
       card.appendChild(actionsRow);
       tabsContainer.appendChild(card);
     });
   }
   async function fetchOpenTabs() {
-    tabsContainer.replaceChildren();
-    const loadingTabs = document.createElement("div");
-    loadingTabs.className = "loading-state";
-    loadingTabs.textContent = "Loading tabs...";
-    tabsContainer.appendChild(loadingTabs);
+    tabsContainer.innerHTML = '<div class="loading-state">Loading tabs...</div>';
     chrome.runtime.sendMessage({ type: "LIST_OPEN_TABS" }, (res) => {
       if (!res?.success) {
-        tabsContainer.replaceChildren();
-        const noTabList = document.createElement("div");
-        noTabList.className = "empty-state";
-        noTabList.textContent = "Tab list unavailable.";
-        tabsContainer.appendChild(noTabList);
+        tabsContainer.innerHTML = '<div class="empty-state">Tab list unavailable.</div>';
         return;
       }
       tabResults = res.items || [];
@@ -458,11 +365,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   async function loadLibrary() {
     if (currentMode !== "library") return;
-    libContainer.replaceChildren();
-    const loadingLib = document.createElement("div");
-    loadingLib.className = "loading-state";
-    loadingLib.textContent = "Loading library\u2026";
-    libContainer.appendChild(loadingLib);
+    libContainer.innerHTML = '<div class="loading-state">Loading library\u2026</div>';
     const req = (type) => new Promise((resolve) => {
       chrome.runtime.sendMessage({ type }, (res) => resolve(res));
     });
@@ -497,14 +400,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const items = filtered(bookmarksCache, (b) => [b.title, b.selectedText, b.note, (b.tags || []).join(" "), b.url].filter(Boolean).join(" "));
     statsLabel.textContent = `${items.length} bookmark${items.length === 1 ? "" : "s"}`;
     if (items.length === 0) {
-      libContainer.replaceChildren();
-      const noBookmarks = document.createElement("div");
-      noBookmarks.className = "empty-state";
-      noBookmarks.textContent = "No bookmarks yet. Right-click selected text or click \u2605 on a search result to save.";
-      libContainer.appendChild(noBookmarks);
+      libContainer.innerHTML = '<div class="empty-state">No bookmarks yet. Right-click selected text or click \u2605 on a search result to save.</div>';
       return;
     }
-    libContainer.replaceChildren();
+    libContainer.innerHTML = "";
     items.forEach((b) => {
       const card = document.createElement("div");
       card.className = "result-card library-card";
@@ -560,14 +459,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const items = filtered(snippetsCache, (s) => [s.title, s.text, (s.tags || []).join(" "), s.source?.title || ""].filter(Boolean).join(" "));
     statsLabel.textContent = `${items.length} snippet${items.length === 1 ? "" : "s"}`;
     if (items.length === 0) {
-      libContainer.replaceChildren();
-      const noSnippets = document.createElement("div");
-      noSnippets.className = "empty-state";
-      noSnippets.textContent = "No snippets yet. Right-click selected text \u2192 \"Save selection as snippet\".";
-      libContainer.appendChild(noSnippets);
+      libContainer.innerHTML = '<div class="empty-state">No snippets yet. Right-click selected text \u2192 "Save selection as snippet".</div>';
       return;
     }
-    libContainer.replaceChildren();
+    libContainer.innerHTML = "";
     items.forEach((s) => {
       const card = document.createElement("div");
       card.className = "result-card library-card";
@@ -627,14 +522,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const items = filtered(notesCache, (n) => [n.text, n.title, n.url].filter(Boolean).join(" "));
     statsLabel.textContent = `${items.length} note${items.length === 1 ? "" : "s"}`;
     if (items.length === 0) {
-      libContainer.replaceChildren();
-      const noNotes = document.createElement("div");
-      noNotes.className = "empty-state";
-      noNotes.textContent = "No page notes yet. Right-click the page \u2192 \"Add note to this page\".";
-      libContainer.appendChild(noNotes);
+      libContainer.innerHTML = '<div class="empty-state">No page notes yet. Right-click the page \u2192 "Add note to this page".</div>';
       return;
     }
-    libContainer.replaceChildren();
+    libContainer.innerHTML = "";
     items.forEach((n) => {
       const card = document.createElement("div");
       card.className = "result-card library-card";
@@ -688,14 +579,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const items = recentsCache.slice(0, 25);
     statsLabel.textContent = `${items.length} recent`;
     if (items.length === 0) {
-      libContainer.replaceChildren();
-      const noRecents = document.createElement("div");
-      noRecents.className = "empty-state";
-      noRecents.textContent = "No recent pages yet. Visit some pages to build up history.";
-      libContainer.appendChild(noRecents);
+      libContainer.innerHTML = '<div class="empty-state">No recent pages yet. Visit some pages to build up history.</div>';
       return;
     }
-    libContainer.replaceChildren();
+    libContainer.innerHTML = "";
     items.forEach((p) => {
       const card = document.createElement("div");
       card.className = "result-card library-card";

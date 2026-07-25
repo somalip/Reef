@@ -1228,65 +1228,43 @@
   function escapeHtml(s) {
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
-  function highlightNode(text, query) {
-    const span = document.createElement("span");
-    if (!query) {
-      span.textContent = text;
-      return span;
-    }
+  function highlight(text, query) {
+    if (!query) return escapeHtml(text);
     const safe = escapeHtml(text);
     const q = escapeHtml(query);
     try {
       const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "ig");
-      const parts = safe.split(re);
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i];
-        if (i % 2 === 1) {
+      return safe.replace(re, "<mark>$1</mark>");
+    } catch {
+      return safe;
+    }
+  }
+  function setHighlightNodes(el, text, query) {
+    el.replaceChildren();
+    if (!query) {
+      el.appendChild(document.createTextNode(text));
+      return;
+    }
+    try {
+      const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "ig");
+      const parts = text.split(re);
+      for (const part of parts) {
+        if (re.test(part)) {
           const mark = document.createElement("mark");
           mark.textContent = part;
-          span.appendChild(mark);
+          el.appendChild(mark);
         } else {
-          span.appendChild(document.createTextNode(part));
+          el.appendChild(document.createTextNode(part));
         }
+        re.lastIndex = 0;
       }
-      return span;
     } catch {
-      span.textContent = safe;
-      return span;
+      el.appendChild(document.createTextNode(text));
     }
   }
   function truncate(s, n) {
     if (s.length <= n) return s;
     return s.slice(0, n - 1) + "\u2026";
-  }
-  function createHint(keys, label, separator) {
-    const hint = document.createElement("span");
-    hint.className = "hint";
-    if (Array.isArray(keys)) {
-      keys.forEach((key, i) => {
-        if (i > 0 && separator !== false) {
-          hint.appendChild(document.createTextNode("+"));
-        }
-        const kbd = document.createElement("kbd");
-        kbd.textContent = key;
-        hint.appendChild(kbd);
-      });
-    } else if (keys) {
-      const kbd = document.createElement("kbd");
-      kbd.textContent = keys;
-      hint.appendChild(kbd);
-    }
-    if (label) {
-      hint.appendChild(document.createTextNode(label));
-    }
-    return hint;
-  }
-  function createSvgIcon(svgContent) {
-    const icon = document.createElement("div");
-    const template = document.createElement("template");
-    template.content = (new DOMParser()).parseFromString(svgContent.trim(), "text/html").body.content;
-    icon.appendChild(template.content.firstElementChild.cloneNode(true));
-    return icon;
   }
   var FALLBACK_FAVICON = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6' fill='none' stroke='%23999' stroke-width='1.4'/><path d='M2 8h12M8 2c2.5 2.5 2.5 9.5 0 12M8 2c-2.5 2.5-2.5 9.5 0 12' fill='none' stroke='%23999' stroke-width='1.4'/></svg>";
   function createSpotlight(opts = {}) {
@@ -1394,11 +1372,7 @@
       footer.className = "footer";
       const hints = document.createElement("span");
       hints.className = "hints";
-      hints.appendChild(createHint(["\u2191", "\u2193"], "navigate", false));
-      hints.appendChild(createHint("\u21B5", "open"));
-      hints.appendChild(createHint("esc", "close"));
-      hints.appendChild(createHint("tab", "cycle matches"));
-      hints.appendChild(createHint(["Ctrl", "1\u20139"], "jump"));
+      hints.innerHTML = '<span class="hint"><kbd>\u2191</kbd><kbd>\u2193</kbd>navigate</span><span class="hint"><kbd>\u21B5</kbd>open</span><span class="hint"><kbd>esc</kbd>close</span><span class="hint"><kbd>tab</kbd>cycle matches</span><span class="hint"><kbd>Ctrl</kbd>+<kbd>1\u20139</kbd>jump</span>';
       footer.appendChild(hints);
       const brand = document.createElement("span");
       brand.className = "brand";
@@ -1463,9 +1437,8 @@
           link.textContent = suggestion;
           empty.appendChild(link);
           empty.appendChild(document.createTextNode("?"));
-          const suggestionLink = empty.querySelector(".suggestion");
-          if (suggestionLink) {
-            suggestionLink.addEventListener("click", (e) => {
+          if (link) {
+            link.addEventListener("click", (e) => {
               e.preventDefault();
               if (input) {
                 input.value = suggestion;
@@ -1514,19 +1487,18 @@
       if (autocorrected && suggestion) {
         const banner = document.createElement("div");
         banner.className = "autocorrect-banner";
+        banner.appendChild(document.createTextNode("Showing results for "));
         const strong = document.createElement("strong");
         strong.textContent = suggestion;
         banner.appendChild(strong);
-        const mdash = document.createTextNode(" \u2014 ");
-        banner.appendChild(mdash);
+        banner.appendChild(document.createTextNode(" \u2014 "));
         const origLink = document.createElement("a");
         origLink.className = "autocorrect-orig";
         origLink.href = "#";
         origLink.textContent = `search for "${query}" instead`;
         banner.appendChild(origLink);
-        const origLinkEl = banner.querySelector(".autocorrect-orig");
-        if (origLinkEl) {
-          origLinkEl.addEventListener("click", (e) => {
+        if (origLink) {
+          origLink.addEventListener("click", (e) => {
             e.preventDefault();
             lastQueryKey = "\0force-requery\0";
             if (input) {
@@ -1598,7 +1570,7 @@
       main.className = "main";
       const title = document.createElement("div");
       title.className = "title";
-      title.appendChild(highlightNode(truncate(item.title, 60), query));
+      setHighlightNodes(title, truncate(item.title, 60), query);
       const url = document.createElement("div");
       url.className = "url";
       url.textContent = hostFromUrl(item.url);
@@ -1627,13 +1599,29 @@
       row.title = sr.headingText;
       const icon = document.createElement("div");
       icon.className = "favicon site-icon";
-      icon.appendChild(createSvgIcon('<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M2 8h12M8 2c2 2.5 2 9.5 0 12M8 2c-2 2.5-2 9.5 0 12"/></svg>').firstElementChild);
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svgEl = document.createElementNS(svgNS, "svg");
+      svgEl.setAttribute("viewBox", "0 0 16 16");
+      svgEl.setAttribute("width", "14");
+      svgEl.setAttribute("height", "14");
+      svgEl.setAttribute("fill", "none");
+      svgEl.setAttribute("stroke", "currentColor");
+      svgEl.setAttribute("stroke-width", "1.5");
+      const circleEl = document.createElementNS(svgNS, "circle");
+      circleEl.setAttribute("cx", "8");
+      circleEl.setAttribute("cy", "8");
+      circleEl.setAttribute("r", "6");
+      const pathEl = document.createElementNS(svgNS, "path");
+      pathEl.setAttribute("d", "M2 8h12M8 2c2 2.5 2 9.5 0 12M8 2c-2 2.5-2 9.5 0 12");
+      svgEl.appendChild(circleEl);
+      svgEl.appendChild(pathEl);
+      icon.appendChild(svgEl);
       row.appendChild(icon);
       const main = document.createElement("div");
       main.className = "main";
       const title = document.createElement("div");
       title.className = "title";
-      title.appendChild(highlightNode(truncate(sr.headingText, 60), query));
+      setHighlightNodes(title, truncate(sr.headingText, 60), query);
       const url = document.createElement("div");
       url.className = "url";
       url.textContent = sr.sourceOrigin;
@@ -1656,9 +1644,9 @@
       const icon = document.createElement("div");
       icon.className = "favicon action-icon";
       if (action.type === "search-web") {
-        icon.appendChild(createSvgIcon('<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke-linecap="round"/></svg>').firstElementChild);
+        icon.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="15" y2="15" stroke-linecap="round"/></svg>';
       } else {
-        icon.appendChild(createSvgIcon('<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4"/></svg>').firstElementChild);
+        icon.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4"/></svg>';
       }
       row.appendChild(icon);
       const main = document.createElement("div");
@@ -2263,7 +2251,7 @@
       style.textContent = REEF_TOOLBAR_CSS;
       const bar = document.createElement("div");
       bar.className = "bar";
-      bar.insertAdjacentHTML("beforeend", `
+      bar.innerHTML = `
       <button class="btn" data-action="bookmark" title="Bookmark selection">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M4 2h8a1 1 0 0 1 1 1v11l-5-3-5 3V3a1 1 0 0 1 1-1z"/></svg>
         <span>Bookmark</span>
@@ -2280,7 +2268,7 @@
         <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M5 2h7a1 1 0 0 1 1 1v9h-1V3H5V2zM3 4h7a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm0 1v9h7V5H3z"/></svg>
         <span>Copy</span>
       </button>
-    `);
+    `;
       root.appendChild(style);
       root.appendChild(bar);
       bar.addEventListener("mousedown", (e) => {
