@@ -1674,6 +1674,7 @@
         matchedRecords: [],
         _isRecent: true
       }));
+      unifiedResults = currentResults.map((r) => ({ kind: "tab", data: r }));
       selectedIndex = 0;
       results.replaceChildren();
       if (items.length === 0) {
@@ -1720,6 +1721,7 @@
         fragment.appendChild(row);
       });
       results.appendChild(fragment);
+      applySelection();
     }
     async function runQuery(query) {
       const key = query.trim();
@@ -1899,12 +1901,10 @@
       input.value = "";
       currentQuery = "";
       await runQuery("");
-      requestAnimationFrame(() => {
-        try {
-          input?.focus();
-        } catch {
-        }
-      });
+      try {
+        input?.focus();
+      } catch {
+      }
     }
     function hide() {
       if (!host) return;

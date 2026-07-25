@@ -5,10 +5,10 @@
   "default_locale": "en",
   "description": "__MSG_appDescription__",
   "icons": {
-    "16": "icons/plugin_logo.png",
-    "32": "icons/plugin_logo.png",
-    "48": "icons/plugin_logo.png",
-    "128": "icons/plugin_logo.png"
+    "16": "icons/plugin_logo(1).png",
+    "32": "icons/plugin_logo(2).png",
+    "48": "icons/plugin_logo(3).png",
+    "128": "icons/plugin_logo(4).png"
   },
   "browser_specific_settings": {
     "gecko": {
@@ -27,10 +27,10 @@
     "default_popup": "src/popup/popup.html",
     "default_title": "__MSG_appName__",
     "default_icon": {
-      "16": "icons/plugin_logo.png",
-      "32": "icons/plugin_logo.png",
-      "48": "icons/plugin_logo.png",
-      "128": "icons/plugin_logo.png"
+      "16": "icons/plugin_logo(1).png",
+      "32": "icons/plugin_logo(2).png",
+      "48": "icons/plugin_logo(3).png",
+      "128": "icons/plugin_logo(4).png"
     }
   },
   "options_ui": {
