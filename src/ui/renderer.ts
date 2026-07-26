@@ -3,7 +3,7 @@
  * Handles creating the modal DOM, focus trapping, and ARIA attributes.
  */
 
-import { getResultTypeIcon, getResultTypeLabel, escapeHtml, highlight, getSnippet } from './ui-helpers.js';
+import { getResultTypeIconNode, getResultTypeLabel, escapeHtml, appendHighlightedText, getSnippet } from './ui-helpers.js';
 import type { IndexRecord } from '../types.js';
 
 export class UIRenderer {
@@ -66,7 +66,8 @@ renderUI(
     this.root = host.attachShadow({ mode: 'open' });
     const shadow = this.root;
 
-    shadow.innerHTML = `
+    const parser = new DOMParser();
+    const parsedDoc = parser.parseFromString(`
       <style>
         :host {
           position: fixed;
@@ -497,7 +498,7 @@ renderUI(
       <div class="panel" role="dialog" aria-modal="true" aria-label="Site search">
         <div class="input-row">
           <svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input class="input" type="text" placeholder="${placeholder}" autocomplete="off" />
+          <input class="input" type="text" placeholder="" autocomplete="off" />
           <span class="hint">ESC</span>
           <button class="settings-toggle-btn" type="button" aria-label="Toggle settings">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -592,9 +593,19 @@ renderUI(
           </div>
         </div>
       </div>
-    `;
+    `, 'text/html');
+
+    while (parsedDoc.head.firstChild) {
+      shadow.appendChild(parsedDoc.head.firstChild);
+    }
+    while (parsedDoc.body.firstChild) {
+      shadow.appendChild(parsedDoc.body.firstChild);
+    }
 
     this.input = shadow.querySelector('input') as HTMLInputElement | null;
+    if (this.input) {
+      this.input.placeholder = placeholder;
+    }
     this.resultsList = shadow.querySelector('.results') as HTMLElement | null;
 
     // Toggle Settings View
@@ -779,7 +790,10 @@ renderUI(
     this.clearFocusableElements();
 
     if (!results.length) {
-      this.resultsList.innerHTML = `<div class="empty">No sections match "${escapeHtml(query)}"</div>`;
+      const div = document.createElement('div');
+      div.className = 'empty';
+      div.textContent = `No sections match "${query}"`;
+      this.resultsList.replaceChildren(div);
       if (countEl) countEl.textContent = '0 results';
       return;
     }
@@ -797,44 +811,82 @@ renderUI(
     }
 
     if (this.resultsList) {
-      this.resultsList.innerHTML = results
-        .map((result, index) => {
-          const isSelected = index === selectedIndex;
-          const snippet = getSnippet(result.bodyText, query);
-          const typeIcon = getResultTypeIcon(result.type);
-          const typeLabel = getResultTypeLabel(result.type);
+      const fragment = document.createDocumentFragment();
 
-          const isAction = result.type === 'action';
-          const isSamePage = result.url === window.location.href.split('#')[0];
-          const canExecuteHere = isAction && isSamePage && !result.destructive;
-          const actionHint = canExecuteHere
-            ? '<span class="result-action-hint run-here">↵ to run here</span>'
-            : '<span class="result-action-hint go-there">↵ to go there</span>';
+      results.forEach((result, index) => {
+        const isSelected = index === selectedIndex;
+        const snippet = getSnippet(result.bodyText, query);
+        const typeLabel = getResultTypeLabel(result.type);
 
-          let answerPreview = '';
-          if (result.type === 'structured' && result.structuredData) {
-            if (result.structuredData.answer) {
-              answerPreview = `<div class="answer-preview">${escapeHtml(result.structuredData.answer.substring(0, 100))}${result.structuredData.answer.length > 100 ? '…' : ''}</div>`;
-            } else if (result.structuredData.question && result.structuredData.answer) {
-              answerPreview = `<div class="answer-preview"><strong>${escapeHtml(result.structuredData.question)}</strong>: ${escapeHtml(result.structuredData.answer.substring(0, 100))}${result.structuredData.answer.length > 100 ? '…' : ''}</div>`;
+        const isAction = result.type === 'action';
+        const isSamePage = result.url === window.location.href.split('#')[0];
+        const canExecuteHere = isAction && isSamePage && !result.destructive;
+
+        const btn = document.createElement('button');
+        btn.className = `result ${isSelected ? 'is-selected' : ''}`;
+        btn.type = 'button';
+        btn.setAttribute('data-index', String(index));
+
+        const typeDiv = document.createElement('div');
+        typeDiv.className = 'result-type';
+
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'result-type-icon';
+        iconSpan.appendChild(getResultTypeIconNode(result.type));
+
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'result-type-label';
+        labelSpan.textContent = typeLabel;
+
+        typeDiv.appendChild(iconSpan);
+        typeDiv.appendChild(labelSpan);
+        btn.appendChild(typeDiv);
+
+        if (result.breadcrumb) {
+          const breadcrumbDiv = document.createElement('div');
+          breadcrumbDiv.className = 'breadcrumb';
+          breadcrumbDiv.textContent = result.breadcrumb;
+          btn.appendChild(breadcrumbDiv);
+        }
+
+        const headingDiv = document.createElement('div');
+        headingDiv.className = 'heading';
+        appendHighlightedText(headingDiv, result.headingText, query);
+        btn.appendChild(headingDiv);
+
+        if (result.type === 'structured' && result.structuredData) {
+          if (result.structuredData.answer || (result.structuredData.question && result.structuredData.answer)) {
+            const answerDiv = document.createElement('div');
+            answerDiv.className = 'answer-preview';
+            if (result.structuredData.question && result.structuredData.answer) {
+              const qStrong = document.createElement('strong');
+              qStrong.textContent = result.structuredData.question;
+              answerDiv.appendChild(qStrong);
+              answerDiv.appendChild(document.createTextNode(': '));
             }
+            const ansText = result.structuredData.answer;
+            const truncatedAns = ansText.substring(0, 100) + (ansText.length > 100 ? '…' : '');
+            answerDiv.appendChild(document.createTextNode(truncatedAns));
+            btn.appendChild(answerDiv);
           }
+        }
 
-          return `
-            <button class="result ${isSelected ? 'is-selected' : ''}" type="button" data-index="${index}">
-              <div class="result-type">
-                <span class="result-type-icon">${typeIcon}</span>
-                <span class="result-type-label">${typeLabel}</span>
-              </div>
-              <div class="breadcrumb">${escapeHtml(result.breadcrumb)}</div>
-              <div class="heading">${highlight(result.headingText, query)}</div>
-              ${answerPreview}
-              <div class="snippet">${highlight(snippet, query)}</div>
-              ${isAction ? actionHint : ''}
-            </button>
-          `;
-        })
-        .join('');
+        const snippetDiv = document.createElement('div');
+        snippetDiv.className = 'match';
+        appendHighlightedText(snippetDiv, snippet, query);
+        btn.appendChild(snippetDiv);
+
+        if (isAction) {
+          const actionSpan = document.createElement('span');
+          actionSpan.className = `result-action-hint ${canExecuteHere ? 'run-here' : 'go-there'}`;
+          actionSpan.textContent = canExecuteHere ? '↵ to run here' : '↵ to go there';
+          btn.appendChild(actionSpan);
+        }
+
+        fragment.appendChild(btn);
+      });
+
+      this.resultsList.replaceChildren(fragment);
 
       // Use event delegation instead of per-button listeners to avoid DOM detachment bugs
       const handleMouseEnter = (event: Event) => {

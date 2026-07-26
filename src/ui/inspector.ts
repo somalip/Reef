@@ -87,7 +87,7 @@ export class VisualInspector {
     if (!this.active || !this.overlayContainer) return;
 
     // Clear existing overlay boxes
-    this.overlayContainer.innerHTML = '';
+    this.overlayContainer.replaceChildren();
 
     const currentUrl = window.location.href.split('#')[0];
 

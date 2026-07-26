@@ -238,10 +238,25 @@ class ReefSearch {
 
     if (!results.length) {
       const suggestion = findClosestWord(query, this.index);
+      const list = this.ui.getResultsList();
+      if (!list) return;
+
+      const makeEmpty = (text: string) => {
+        const div = document.createElement('div');
+        div.className = 'empty';
+        div.textContent = text;
+        return div;
+      };
+
       if (suggestion) {
-        this.ui.getResultsList()!.innerHTML = `<div class="empty">No sections match "${this.escapeHtml(query)}". Did you mean <strong>${this.escapeHtml(suggestion)}</strong>?</div>`;
+        const div = makeEmpty(`No sections match "${query}". Did you mean `);
+        const strong = document.createElement('strong');
+        strong.textContent = suggestion;
+        div.appendChild(strong);
+        div.appendChild(document.createTextNode('?'));
+        list.replaceChildren(div);
       } else {
-        this.ui.getResultsList()!.innerHTML = `<div class="empty">No sections match "${this.escapeHtml(query)}"</div>`;
+        list.replaceChildren(makeEmpty(`No sections match "${query}"`));
       }
       const countEl = this.ui.getRoot()?.querySelector('#count');
       if (countEl) countEl.textContent = '0 results';
